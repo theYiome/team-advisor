@@ -12,8 +12,8 @@ export class Lockfile extends React.Component {
         filename: "lockfile",
         username: "riot",
         protocol: "https",
-        port: null,
-        password: null
+        port: "",
+        password: ""
     }
 
     lockfilePath() {
@@ -34,20 +34,40 @@ export class Lockfile extends React.Component {
         return (
             <Container>
                 <Container>
-                    <Typography>{this.state.protocol}</Typography>
-                    <Typography>{this.state.port}</Typography>
-                    <Typography>{this.state.username}</Typography>
-                    <Typography>{this.state.password}</Typography>
+                    <TextField
+                        label="protocol"
+                        value={this.state.protocol}
+                        sx={{width: 1, mb: 2}}
+                    />
+                    <TextField
+                        label="port"
+                        value={this.state.port}
+                        sx={{width: 1, mb: 2}}
+                    />
+                    <TextField
+                        label="username"
+                        value={this.state.username}
+                        sx={{width: 1, mb: 2}}
+                    />
+                    <TextField
+                        label="password"
+                        value={this.state.password}
+                        sx={{width: 1, mb: 2}}
+                    />
                 </Container>
                 <Container>
-                    <TextField 
+                    <TextField
+                        label="dirPath"
                         value={this.state.dirPath} 
                         onChange={(e) => this.onPathChange(e)}
+                        sx={{width: 1, mb: 2}}
                     />
-                    <Typography>{this.state.filename}</Typography>
-                </Container>
-                <Container>
-                    <Button variant='contained' onClick={() => this.getLockfileData()}>
+                    <TextField
+                        label="filename"
+                        value={this.state.filename}
+                        sx={{width: 1, mb: 2}}
+                    />
+                    <Button sx={{width: 1}} variant='contained' onClick={() => this.getLockfileData()}>
                         Get data from lockfile
                     </Button>
                 </Container>

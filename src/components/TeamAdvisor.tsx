@@ -2,12 +2,14 @@ import * as React from 'react';
 
 import { Lockfile } from './Lockfile';
 import { Lobby } from './Lobby';
+import { Team } from './Team';
 
 import * as settingsModule from '../jsutils/settings.js';
 import * as ddragon from '../jsutils/ddragon.js';
 import * as clientLockfile from '../jsutils/clientLockfile.js';
-import { Button, Container } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, Container, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 export class TeamAdvisor extends React.Component {
@@ -58,16 +60,39 @@ export class TeamAdvisor extends React.Component {
     render() {
         return (
             <Container sx={{boxShadow: 10, p: 10}}>
-                <Box sx={{boxShadow: 3}}>
-                    <Lockfile ref={this.state.lockfileRef}></Lockfile>
-                </Box>
-                <Box sx={{boxShadow: 3}}>
-                    <Button variant="contained" onClick={() => this.updateLobby()}>Update lobby data</Button>
-                    <Button variant="contained" onClick={() => this.updateStaticChampionData()}>Update static champion data</Button>
-                </Box>
-                <Box sx={{boxShadow: 3}}>
-                    <Lobby ref={this.state.lobbyRef}></Lobby>
-                </Box>
+                <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+                        <Typography>
+                            Lockfile access
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Lockfile ref={this.state.lockfileRef}></Lockfile>
+                    </AccordionDetails>
+                </Accordion>
+                
+                <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+                        <Typography>
+                            Buttons
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Button variant="contained" onClick={() => this.updateLobby()}>Update lobby data</Button>
+                        <Button variant="contained" onClick={() => this.updateStaticChampionData()}>Update static champion data</Button>
+                    </AccordionDetails>
+                </Accordion>
+
+                <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+                        <Typography>
+                            Lobby State
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Lobby ref={this.state.lobbyRef}></Lobby>
+                    </AccordionDetails>
+                </Accordion>
             </Container>
         )
     } 

@@ -1,19 +1,17 @@
 import { Chip, Container } from '@mui/material';
-import * as React from 'react';
+import React from 'react';
+import {FC, ReactElement, useState} from 'react';
 
+export const Team: FC<any> = (): ReactElement => {
+    const [summoners, setSummoners] = useState([]);
+    const [localPlayerCellId, setLocalPlayerCellId] = useState(null);
 
-export class Team extends React.Component {
-    state: any = {
-        summoners: [],
-        localPlayerCellId: null
-    }
-
-    renderSummoners() {
-        if(!this.state.summoners) return (
+    const renderSummoners = () => {
+        if(!summoners) return (
             <Chip label="No summoner data" color="error"></Chip>
         );
 
-        return this.state.summoners.map(
+        return summoners.map(
             (s: any) => {
                 <Container className="summoner" key={s.cellId}>
                     <div className="summonerId">{s.summonerId}</div>
@@ -26,11 +24,9 @@ export class Team extends React.Component {
         );
     }
 
-    render() {
-        return (
-            <Container className="team" sx={{boxShadow: 3}}>
-                {this.renderSummoners()}
-            </Container>
-        );
-    }
+    return (
+        <Container className="team">
+            {renderSummoners()}
+        </Container>
+    );
 }
