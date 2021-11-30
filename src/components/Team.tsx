@@ -2,16 +2,16 @@ import { Chip, Container } from '@mui/material';
 import React from 'react';
 import {FC, ReactElement, useState} from 'react';
 
-export const Team: FC<any> = (): ReactElement => {
-    const [summoners, setSummoners] = useState([]);
-    const [localPlayerCellId, setLocalPlayerCellId] = useState(null);
+export type TeamProp = {
+    summoners: Array<any>,
+    localPlayerCellId: Number
+};
+
+export const Team: FC<TeamProp> = (props: TeamProp): ReactElement => {
+    const {summoners, localPlayerCellId} = props;
 
     const renderSummoners = () => {
-        if(!summoners) return (
-            <Chip label="No summoner data" color="error"></Chip>
-        );
-
-        return summoners.map(
+        return (!summoners) ? <Chip label="No summoner data" color="error"></Chip> : summoners.map(
             (s: any) => {
                 <Container className="summoner" key={s.cellId}>
                     <div className="summonerId">{s.summonerId}</div>
