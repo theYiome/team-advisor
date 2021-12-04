@@ -1,14 +1,14 @@
-import { Container } from '@mui/material';
+import { Container, Button, Stack, Divider, LinearProgress } from '@mui/material';
 import React, { ReactElement, FC, useState } from 'react';
 import { Team, TeamProp } from './Team';
+
+import * as clientLockfile from '../jsutils/clientLockfile.js';
 
 //TODO Lobby should be able to do client requests
 //TODO provide data form lockfile
 
 export const Lobby: FC<any> = (): ReactElement => {
     const initialState: any = {
-        leftTeamRef: null,
-        rightTeamRef: null,
         bans: [],
         leftTeam: [],
         rightTeam: [],
@@ -24,68 +24,36 @@ export const Lobby: FC<any> = (): ReactElement => {
         localPlayerCellId: 1
     }
 
+    const updateLobby = async () => {
+        // const lobbyState = await parsedLobbyState(lockfileState.port, lockfileState.password);
+        const lobbyState = await clientLockfile.mockedParsedLobbyState();
+        console.log(lobbyState);
+        setLobbyState(lobbyState);
+    }
+
+    const bansView = lobbyState.bans.length > 0 ? lobbyState.bans.map((ban: any) => <Stack key={ban} sx={{p: 2, boxShadow: 2, textAlign: "center"}}>{ban}</Stack>) : <LinearProgress/>;
+
     return (
-        <Container>
-            <Container>
-                <Team {...tmp}></Team>
-            </Container>
-            <Container>
-                Bans: {lobbyState.bans.toString()}
-            </Container>
-            <Container>
-                <Team {...tmp}></Team>
-            </Container>
-        </Container>
+        <Stack divider={<Divider orientation="horizontal" flexItem />} spacing={2}>
+
+            <Stack direction="row" sx={{p: 2}}>
+                <Container>
+                    <Team {...{summoners: lobbyState.leftTeam, localPlayerCellId: lobbyState.localPlayerCellId}}></Team>
+                </Container>
+
+                <Stack spacing={2}>
+                    {<Stack key="ban" sx={{p: 2, boxShadow: 2}}>Bans</Stack>}
+                    {bansView}
+                </Stack>
+                
+                <Container>
+                    <Team {...{summoners: lobbyState.rightTeam, localPlayerCellId: lobbyState.localPlayerCellId}}></Team>
+                </Container>
+            </Stack>
+
+            <Stack sx={{p: 2}}>
+                <Button variant="contained" onClick={updateLobby}>Update lobby</Button> 
+            </Stack>
+        </Stack>
     );
 }
-
-// export class Lobby2 extends React.Component {
-//     constructor(props: any) {
-//         super(props);
-//         this.state.leftTeamRef = React.createRef();
-//         this.state.rightTeamRef = React.createRef();
-//     }
-
-//     state: any = {
-//         leftTeamRef: null,
-//         rightTeamRef: null,
-//         bans: [],
-//         leftTeam: [],
-//         rightTeam: [],
-//         localPlayerCellId: null,
-//         localPlayerTeamId: null,
-//         gameId: null
-//     }
-
-//     update(lobbyState: any) {
-
-//         this.setState(lobbyState)
-
-//         const leftTeamComponent = this.state.leftTeamRef.current;
-//         leftTeamComponent.setState({summoners: lobbyState.leftTeam});
-
-//         const rightTeamComponent = this.state.rightTeamRef.current;
-//         rightTeamComponent.setState({summoners: lobbyState.rightTeam});
-
-//         if(lobbyState.localPlayerTeamId === 1)
-//             leftTeamComponent.setState({localPlayerCellId: lobbyState.localPlayerCellId});
-//         else
-//             rightTeamComponent.setState({localPlayerCellId: lobbyState.localPlayerCellId});
-//     }
-
-//     render() {
-//         return (
-//             <Container>
-//                 <Container>
-//                     <Team ref={this.state.leftTeamRef}></Team>
-//                 </Container>
-//                 <Container>
-//                     Bans: {this.state.bans.toString()}
-//                 </Container>
-//                 <Container>
-//                     <Team ref={this.state.rightTeamRef}></Team>
-//                 </Container>
-//             </Container>
-//         )
-//     } 
-// }

@@ -1,6 +1,5 @@
-import { Chip, Container } from '@mui/material';
-import React from 'react';
-import {FC, ReactElement, useState} from 'react';
+import { LinearProgress, CircularProgress, Avatar, Divider, Stack, Typography } from '@mui/material';
+import React, {FC, ReactElement, useState} from 'react';
 
 export type TeamProp = {
     summoners: Array<any>,
@@ -9,24 +8,34 @@ export type TeamProp = {
 
 export const Team: FC<TeamProp> = (props: TeamProp): ReactElement => {
     const {summoners, localPlayerCellId} = props;
+    console.log(summoners, localPlayerCellId);
 
     const renderSummoners = () => {
-        return (!summoners) ? <Chip label="No summoner data" color="error"></Chip> : summoners.map(
+        console.log(summoners, localPlayerCellId);
+        return (!summoners || summoners.length < 1) ? <LinearProgress color="secondary"/> : summoners.map(
             (s: any) => {
-                <Container className="summoner" key={s.cellId}>
-                    <div className="summonerId">{s.summonerId}</div>
-                    <div className="cellId">{s.cellId}</div>
-                    <div className="assignedPosition">{s.assignedPosition}</div>
-                    <div className="championId">{s.championId}</div>
-                    <div className="championPickIntent">{s.championPickIntent}</div>
-                </Container>
+                
+                const style = s.cellId === localPlayerCellId ? {boxShadow: 1, p: 2, backgroundColor: "#AAA"} : {boxShadow: 1, p: 2, backgroundColor: "#EEE"};
+
+                return (
+                    <Stack key={s.cellId} direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={2} sx={style}>
+                        <Avatar alt="Champion name"/>
+                        <Stack divider={<Divider orientation="horizontal" flexItem />} spacing={1}>
+                            <Typography>{s.summonerId}</Typography>
+                            {/* <Typography>{s.cellId}</Typography> */}
+                            <Typography>{s.assignedPosition === "" ? "unknown role" : s.assignedPosition}</Typography>
+                            <Typography>{s.championId}</Typography>
+                            <Typography>{s.championPickIntent}</Typography>
+                        </Stack>
+                    </Stack>
+                );
             }
         );
     }
 
     return (
-        <Container className="team">
+        <Stack spacing={2}>
             {renderSummoners()}
-        </Container>
+        </Stack>
     );
 }

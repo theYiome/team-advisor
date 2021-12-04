@@ -1,77 +1,72 @@
-import * as React from 'react';
+import React, { ReactElement, FC, useState, useContext } from 'react';
 import * as pathModule from 'path';
 
 import * as clientLockfile from '../jsutils/clientLockfile.js';
 import Container from '@mui/material/Container'
 import { Button, TextField, Typography } from '@mui/material';
+import { LockfileContext } from './LockfileContext';
+
+export const Lockfile: FC<any> = (): ReactElement => {
+
+    const [dirPath, setDirPath] = useState("C:\\Riot Games\\League of Legends\\");
+    const [filename, setFilename] = useState("lockfile");
+
+    const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
+    const {protocol, port, username, password} = lockfileContent;
 
 
-export class Lockfile extends React.Component {
-    state: any = {
-        dirPath: "C:\\Riot Games\\League of Legends\\",
-        filename: "lockfile",
-        username: "riot",
-        protocol: "https",
-        port: "",
-        password: ""
-    }
-
-    lockfilePath() {
-        return pathModule.join(this.state.dirPath, this.state.filename);
-    }
-
-    onPathChange(event: any) {
-        this.setState({path: event.target.value});
-    }
-
-    async getLockfileData() {
-        const fileData = await clientLockfile.getDataFromFile(this.lockfilePath());
+    const getLockfileData = async () => {
+        const lockfilePath = pathModule.join(dirPath, filename);
+        const fileData = await clientLockfile.getDataFromFile(lockfilePath);
         const parsedData = clientLockfile.parseLockfile(fileData);
-        this.setState(parsedData);
+        setLockfileContent(parsedData);
     }
 
-    render() {
-        return (
+    return (
+        <Container>
             <Container>
-                <Container>
-                    <TextField
-                        label="protocol"
-                        value={this.state.protocol}
-                        sx={{width: 1, mb: 2}}
-                    />
-                    <TextField
-                        label="port"
-                        value={this.state.port}
-                        sx={{width: 1, mb: 2}}
-                    />
-                    <TextField
-                        label="username"
-                        value={this.state.username}
-                        sx={{width: 1, mb: 2}}
-                    />
-                    <TextField
-                        label="password"
-                        value={this.state.password}
-                        sx={{width: 1, mb: 2}}
-                    />
-                </Container>
-                <Container>
-                    <TextField
-                        label="dirPath"
-                        value={this.state.dirPath} 
-                        onChange={(e) => this.onPathChange(e)}
-                        sx={{width: 1, mb: 2}}
-                    />
-                    <TextField
-                        label="filename"
-                        value={this.state.filename}
-                        sx={{width: 1, mb: 2}}
-                    />
-                    <Button sx={{width: 1}} variant='contained' onClick={() => this.getLockfileData()}>
-                        Get data from lockfile
-                    </Button>
-                </Container>
+                <TextField
+                    label="protocol"
+                    value={protocol}
+                    sx={{width: 1, mb: 2}}
+                    disabled
+                />
+                <TextField
+                    label="port"
+                    value={port}
+                    sx={{width: 1, mb: 2}}
+                    disabled
+                />
+                <TextField
+                    label="username"
+                    value={username}
+                    sx={{width: 1, mb: 2}}
+                    disabled
+                />
+                <TextField
+                    label="password"
+                    value={password}
+                    sx={{width: 1, mb: 2}}
+                    disabled
+                />
             </Container>
-        )
-    } 
+            <Container>
+                <TextField
+                    label="dirPath"
+                    value={dirPath} 
+                    onChange={(e) => setDirPath(e.target.value)}
+                    sx={{width: 1, mb: 2}}
+                />
+                <TextField
+                    label="filename"
+                    value={filename}
+                    onChange={(e) => setFilename(e.target.value)}
+                    sx={{width: 1, mb: 2}}
+                />
+                <Button sx={{width: 1}} variant='contained' onClick={getLockfileData}>
+                    Get data from lockfile
+                </Button>
+            </Container>
+        </Container>
+    );
 }
