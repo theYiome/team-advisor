@@ -8,14 +8,14 @@ export type TeamProp = {
 
 export const Team: FC<TeamProp> = (props: TeamProp): ReactElement => {
     const {summoners, localPlayerCellId} = props;
-    console.log(summoners, localPlayerCellId);
 
     const renderSummoners = () => {
-        console.log(summoners, localPlayerCellId);
+        // console.log(summoners, localPlayerCellId);
         return (!summoners || summoners.length < 1) ? <LinearProgress color="secondary"/> : summoners.map(
             (s: any) => {
                 
-                const style = s.cellId === localPlayerCellId ? {boxShadow: 1, p: 2, backgroundColor: "#AAA"} : {boxShadow: 1, p: 2, backgroundColor: "#EEE"};
+                const style = {boxShadow: 1, p: 2, backgroundColor: "#EEE"};
+                s.cellId !== localPlayerCellId ? style.backgroundColor = "#EEE" : style.backgroundColor = "gold";
 
                 return (
                     <Stack key={s.cellId} direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={2} sx={style}>

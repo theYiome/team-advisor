@@ -1,9 +1,9 @@
-import * as fetchData from './fetchData';
+import * as connections from '../libs/connections';
 
 
 export async function ddragonVersions() {
     const ddragonVersionsURL = "https://ddragon.leagueoflegends.com/api/versions.json";
-    return fetchData.fetchJSON(ddragonVersionsURL);
+    return connections.fetchJSON(ddragonVersionsURL);
 }
 
 export async function ddragonChampions(patch) {
@@ -11,7 +11,7 @@ export async function ddragonChampions(patch) {
 
     try {
 
-        const ddragonData = await fetchData.fetchJSON(ddragonChampionURL);
+        const ddragonData = await connections.fetchJSON(ddragonChampionURL);
         
         const output = {
             patch: ddragonData.version
