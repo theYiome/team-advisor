@@ -5,9 +5,11 @@ export async function loadString(path: string): Promise<string> {
     try {
         // https://nodejs.org/api/fs.html
         const file = await fsPromises.open(path, "r");
-        const fileData = await file.read();
+        const buffer = await file.readFile();
+        // console.log(fileData, fileData.toJSON(), fileData.toString());
+        // fileData.
         file.close();
-        const buffer = fileData.buffer.slice(0, fileData.bytesRead);
+        // const buffer = fileData.buffer.slice(0, fileData.bytesRead);
         return buffer.toString();
     }
     catch (err) {
