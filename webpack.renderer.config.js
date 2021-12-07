@@ -7,7 +7,7 @@ rules.push({
 });
 
 module.exports = {
-    target: "node",
+    target: "electron-renderer",
     module: {
         rules,
     },
