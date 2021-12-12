@@ -51,15 +51,15 @@ export const SmartAccept: FC<any> = (): ReactElement => {
     return (
         <Stack spacing={2}>
             <Stack sx={{p: 2}}>
-                <Stack>
+                <Stack sx={{p: 2, m: 1, boxShadow: 3}}>
                     <Typography>Is smart accept enabled: </Typography>
                     <Button variant="contained" onClick={() => setEnabled(!enabled)}>{enabled.toString()}</Button> 
                 </Stack>
-                <Stack>
+                <Stack sx={{p: 2, m: 1, boxShadow: 3}}>
                     <Typography>Accept at [seconds]:</Typography>
                     <Slider onChange={handleTimeChange} defaultValue={10} valueLabelDisplay="auto" step={1} marks min={1} max={12}/>
                 </Stack>
-                <Stack sx={{p: 2}}>
+                <Stack sx={{p: 2, m: 1, boxShadow: 3}}>
                     {secondsSinceFound ? `Game found ${secondsSinceFound} seconds ago` : "Nothing to see here"}
                 </Stack>
             </Stack>

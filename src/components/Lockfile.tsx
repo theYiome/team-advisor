@@ -1,4 +1,4 @@
-import React, { ReactElement, FC, useState, useContext } from 'react';
+import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 import * as pathModule from 'path';
 
 import Container from '@mui/material/Container'
@@ -13,14 +13,27 @@ export const Lockfile: FC<any> = (): ReactElement => {
 
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
     const { protocol, port, username, password } = lockfileContent;
-
-
+    
     const getLockfileData = async () => {
         const lockfilePath = pathModule.join(dirPath, filename);
         const fileData = await files.loadString(lockfilePath);
         const parsedData = parseLockfile(fileData);
         setLockfileContent(parsedData);
     }
+
+    useEffect(() => {
+
+        const updateFunction = () => {
+            getLockfileData();
+        }
+
+        getLockfileData();
+        const periodicUpdate = setInterval(updateFunction, 5000);
+
+        return () => clearInterval(periodicUpdate);
+
+    }, [dirPath, filename]);
+
 
     return (
         <Container>
