@@ -19,10 +19,10 @@ export async function ddragonChampions(patch) {
     
         // creates object {"103": "Ahri", "1": "Annie", ...}
         for (const [key, value] of Object.entries(ddragonData.data)) {
-            console.log(key, value.key);
             const id = value.key;
             output[id] = key;
         }
+        console.log(output);
         return output;
 
     } catch (err) {

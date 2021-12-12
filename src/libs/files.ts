@@ -1,5 +1,5 @@
 import * as fsPromises from 'node:fs/promises';
-
+import * as mkdirp from 'mkdirp';
 
 export async function loadString(path: string): Promise<string> {
     try {
@@ -38,8 +38,17 @@ export async function saveJSON(object: any, path: string, indent = 0) {
     }
 }
 
+export async function saveJSONToDir(object: any, path: string, dir: string = 'data', indent = 0) {
+    mkdirp.default(dir).then((firstCreated) => {
+        if (firstCreated) console.warn(`Directory "${firstCreated}" had to be created.`)
+        saveJSON(object, path, indent);
+    });
+}
+
 
 function bufferToValidString(buffer: any) {
     // https://stackoverflow.com/questions/22809401/removing-a-null-character-from-a-string-in-javascript
     return buffer.toString().replace(/\0/g, '').trim();
 }
+
+
