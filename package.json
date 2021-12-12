@@ -23,6 +23,20 @@
   "license": "MIT",
   "config": {
     "forge": {
+      "publishers": [
+        {
+          "name": "@electron-forge/publisher-github",
+          "platforms": [
+            "win32"
+          ],
+          "config": {
+            "repository": {
+              "owner": "theYiome",
+              "name": "team-advisor"
+            }
+          }
+        }
+      ],
       "packagerConfig": {},
       "makers": [
         {
@@ -73,6 +87,7 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
     "@electron-forge/maker-zip": "^6.0.0-beta.61",
     "@electron-forge/plugin-webpack": "^6.0.0-beta.61",
+    "@electron-forge/publisher-github": "^6.0.0-beta.61",
     "@types/mkdirp": "^1.0.2",
     "@types/react": "^17.0.35",
     "@types/react-dom": "^17.0.11",

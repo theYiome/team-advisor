@@ -2,6 +2,7 @@ import React, { ReactElement, FC, useState, useContext } from 'react';
 
 import { Lockfile } from './Lockfile';
 import { Lobby } from './Lobby';
+import { SmartAccept } from './SmartAccept';
 import { LockfileProvider } from './LockfileContext';
 import { Settings } from './Settings';
 
@@ -31,6 +32,17 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                     </AccordionSummary>
                     <AccordionDetails>
                         <Lockfile></Lockfile>
+                    </AccordionDetails>
+                </Accordion>
+
+                <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+                        <Typography>
+                            Smart Accept
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <SmartAccept></SmartAccept>
                     </AccordionDetails>
                 </Accordion>
                 
