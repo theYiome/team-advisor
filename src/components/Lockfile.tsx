@@ -2,7 +2,7 @@ import React, { ReactElement, FC, useState, useContext, useEffect } from 'react'
 import * as pathModule from 'path';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography } from '@mui/material';
+import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { LockfileContext } from './LockfileContext';
 import * as files from '../libs/files';
 
@@ -16,9 +16,20 @@ export const Lockfile: FC<any> = (): ReactElement => {
     
     const getLockfileData = async () => {
         const lockfilePath = pathModule.join(dirPath, filename);
-        const fileData = await files.loadString(lockfilePath);
-        const parsedData = parseLockfile(fileData);
-        setLockfileContent(parsedData);
+        try {
+            const fileData = await files.loadString(lockfilePath);
+            const parsedData = parseLockfile(fileData);
+            setLockfileContent(parsedData);
+
+        } catch (err) {
+            console.info(err);
+            setLockfileContent({
+                protocol: "",
+                port: "",
+                username: "",
+                password: "",
+            });
+        }
     }
 
     useEffect(() => {
@@ -35,35 +46,57 @@ export const Lockfile: FC<any> = (): ReactElement => {
     }, [dirPath, filename]);
 
 
+    const warning_msg = (
+    <Alert severity="warning">
+        <AlertTitle>Failed to load data from lockfile</AlertTitle>
+        Either <strong>client is not running</strong> or <strong>installation path is incorrect</strong>.
+        Remember to choose your League instalation directory!
+    </Alert>
+    );
+
+    const ok_message = (
+        <Alert severity="success">
+            <AlertTitle>Loaded data from lockfile</AlertTitle>
+            Successulfy loaded data from lockfile.<br/><strong>Looks OK!</strong>
+        </Alert>
+    );
+
+    const data_table = (
+        <TableContainer component={Paper}>
+            <Table sx={{ width: 1 }} size="small" aria-label="a dense table">
+                <TableHead>
+                    <TableRow sx={{backgroundColor: "#EEE"}}>
+                        <TableCell>names</TableCell>
+                        <TableCell>values</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    <TableRow key={1} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell component="th" scope="row">protocol</TableCell>
+                        <TableCell component="th" scope="row">{protocol}</TableCell>
+                    </TableRow>
+                    <TableRow key={2} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell component="th" scope="row">port</TableCell>
+                        <TableCell component="th" scope="row">{port}</TableCell>
+                    </TableRow>
+                    <TableRow key={3} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell component="th" scope="row">username</TableCell>
+                        <TableCell component="th" scope="row">{username}</TableCell>
+                    </TableRow>
+                    <TableRow key={4} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell component="th" scope="row">password</TableCell>
+                        <TableCell component="th" scope="row">{password}</TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        </TableContainer>
+    );
+
     return (
         <Container>
-            <Container>
-                <TextField
-                    label="protocol"
-                    value={protocol}
-                    sx={{ width: 1, mb: 2 }}
-                    disabled
-                />
-                <TextField
-                    label="port"
-                    value={port}
-                    sx={{ width: 1, mb: 2 }}
-                    disabled
-                />
-                <TextField
-                    label="username"
-                    value={username}
-                    sx={{ width: 1, mb: 2 }}
-                    disabled
-                />
-                <TextField
-                    label="password"
-                    value={password}
-                    sx={{ width: 1, mb: 2 }}
-                    disabled
-                />
-            </Container>
-            <Container>
+            <Stack spacing={3}>
+                {port === "" ? warning_msg : ok_message}
+                {data_table}
                 <TextField
                     label="dirPath"
                     value={dirPath}
@@ -77,9 +110,9 @@ export const Lockfile: FC<any> = (): ReactElement => {
                     sx={{ width: 1, mb: 2 }}
                 />
                 <Button sx={{ width: 1 }} variant='contained' onClick={getLockfileData}>
-                    Get data from lockfile
+                    Load data from lockfile
                 </Button>
-            </Container>
+            </Stack>
         </Container>
     );
 }
