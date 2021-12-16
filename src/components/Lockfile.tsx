@@ -47,11 +47,11 @@ export const Lockfile: FC<any> = (): ReactElement => {
 
 
     const warning_msg = (
-    <Alert severity="warning">
-        <AlertTitle>Failed to load data from lockfile</AlertTitle>
-        Either <strong>client is not running</strong> or <strong>given installation path is incorrect</strong>.
-        Remember to choose your League instalation directory!
-    </Alert>
+        <Alert severity="warning">
+            <AlertTitle>Failed to load data from lockfile</AlertTitle>
+            Either <strong>client is not running</strong> or <strong>given installation path is incorrect</strong>.
+            Remember to choose your League instalation directory!
+        </Alert>
     );
 
     const ok_message = (
