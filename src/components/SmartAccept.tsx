@@ -13,6 +13,9 @@ import * as connections from '../libs/connections'
     POST /lol-matchmaking/v1/ready-check/decline
 */
 
+const dirStructure = "data";
+const filePath = "data/smart_accept.settings.json";
+
 enum QueueStateEnum {
     NoClient,
     NoInQueue,
@@ -31,6 +34,7 @@ type QueueState = {
 
 export const SmartAccept: FC<any> = (): ReactElement => {
 
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [enabled, setEnabled] = useState(false);
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
 
@@ -43,6 +47,33 @@ export const SmartAccept: FC<any> = (): ReactElement => {
     const [secondsToAccept, setSecondsToAccept] = useState(8);
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
 
+    // load setting from file
+    useEffect(() => {
+        try {
+            files.loadJSON(filePath).then((settings) => {
+                setEnabled(settings.enabled);
+                setSecondsToAccept(settings.secondsToAccept);
+                setSettingsLoaded(true);
+            });
+        } catch(error) {
+            console.warn(error);
+            setSettingsLoaded(true);
+        }
+    }, [])
+
+    // save settings to file when settings are updated
+    useEffect(() => {
+        const dataToSave = {
+            enabled: enabled,
+            secondsToAccept: secondsToAccept
+        }
+
+        if(settingsLoaded)
+            files.saveJSONToDir(dataToSave, filePath, dirStructure, 4);
+            
+    }, [enabled, secondsToAccept])
+
+    // pooling client status
     useEffect(() => {
 
         const updateFunction = () => {
@@ -64,6 +95,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
     }, [enabled, lockfileContent]);
 
+    // clearing state when turned off
     useEffect(() => {
         if(!enabled)
             setQueueState(initialQueueState);

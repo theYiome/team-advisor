@@ -2,14 +2,21 @@ import React, { ReactElement, FC, useState, useContext, useEffect } from 'react'
 import * as pathModule from 'path';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup } from '@mui/material';
 import { LockfileContext } from './LockfileContext';
 import * as files from '../libs/files';
 
+const dirStructure = "data";
+const filePath = "data/lockfile.settings.json";
+
 export const Lockfile: FC<any> = (): ReactElement => {
 
-    const [dirPath, setDirPath] = useState("C:\\Riot Games\\League of Legends\\");
-    const [filename, setFilename] = useState("lockfile");
+    const defaultDirPath = "C:\\Riot Games\\League of Legends\\";
+    const defaultFilename = "lockfile";
+
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
+    const [dirPath, setDirPath] = useState(defaultDirPath);
+    const [filename, setFilename] = useState(defaultFilename);
 
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
     const { protocol, port, username, password } = lockfileContent;
@@ -32,15 +39,40 @@ export const Lockfile: FC<any> = (): ReactElement => {
         }
     }
 
-    useEffect(() => {
+    const resetToDefault = () => {
+        setDirPath(defaultDirPath);
+        setFilename(defaultFilename);
+    };
 
-        const updateFunction = () => {
-            getLockfileData();
+    // load setting from file
+    useEffect(() => {
+        try {
+            files.loadJSON(filePath).then((settings) => {
+                setDirPath(settings.dirPath);
+                setFilename(settings.filename);
+                setSettingsLoaded(true);
+            });
+        } catch(error) {
+            console.warn(error);
+            setSettingsLoaded(true);
+        }
+    }, []);
+
+    // save settings to file when settings are updated
+    useEffect(() => {
+        const dataToSave = {
+            dirPath: dirPath,
+            filename: filename
         }
 
-        getLockfileData();
-        const periodicUpdate = setInterval(updateFunction, 5000);
+        if(settingsLoaded)
+            files.saveJSONToDir(dataToSave, filePath, dirStructure, 4);
+    }, [dirPath, filename]);
 
+    // periodicly check lockfile
+    useEffect(() => {
+        getLockfileData();
+        const periodicUpdate = setInterval(getLockfileData, 5000);
         return () => clearInterval(periodicUpdate);
 
     }, [dirPath, filename]);
@@ -109,9 +141,11 @@ export const Lockfile: FC<any> = (): ReactElement => {
                     onChange={(e) => setFilename(e.target.value)}
                     sx={{ width: 1, mb: 2 }}
                 />
-                <Button sx={{ width: 1 }} variant='contained' onClick={getLockfileData}>
-                    FORCE LOAD DATA FROM LOCKFILE
-                </Button>
+
+                <ButtonGroup sx={{ width: 1 }} variant="contained" aria-label="outlined primary button group">
+                    <Button sx={{ width: 1}} color="error" onClick={getLockfileData}>FORCE LOAD DATA FROM LOCKFILE</Button>
+                    <Button sx={{ width: 1}} color="success" onClick={resetToDefault}>RESET TO DEFAULT</Button>
+                </ButtonGroup>
             </Stack>
         </Container>
     );
