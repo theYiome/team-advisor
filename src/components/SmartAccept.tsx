@@ -13,8 +13,7 @@ import * as connections from '../libs/connections'
     POST /lol-matchmaking/v1/ready-check/decline
 */
 
-const dirStructure = "data";
-const filePath = "data/smart_accept.settings.json";
+const filePath = "settings/smartaccept.settings.json";
 
 enum QueueStateEnum {
     NoClient,
@@ -49,16 +48,14 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
     // load setting from file
     useEffect(() => {
-        try {
-            files.loadJSON(filePath).then((settings) => {
-                setEnabled(settings.enabled);
-                setSecondsToAccept(settings.secondsToAccept);
-                setSettingsLoaded(true);
-            });
-        } catch(error) {
+        files.loadJSON(filePath).then((settings) => {
+            setEnabled(settings.enabled);
+            setSecondsToAccept(settings.secondsToAccept);
+            setSettingsLoaded(true);
+        }).catch(error => {
             console.warn(error);
             setSettingsLoaded(true);
-        }
+        });
     }, [])
 
     // save settings to file when settings are updated
@@ -69,7 +66,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
         }
 
         if(settingsLoaded)
-            files.saveJSONToDir(dataToSave, filePath, dirStructure, 4);
+            files.saveJSON(dataToSave, filePath, 4);
             
     }, [enabled, secondsToAccept])
 
@@ -93,7 +90,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
         return () => clearInterval(periodicUpdate);
 
-    }, [enabled, lockfileContent]);
+    }, [enabled, lockfileContent, settingsLoaded]);
 
     // clearing state when turned off
     useEffect(() => {
@@ -134,7 +131,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
             break;
         }
         case QueueStateEnum.Error: { 
-            currentMessage = errorStateMessage("Don't know what happened but it's not good!");
+            currentMessage = errorStateMessage("Don't know what happened but it's not good! Maybe client isn't running?");
             break;
         } 
     }

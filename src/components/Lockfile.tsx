@@ -6,8 +6,7 @@ import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, 
 import { LockfileContext } from './LockfileContext';
 import * as files from '../libs/files';
 
-const dirStructure = "data";
-const filePath = "data/lockfile.settings.json";
+const filePath = "settings/lockfile.settings.json";
 
 export const Lockfile: FC<any> = (): ReactElement => {
 
@@ -46,16 +45,14 @@ export const Lockfile: FC<any> = (): ReactElement => {
 
     // load setting from file
     useEffect(() => {
-        try {
-            files.loadJSON(filePath).then((settings) => {
-                setDirPath(settings.dirPath);
-                setFilename(settings.filename);
-                setSettingsLoaded(true);
-            });
-        } catch(error) {
+        files.loadJSON(filePath).then((settings) => {
+            setDirPath(settings.dirPath);
+            setFilename(settings.filename);
+            setSettingsLoaded(true);
+        }).catch(error => {
             console.warn(error);
             setSettingsLoaded(true);
-        }
+        });
     }, []);
 
     // save settings to file when settings are updated
@@ -66,7 +63,7 @@ export const Lockfile: FC<any> = (): ReactElement => {
         }
 
         if(settingsLoaded)
-            files.saveJSONToDir(dataToSave, filePath, dirStructure, 4);
+            files.saveJSON(dataToSave, filePath, 4);
     }, [dirPath, filename]);
 
     // periodicly check lockfile
@@ -75,7 +72,7 @@ export const Lockfile: FC<any> = (): ReactElement => {
         const periodicUpdate = setInterval(getLockfileData, 5000);
         return () => clearInterval(periodicUpdate);
 
-    }, [dirPath, filename]);
+    }, [dirPath, filename, settingsLoaded]);
 
 
     const warning_msg = (

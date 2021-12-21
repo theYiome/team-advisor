@@ -4,7 +4,6 @@ import * as ddragon from '../jsutils/ddragon.js';
 import * as files from "../libs/files";
 
 
-const dirStructure = "data";
 const filePath = "data/champions.json";
 
 
@@ -26,7 +25,7 @@ export const Settings: FC<any> = (): ReactElement => {
         const versionsArray: any = await ddragon.ddragonVersions();
         const champions = await ddragon.ddragonChampions(versionsArray[0]);
         setChampionData(champions);
-        files.saveJSONToDir(champions, filePath, dirStructure, 4);
+        files.saveJSON(champions, filePath, 4);
     }
 
     return (
