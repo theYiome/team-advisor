@@ -1,11 +1,12 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
-import * as pathModule from 'path';
 
 import Container from '@mui/material/Container'
 import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel } from '@mui/material';
 import { LockfileContext } from './LockfileContext';
 import * as files from '../libs/files';
 import * as connections from '../libs/connections'
+
+import { noClientMessage, errorStateMessage } from './CommonMessages';
 
 /*
     GET /lol-matchmaking/v1/ready-check	
@@ -86,7 +87,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
             clearInterval(periodicUpdate);
 
         if (enabled)
-            setPeriodicUpdate(setInterval(updateFunction, 700));
+            setPeriodicUpdate(setInterval(updateFunction, 400));
 
         return () => clearInterval(periodicUpdate);
 
@@ -263,14 +264,6 @@ function declineQueue(lockfileContent: any): void {
     }
 }
 
-const noClientMessage = (
-    <Alert severity="error">
-        <AlertTitle>Failed to load data from lockfile</AlertTitle>
-        Either <strong>client is not running</strong> or <strong>given installation path is incorrect</strong>.
-        Remember to choose your League instalation directory!
-    </Alert>
-);
-
 const noInQueueMessage = (
     <Alert severity="warning">
         <AlertTitle>You are not yet in queue</AlertTitle>
@@ -324,12 +317,5 @@ const unknownStateMessage = (
         Can't tell what is happening.<br/>
         Smart Accept is likely <strong>disabled</strong>.<br/>
         If Smart Accept is <strong>enabled</strong> and problem persists please <strong>restart</strong> your League client.
-    </Alert>
-);
-
-const errorStateMessage = (error: string) => (
-    <Alert severity="error">
-        <AlertTitle>An error has occured</AlertTitle>
-        <strong>Error message:</strong> {error}
     </Alert>
 );

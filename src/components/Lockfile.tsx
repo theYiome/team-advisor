@@ -127,13 +127,13 @@ export const Lockfile: FC<any> = (): ReactElement => {
                 {port === "" ? warning_msg : ok_message}
                 {data_table}
                 <TextField
-                    label="dirPath"
+                    label="League installation path"
                     value={dirPath}
                     onChange={(e) => setDirPath(e.target.value)}
                     sx={{ width: 1, mb: 2 }}
                 />
                 <TextField
-                    label="filename"
+                    label="Lockfile filename"
                     value={filename}
                     onChange={(e) => setFilename(e.target.value)}
                     sx={{ width: 1, mb: 2 }}

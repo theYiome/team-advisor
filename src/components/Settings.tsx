@@ -3,18 +3,20 @@ import { Button, ButtonGroup, Container, Stack, Typography } from '@mui/material
 import * as ddragon from '../jsutils/ddragon.js';
 import * as files from "../libs/files";
 
+import { ChampionsContext } from './ChampionsContext';
+
 
 const filePath = "data/champions.json";
 
 
 export const Settings: FC<any> = (): ReactElement => {
 
-    const [championData, setChampionData] = useState(null);
+    const [champions, setChampions] = useContext(ChampionsContext);
 
     useEffect(() => {
         try {
             files.loadJSON(filePath).then((localChampionData) => {
-                setChampionData(localChampionData);
+                setChampions(localChampionData);
             });
         } catch(error) {
             console.warn(error);
@@ -23,9 +25,9 @@ export const Settings: FC<any> = (): ReactElement => {
 
     const updateStaticChampionData = async () => {
         const versionsArray: any = await ddragon.ddragonVersions();
-        const champions = await ddragon.ddragonChampions(versionsArray[0]);
-        setChampionData(champions);
-        files.saveJSON(champions, filePath, 4);
+        const parsed_champions = await ddragon.ddragonChampions(versionsArray[0]);
+        setChampions(parsed_champions);
+        files.saveJSON(parsed_champions, filePath, 4);
     }
 
     return (
@@ -37,7 +39,7 @@ export const Settings: FC<any> = (): ReactElement => {
             </ButtonGroup>
 
             <Stack sx={{m: 2, p: 2, boxShadow: 2}}>
-                {championData ? JSON.stringify(championData, null, 4) : "Nothing to display"}
+                {champions ? JSON.stringify(champions, null, 4) : "Nothing to display"}
             </Stack>
         </Container>
     );
