@@ -87,7 +87,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
             clearInterval(periodicUpdate);
 
         if (enabled)
-            setPeriodicUpdate(setInterval(updateFunction, 400));
+            setPeriodicUpdate(setInterval(updateFunction, 500));
 
         return () => clearInterval(periodicUpdate);
 
@@ -163,7 +163,8 @@ export const SmartAccept: FC<any> = (): ReactElement => {
                 <Stack>
                     <Alert severity="info">
                         <AlertTitle>When my game will be accepted?</AlertTitle>
-                        After <strong>{secondsToAccept} {secondsToAccept > 1.1 ? "seconds" : "second"}</strong> since found, timing can adjust that with slider below.
+                        After <strong>{secondsToAccept} {secondsToAccept > 1.1 ? "seconds" : "second"}</strong> since found, timing can adjust that with slider below. 
+                        Keep in mind that 12 second mark is last moment and there sometimes might be a miss, threfore <strong>11 seconds are recommended</strong>.
                     </Alert>
                 </Stack>
                 <Stack>

@@ -11,6 +11,8 @@ import { ChampionsProvider } from './ChampionsContext';
 
 import { Accordion, AccordionDetails, AccordionSummary, Button, Container, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import '@fontsource/roboto/400.css';
+
 
 export const TeamAdvisor: FC<any> = (): ReactElement => {
     return (

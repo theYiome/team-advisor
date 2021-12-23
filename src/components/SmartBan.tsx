@@ -153,8 +153,8 @@ export const SmartBan: FC<any> = (): ReactElement => {
                 <Stack>
                     <Alert severity="info">
                         <AlertTitle>How does it work?</AlertTitle>
-                        After <strong>{secondsToAction} {secondsToAction > 1.1 ? "seconds" : "second"}</strong> since start of the banning phase,
-                        there will be an attempt to ban first champion from your list that isn't <strong>already banned</strong> and 
+                        After <strong>{secondsToAction} {secondsToAction > 1.1 ? "seconds" : "second"}</strong> since start of the banning phase, 
+                        if you are <strong>not hovering any ban intent</strong> there will be an attempt to ban first champion from your list that isn't <strong>already banned</strong> and 
                         isn't a <strong>pick intent</strong> of any ally and isn't currently <strong>disabled</strong> (for example due to game breaking bug).
                         If no such champion is found, nothing will happen.
                         <br/>
