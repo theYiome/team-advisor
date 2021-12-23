@@ -16,6 +16,10 @@ export function asyncFetch(url: string, options: any = {}): Promise<string> {
     );
 }
 
+export async function fetchRaw(url: string, options: any = {}) {
+    return asyncFetch(url, options);
+}
+
 export async function fetchJSON(url: string, options: any = {}) {
     return asyncFetch(url, options).then(rawData => JSON.parse(rawData));
 }

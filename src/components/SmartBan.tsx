@@ -11,27 +11,20 @@ import { ChampionsContext } from './ChampionsContext';
 
 import { noClientMessage, errorStateMessage } from './CommonMessages';
 
-/*
-    GET /lol-matchmaking/v1/ready-check	
-    POST /lol-matchmaking/v1/ready-check/accept	
-    POST /lol-matchmaking/v1/ready-check/decline
-*/
-
 const filePath = "settings/smartban.settings.json";
 
-enum BanStateEnum {
+enum ChampionSelectState {
     NoClient,
     NoInLobby,
     InLobby,
+    Planning,
     Banning,
     BanHovered,
+    Picking,
+    PickHovered,
+    Picked,
     Unknown,
     Error
-}
-
-type BanState = {
-    state: BanStateEnum,
-    timer: number
 }
 
 export const SmartBan: FC<any> = (): ReactElement => {
@@ -41,7 +34,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
 
     const initialLobbyState = {
-        state: BanStateEnum.Unknown,
+        state: ChampionSelectState.Unknown,
         timer: 0
     };
     const [lobbyState, setLobbyState] = useState(initialLobbyState);
@@ -130,6 +123,10 @@ export const SmartBan: FC<any> = (): ReactElement => {
         <Container>
             <Stack spacing={3}>
                 <Stack>
+                    <Button onClick={() => getInfo(lockfileContent)} variant="contained">GET INFO</Button>
+                    <Button onClick={async () => console.log(await getLobbyState(lockfileContent))} variant="contained">GET LOBBY STATE</Button>
+                </Stack>
+                <Stack>
                     <FormControlLabel control={enablingSwitch} label={switchLabel} />
                 </Stack>
                 <Stack>
@@ -168,4 +165,147 @@ export const SmartBan: FC<any> = (): ReactElement => {
             </Stack>
         </Container>
     );
+}
+
+/*
+    GET /lol-champ-select/v1/bannable-champions
+    GET /lol-champ-select/v1/current-champion	
+    GET /lol-champ-select/v1/disabled-champions
+    GET /lol-champ-select/v1/pickable-champions
+    GET /lol-champ-select/v1/session/timer
+*/
+
+async function getLobbyState(lockfileContent: any) {
+
+    const {protocol, port, username, password} = lockfileContent;
+
+    const urlWithAuth = connections.clientURL(port, password, username, protocol);
+    const endpointName = "lol-champ-select/v1/session";
+    const url = urlWithAuth + endpointName;
+
+    let session = null;
+    try {
+        session = await connections.fetchJSON(url);
+    } catch(error) {
+        console.warn(error);
+        return {
+            state: ChampionSelectState.NoClient
+        }
+    }
+
+    console.log(session);
+
+    if (session.message === "No active delegate") return {
+        state: ChampionSelectState.NoInLobby
+    }
+
+    const counter = session.counter;
+    if (session.timer.phase === "PLANNING") return {
+        state: ChampionSelectState.Planning,
+        counter: counter
+    }
+
+    const userActions = getUserActions(session);
+
+    const uncompletedActions = userActions.filter(action => !action.completed);
+    if(uncompletedActions.length < 1) return {
+        state: ChampionSelectState.Picked
+    }
+
+    let activeAction = uncompletedActions.find(action => action.isInProgress);
+
+    if (!activeAction) return {
+        state: ChampionSelectState.InLobby
+    }
+    else {
+        const isHovering = activeAction.championId > 0;
+        const actionId = activeAction.id;
+
+        if(activeAction.type === "ban") 
+            if(isHovering) return {
+                state: ChampionSelectState.BanHovered,
+                actionId: actionId,
+                counter: counter
+            }
+            else return {
+                state: ChampionSelectState.Banning,
+                actionId: actionId,
+                counter: counter
+            }
+        else if (activeAction.type === "pick")             
+            if(isHovering) return {
+                state: ChampionSelectState.PickHovered,
+                actionId: actionId,
+                counter: counter
+            }
+            else return {
+                state: ChampionSelectState.Picking,
+                actionId: actionId,
+                counter: counter
+            }
+        else return {
+            state: ChampionSelectState.Unknown,
+            actionId: actionId,
+            counter: counter
+        }
+    }
+}
+
+async function hoverChampion(lockfileContent: any, actionId: number, championId: number) {
+    const options = {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: { championId },
+        json: true
+    }
+    return asyncClientRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}`, options);
+}
+
+async function completeAction(lockfileContent: any, actionId: number) {
+    return asyncClientRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}/complete`, { method: "POST" });
+}
+
+function instantCompleteAction(lockfileContent: any, actionId: number, championId: number) {
+    hoverChampion(lockfileContent, actionId, championId).then((result) => completeAction(lockfileContent, actionId));
+}
+
+function getInfo(lockfileContent: any): void {
+    clinetRequest(lockfileContent, "lol-champ-select/v1/session");
+}
+
+async function asyncClientRequest(lockfileContent: any, endpointName: string, options: any = { method: 'GET' }) {
+    const {protocol, port, username, password} = lockfileContent;
+    const urlWithAuth = connections.clientURL(port, password, username, protocol);
+    const url = urlWithAuth + endpointName;
+
+    return connections.fetchRaw(url, options)
+}
+
+function clinetRequest(lockfileContent: any, endpointName: string, options: any = { method: 'GET' }) {
+    const {protocol, port, username, password} = lockfileContent;
+
+    try {
+        const urlWithAuth = connections.clientURL(port, password, username, protocol);
+        const url = urlWithAuth + endpointName;
+
+        connections.fetchJSON(url, options).then((clientResponse) => {
+            console.log(url, clientResponse);
+        }).catch(err => console.warn(err));
+    } 
+    catch(err) {
+        console.warn(err);
+    }
+}
+
+function getUserActions(session: any) {
+    const actionsFlat = [];
+    for (const actionSection of session.actions) {
+        for (const action of actionSection) {
+            actionsFlat.push(action);
+        }
+    }
+
+    return actionsFlat.filter(action => session.localPlayerCellId === action.actorCellId).sort((a, b) => a.id - b.id);
 }
