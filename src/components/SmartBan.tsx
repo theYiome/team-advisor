@@ -76,7 +76,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
         if(settingsLoaded)
             files.saveJSON(dataToSave, filePath, 4);
             
-    }, [enabled, secondsToAction])
+    }, [enabled, secondsToAction, banList])
 
     // pooling client status
     useEffect(() => {
@@ -124,6 +124,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
     );
 
     const switchLabel = (<>Enable <strong>Smart Ban</strong></>);
+    const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
 
     return (
         <Container>
@@ -134,7 +135,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
                 <Stack>
                     <Autocomplete
                         multiple
-                        options={Object.values(champions)}
+                        options={championNames}
                         value={banList}
                         onChange={(event, newValue) => {
                             console.log(newValue);
