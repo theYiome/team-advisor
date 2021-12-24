@@ -56,13 +56,13 @@ export const appInControl = (
     </Alert>
 );
 
-export const userInControl = (controlSetter: React.Dispatch<React.SetStateAction<boolean>>) => (
+export const userInControl = (giveUpControl: () => void) => (
     <Alert severity="success">
         <AlertTitle>You are in control</AlertTitle>
         You hovered something and took control from the app <strong>in this phase</strong>.
         <br/>
         <br/>
-        <Button onClick={() => controlSetter(false)} variant="contained" color="error">
+        <Button onClick={() => giveUpControl()} variant="contained" color="error">
             GIVE UP CONTROL
         </Button>
     </Alert>

@@ -56,21 +56,28 @@ export const SmartBan: FC<any> = (): ReactElement => {
             
     }, [enabled, banList])
 
+    const giveUpControl = () => {
+        setUserTookControl(false);
+        setLastChampionId(0);
+    };
+
     // pooling client status
     useEffect(() => {
 
         const updateFunction = () => {
             getChampionSelectState(lockfileContent).then((state) => {
-                console.log(state);
                 const phase = state.phase;
+                setChampionSelectPhase(phase);
                 
-                const controlTakenNow = lastChampionId !== 0 && lastChampionId !== state.championId;
-
+                const championId = state.championId;
+                const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0;
+                
                 if (controlTakenNow)
                     setUserTookControl(true);
                 
-                setLastChampionId(state.championId);
-                
+                setLastChampionId(championId);
+                console.log({state, lastChampionId, championId, controlTakenNow, phase});
+                    
                 const isInBanningPhase = phase === ChampionSelectPhase.Banning || phase === ChampionSelectPhase.BanHovered;
                 
                 if (isInBanningPhase && !userTookControl && !controlTakenNow) {
@@ -78,24 +85,25 @@ export const SmartBan: FC<any> = (): ReactElement => {
                     
                     const picks = state.picks;
                     const bans = state.bans;
-                    const noBanList = bans.concat(picks).filter(noBan => noBan !== state.championId);
+                    const noBanList = bans.concat(picks).filter(noBan => noBan !== championId);
                     
-                    console.log({idBanList, bans, picks, noBanList});
+                    console.log({idBanList, bans, picks, noBanList, championId, lastChampionId});
                     
                     const championToBan = idBanList.find(ban => !noBanList.includes(ban));
-                    if (championToBan)
-                        hoverChampion(lockfileContent, state.actionId, championToBan);
+
+                    if (championToBan) {
+                        if (championToBan !== championId) {
+                            setLastChampionId(championToBan);
+                            hoverChampion(lockfileContent, state.actionId, championToBan);
+                        }
+                    }
                     else
-                        console.warn("No champion could be banned", banList, noBanList);
+                        console.warn({messaage: "No champion from ban list matches criteria", banList, noBanList});
                 }
                 
                 const idlePhases = [ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInChampionSelect, ChampionSelectPhase.InChampionSelect, ChampionSelectPhase.Unknown];
-                if (idlePhases.includes(phase) || championSelectPhase !== phase) {
-                    setUserTookControl(false);
-                    setLastChampionId(0);
-                }
-
-                setChampionSelectPhase(phase);
+                if (idlePhases.includes(phase) || championSelectPhase !== phase)
+                    giveUpControl();
             });
         }
 
@@ -103,11 +111,11 @@ export const SmartBan: FC<any> = (): ReactElement => {
             clearInterval(periodicUpdate);
 
         if (enabled)
-            setPeriodicUpdate(setInterval(updateFunction, 2000));
+            setPeriodicUpdate(setInterval(updateFunction, 500));
 
         return () => clearInterval(periodicUpdate);
 
-    }, [enabled, lockfileContent, settingsLoaded, banList]);
+    }, [enabled, lockfileContent, settingsLoaded, banList, userTookControl, lastChampionId, championSelectPhase]);
 
     // clearing state when turned off
     useEffect(() => {
@@ -172,7 +180,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
     const switchLabel = (<>Enable <strong>Smart Ban</strong></>);
     const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
 
-    const controlMessage = userTookControl ? userInControl(setUserTookControl) : appInControl;
+    const controlMessage = userTookControl ? userInControl(giveUpControl) : appInControl;
 
     return (
         <Container>

@@ -29,8 +29,8 @@ export const Lobby: FC<any> = (): ReactElement => {
     const updateLobby = async () => {
         // console.log(lockfileContent);
         const {protocol, port, username, password} = lockfileContent;
-        // const lobbyState = await parsedLobbyState(port, password, username, protocol);
-        const lobbyState = await mockedParsedLobbyState();
+        const lobbyState = await parsedLobbyState(port, password, username, protocol);
+        // const lobbyState = await mockedParsedLobbyState();
         console.log(lobbyState);
         setLobbyState(lobbyState);
     }
