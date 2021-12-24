@@ -4,28 +4,14 @@ import Container from '@mui/material/Container'
 import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Autocomplete } from '@mui/material';
 
 import * as files from '../libs/files';
-import * as connections from '../libs/connections'
 
 import { LockfileContext } from './LockfileContext';
 import { ChampionsContext } from './ChampionsContext';
 
 import { noClientMessage, errorStateMessage } from './CommonMessages';
+import { ChampionSelectPhase, getChampionSelectState, hoverChampion } from '../componentLibs/championSelect';
 
 const filePath = "settings/smartban.settings.json";
-
-enum ChampionSelectPhase {
-    NoClient,
-    NoInLobby,
-    InLobby,
-    Planning,
-    Banning,
-    BanHovered,
-    Picking,
-    PickHovered,
-    Picked,
-    Unknown,
-    Error
-}
 
 export const SmartBan: FC<any> = (): ReactElement => {
 
@@ -33,13 +19,14 @@ export const SmartBan: FC<any> = (): ReactElement => {
     const [enabled, setEnabled] = useState(false);
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
 
-    const initialLobbyState = {
-        state: ChampionSelectPhase.Unknown,
-        timer: 0
-    };
-    const [lobbyState, setLobbyState] = useState(initialLobbyState);
+    const initialPhase = ChampionSelectPhase.Unknown;
+
+    const [championSelectPhase, setChampionSelectPhase] = useState(initialPhase);
     const [banList, setBanList] = useState([]);
     const [secondsToAction, setSecondsToAction] = useState(20);
+
+    const [lastChampionId, setLastChampionId] = useState(0);
+    const [userTookControl, setUserTookControl] = useState(false);
 
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
     const [champions, setChampions] = useContext(ChampionsContext);
@@ -75,24 +62,44 @@ export const SmartBan: FC<any> = (): ReactElement => {
     useEffect(() => {
 
         const updateFunction = () => {
-            getLobbyState(lockfileContent).then((state) => {
+            getChampionSelectState(lockfileContent).then((state) => {
                 console.log(state);
-                if (state.state === ChampionSelectPhase.Banning && state.counter >= secondsToAction || state.counter === -1) {
+                const phase = state.phase;
+                const counter = state.counter;
+                
+                const controlTakenNow = lastChampionId !== 0 && lastChampionId !== state.championId;
+
+                if (controlTakenNow)
+                    setUserTookControl(true);
+                
+                setLastChampionId(state.championId);
+                
+                const isInBanningPhase = phase === ChampionSelectPhase.Banning || phase === ChampionSelectPhase.BanHovered;
+                const isRightTime = counter >= secondsToAction || counter === -1;
+                
+                if (isInBanningPhase && isRightTime && !userTookControl && !controlTakenNow) {
                     const idBanList = banList.map(name => parseInt(champions[name]));
                     
                     const picks = state.picks;
                     const bans = state.bans;
-                    const noBanList = bans.concat(picks);
-
+                    const noBanList = bans.concat(picks).filter(noBan => noBan !== state.championId);
+                    
                     console.log({idBanList, bans, picks, noBanList});
-
+                    
                     const championToBan = idBanList.find(ban => !noBanList.includes(ban));
                     if (championToBan)
                         hoverChampion(lockfileContent, state.actionId, championToBan);
-                        // instantCompleteAction(lockfileContent, state.actionId, championToBan);
                     else
                         console.warn("No champion could be banned", banList, noBanList);
                 }
+                
+                const idlePhases = [ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInLobby, ChampionSelectPhase.InLobby, ChampionSelectPhase.Unknown];
+                if (idlePhases.includes(phase) || championSelectPhase !== phase) {
+                    setUserTookControl(false);
+                    setLastChampionId(0);
+                }
+
+                setChampionSelectPhase(phase);
             });
         }
 
@@ -109,7 +116,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
     // clearing state when turned off
     useEffect(() => {
         if(!enabled)
-            setLobbyState(initialLobbyState);
+            setChampionSelectPhase(initialPhase);
     }, [enabled]);
 
     
@@ -137,6 +144,13 @@ export const SmartBan: FC<any> = (): ReactElement => {
             <Stack spacing={3}>
                 <Stack>
                     <FormControlLabel control={enablingSwitch} label={switchLabel} />
+                </Stack>
+                <Stack>
+                    userTookControl: {userTookControl.toString()}
+                    <br></br>
+                    lastChampionId: {lastChampionId.toString()}
+                    <br></br>
+                    championSelectPhase: {championSelectPhase.toString()}
                 </Stack>
                 <Stack>
                     <Autocomplete
@@ -169,157 +183,9 @@ export const SmartBan: FC<any> = (): ReactElement => {
                     </Alert>
                 </Stack>
                 <Stack>
-                    <Slider onChange={handleTimeChange} value={secondsToAction} valueLabelDisplay="auto" step={1} marks min={10} max={24}/>
+                    <Slider onChange={handleTimeChange} value={secondsToAction} valueLabelDisplay="auto" step={1} marks min={0} max={24}/>
                 </Stack>
             </Stack>
         </Container>
     );
-}
-
-/*
-    GET /lol-champ-select/v1/bannable-champions
-    GET /lol-champ-select/v1/current-champion	
-    GET /lol-champ-select/v1/disabled-champions
-    GET /lol-champ-select/v1/pickable-champions
-    GET /lol-champ-select/v1/session/timer
-*/
-
-async function getLobbyState(lockfileContent: any) {
-
-    const {protocol, port, username, password} = lockfileContent;
-
-    const urlWithAuth = connections.clientURL(port, password, username, protocol);
-    const endpointName = "lol-champ-select/v1/session";
-    const url = urlWithAuth + endpointName;
-
-    const lobbyState = { 
-        state: undefined as ChampionSelectPhase,
-        actionId: undefined as number,
-        counter: undefined as number,
-        picks: undefined as number[],
-        bans: undefined as number[]
-    };
-
-    let session = null;
-    try {
-        session = await connections.fetchJSON(url);
-    } catch(error) {
-        console.warn(error);
-        lobbyState.state = ChampionSelectPhase.NoClient;
-        return lobbyState;
-    }
-
-    // console.log(session);
-
-    if (session.message === "No active delegate") {
-        lobbyState.state = ChampionSelectPhase.NoInLobby;
-        return lobbyState;
-    }
-
-    const counter = session.counter as number;
-    lobbyState.counter = counter;
-
-    if (session.timer.phase === "PLANNING") {
-        lobbyState.state = ChampionSelectPhase.Planning;
-        return lobbyState;
-    }
-
-    const bans = getBans(session);
-    lobbyState.bans = bans;
-
-    const picks = getPicks(session);
-    lobbyState.picks = picks;
-
-    const userActions = getUserActions(session);
-    const uncompletedActions = userActions.filter(action => !action.completed);
-    if(uncompletedActions.length < 1) {
-        lobbyState.state = ChampionSelectPhase.Picked;
-        return lobbyState;
-    }
-
-    let activeAction = uncompletedActions.find(action => action.isInProgress);
-
-    if (!activeAction)
-        lobbyState.state = ChampionSelectPhase.InLobby;
-    else {
-        lobbyState.actionId = activeAction.id;
-        
-        const isHovering = activeAction.championId > 0;
-        if(activeAction.type === "ban") 
-            if(isHovering) 
-                lobbyState.state = ChampionSelectPhase.BanHovered;
-            else 
-                lobbyState.state = ChampionSelectPhase.Banning;
-        else 
-        if (activeAction.type === "pick")
-            if(isHovering) 
-                lobbyState.state = ChampionSelectPhase.PickHovered;
-            else 
-                lobbyState.state = ChampionSelectPhase.Picking;
-        else
-            lobbyState.state = ChampionSelectPhase.Unknown;
-    }
-
-    return lobbyState;
-}
-
-async function hoverChampion(lockfileContent: any, actionId: number, championId: number) {
-    const options = {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: { championId },
-        json: true
-    }
-    return asyncClientRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}`, options);
-}
-
-async function completeAction(lockfileContent: any, actionId: number) {
-    return asyncClientRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}/complete`, { method: "POST" });
-}
-
-function instantCompleteAction(lockfileContent: any, actionId: number, championId: number) {
-    hoverChampion(lockfileContent, actionId, championId).then((result) => completeAction(lockfileContent, actionId));
-}
-
-async function asyncClientRequest(lockfileContent: any, endpointName: string, options: any = { method: 'GET' }) {
-    const {protocol, port, username, password} = lockfileContent;
-    const urlWithAuth = connections.clientURL(port, password, username, protocol);
-    const url = urlWithAuth + endpointName;
-
-    return connections.fetchRaw(url, options)
-}
-
-function getUserActions(session: any) {
-    const actionsFlat = [];
-    for (const actionSection of session.actions) {
-        for (const action of actionSection) {
-            actionsFlat.push(action);
-        }
-    }
-
-    return actionsFlat.filter(action => session.localPlayerCellId === action.actorCellId).sort((a, b) => a.id - b.id);
-}
-
-function getBans(session: any): number[] {
-    const bans: number[] = [];
-    for (const phase of session.actions) {
-        for (const action of phase) {
-            if (action.type === "ban" && action.championId > 0)
-                bans.push(action.championId as number);
-        }
-    }
-    return bans;
-}
-
-function getPicks(session: any): number[] {
-    const picks: number[] = [];
-    for (const phase of session.actions) {
-        for (const action of phase) {
-            if (action.type === "pick" && action.championId > 0)
-                picks.push(action.championId as number);
-        }
-    }
-    return picks;
 }
