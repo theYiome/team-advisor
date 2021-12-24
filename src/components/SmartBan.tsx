@@ -10,6 +10,7 @@ import { ChampionsContext } from './ChampionsContext';
 
 import { noClientMessage, errorStateMessage } from './CommonMessages';
 import { ChampionSelectPhase, getChampionSelectState, hoverChampion } from '../componentLibs/championSelect';
+import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './ChampionSelectMessages';
 
 const filePath = "settings/smartban.settings.json";
 
@@ -22,8 +23,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
     const initialPhase = ChampionSelectPhase.Unknown;
 
     const [championSelectPhase, setChampionSelectPhase] = useState(initialPhase);
-    const [banList, setBanList] = useState([]);
-    const [secondsToAction, setSecondsToAction] = useState(20);
+    const [banList, setBanList] = useState(["Riven"]);
 
     const [lastChampionId, setLastChampionId] = useState(0);
     const [userTookControl, setUserTookControl] = useState(false);
@@ -36,7 +36,6 @@ export const SmartBan: FC<any> = (): ReactElement => {
     useEffect(() => {
         files.loadJSON(filePath).then((settings) => {
             setEnabled(settings.enabled);
-            setSecondsToAction(settings.secondsToAction);
             setBanList(settings.banList);
             setSettingsLoaded(true);
         }).catch(error => {
@@ -50,13 +49,12 @@ export const SmartBan: FC<any> = (): ReactElement => {
         const dataToSave = {
             enabled: enabled,
             banList: banList,
-            secondsToAction: secondsToAction
         }
 
         if(settingsLoaded)
             files.saveJSON(dataToSave, filePath, 4);
             
-    }, [enabled, secondsToAction, banList])
+    }, [enabled, banList])
 
     // pooling client status
     useEffect(() => {
@@ -65,7 +63,6 @@ export const SmartBan: FC<any> = (): ReactElement => {
             getChampionSelectState(lockfileContent).then((state) => {
                 console.log(state);
                 const phase = state.phase;
-                const counter = state.counter;
                 
                 const controlTakenNow = lastChampionId !== 0 && lastChampionId !== state.championId;
 
@@ -75,9 +72,8 @@ export const SmartBan: FC<any> = (): ReactElement => {
                 setLastChampionId(state.championId);
                 
                 const isInBanningPhase = phase === ChampionSelectPhase.Banning || phase === ChampionSelectPhase.BanHovered;
-                const isRightTime = counter >= secondsToAction || counter === -1;
                 
-                if (isInBanningPhase && isRightTime && !userTookControl && !controlTakenNow) {
+                if (isInBanningPhase && !userTookControl && !controlTakenNow) {
                     const idBanList = banList.map(name => parseInt(champions[name]));
                     
                     const picks = state.picks;
@@ -93,7 +89,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
                         console.warn("No champion could be banned", banList, noBanList);
                 }
                 
-                const idlePhases = [ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInLobby, ChampionSelectPhase.InLobby, ChampionSelectPhase.Unknown];
+                const idlePhases = [ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInChampionSelect, ChampionSelectPhase.InChampionSelect, ChampionSelectPhase.Unknown];
                 if (idlePhases.includes(phase) || championSelectPhase !== phase) {
                     setUserTookControl(false);
                     setLastChampionId(0);
@@ -107,7 +103,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
             clearInterval(periodicUpdate);
 
         if (enabled)
-            setPeriodicUpdate(setInterval(updateFunction, 1000));
+            setPeriodicUpdate(setInterval(updateFunction, 2000));
 
         return () => clearInterval(periodicUpdate);
 
@@ -119,10 +115,47 @@ export const SmartBan: FC<any> = (): ReactElement => {
             setChampionSelectPhase(initialPhase);
     }, [enabled]);
 
-    
-    const handleTimeChange = (event: Event, newValue: number, activeThumb: number) => {
-        setSecondsToAction(newValue);
-    };
+    let currentMessage = unknownMessage;
+
+    switch(championSelectPhase) { 
+        case ChampionSelectPhase.NoClient: { 
+            currentMessage = noClientMessage;
+            break; 
+        } 
+        case ChampionSelectPhase.NoInChampionSelect: { 
+            currentMessage = noInChampionSelectMessage;
+            break; 
+        }
+        case ChampionSelectPhase.InChampionSelect: { 
+            currentMessage = inChampionSelectMessage;
+            break; 
+        }
+        case ChampionSelectPhase.Planning: { 
+            currentMessage = planningMessage;
+            break; 
+        }
+        case ChampionSelectPhase.Banning: 
+        case ChampionSelectPhase.BanHovered:
+        { 
+            currentMessage = banningMessage;
+            break;
+        }
+        case ChampionSelectPhase.Picking: 
+        case ChampionSelectPhase.PickHovered:
+        { 
+            currentMessage = pickingMessage;
+            break;
+        }
+        case ChampionSelectPhase.Picked: { 
+            currentMessage = pickedMessage;
+            break;
+        }
+        case ChampionSelectPhase.Error: { 
+            currentMessage = errorStateMessage("Don't know what happened but it's not good! Maybe client isn't running?");
+            break;
+        } 
+    }
+
 
     const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setEnabled(event.target.checked);
@@ -139,18 +172,19 @@ export const SmartBan: FC<any> = (): ReactElement => {
     const switchLabel = (<>Enable <strong>Smart Ban</strong></>);
     const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
 
+    const controlMessage = userTookControl ? userInControl(setUserTookControl) : appInControl;
+
     return (
         <Container>
             <Stack spacing={3}>
                 <Stack>
                     <FormControlLabel control={enablingSwitch} label={switchLabel} />
                 </Stack>
+
+                { enabled ? (<Stack>{controlMessage}</Stack>) : "" }
+                
                 <Stack>
-                    userTookControl: {userTookControl.toString()}
-                    <br></br>
-                    lastChampionId: {lastChampionId.toString()}
-                    <br></br>
-                    championSelectPhase: {championSelectPhase.toString()}
+                    {currentMessage}
                 </Stack>
                 <Stack>
                     <Autocomplete
@@ -174,16 +208,16 @@ export const SmartBan: FC<any> = (): ReactElement => {
                 <Stack>
                     <Alert severity="info">
                         <AlertTitle>How does it work?</AlertTitle>
-                        After around <strong>{secondsToAction}</strong> seconds since start of the banning phase, 
-                        if you are <strong>not hovering any ban intent</strong> app will hover for a ban first champion from your list that isn't <strong>already banned</strong> and 
-                        isn't a <strong>pick intent</strong> of any ally. If no such champion is found, nothing will happen.
-                        <br/>
-                        <br/>
-                        Timing can adjust that with slider below. Keep in mind that it is not exact, client updates its timer around every 4 seconds.
+                        When banning phase starts, 
+                        app will hover first champion from your list that is not <strong>already banned</strong> and 
+                        is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally.
+
+                        <ul>
+                            <li>If champion from your ban list matches criteria, nothing will be hovered.</li>
+                            <li>App will adjust this hover in real time.</li>
+                            <li>Hovering something by yourself takes control from the app.</li>
+                        </ul>
                     </Alert>
-                </Stack>
-                <Stack>
-                    <Slider onChange={handleTimeChange} value={secondsToAction} valueLabelDisplay="auto" step={1} marks min={0} max={24}/>
                 </Stack>
             </Stack>
         </Container>

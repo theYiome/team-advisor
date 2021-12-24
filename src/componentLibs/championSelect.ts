@@ -2,8 +2,8 @@ import { rawClientRequest, jsonClientRequest } from './clientConnection';
 
 enum ChampionSelectPhase {
     NoClient,
-    NoInLobby,
-    InLobby,
+    NoInChampionSelect,
+    InChampionSelect,
     Planning,
     Banning,
     BanHovered,
@@ -38,7 +38,7 @@ async function getChampionSelectState(lockfileContent: any) {
     console.log(session);
 
     if (session.message === "No active delegate") {
-        lobbyState.phase = ChampionSelectPhase.NoInLobby;
+        lobbyState.phase = ChampionSelectPhase.NoInChampionSelect;
         return lobbyState;
     }
 
@@ -66,7 +66,7 @@ async function getChampionSelectState(lockfileContent: any) {
     let activeAction = uncompletedActions.find(action => action.isInProgress);
 
     if (!activeAction)
-        lobbyState.phase = ChampionSelectPhase.InLobby;
+        lobbyState.phase = ChampionSelectPhase.InChampionSelect;
     else {
         lobbyState.actionId = activeAction.id;
         lobbyState.championId = activeAction.championId;
