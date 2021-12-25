@@ -21,8 +21,13 @@ async function getChampionSelectState(lockfileContent: any) {
         actionId: undefined as number,
         championId: 0 as number,
         counter: undefined as number,
-        picks: undefined as number[],
-        bans: undefined as number[]
+        picks: [] as number[],
+        bans: [] as number[],
+        gameId: undefined as number,
+        localPlayerCellId: undefined as number,
+        localPlayerTeamId: undefined as number,
+        leftTeam: [] as any[],
+        rightTeam: [] as any[]
     };
     
     const endpointName = "lol-champ-select/v1/session";
@@ -42,9 +47,16 @@ async function getChampionSelectState(lockfileContent: any) {
         return lobbyState;
     }
 
-    const counter = session.counter as number;
-    lobbyState.counter = counter;
-
+    // parse and return state
+    const playerTeamId = session.myTeam[0].team;
+    lobbyState.leftTeam = playerTeamId === 1 ? session.myTeam : session.theirTeam;
+    lobbyState.rightTeam = playerTeamId === 2 ? session.myTeam : session.theirTeam;
+    
+    lobbyState.localPlayerCellId = session.localPlayerCellId;
+    lobbyState.localPlayerTeamId = session.playerTeamId;
+    lobbyState.gameId = session.gameId,
+    lobbyState.counter = session.counter;
+    
     if (session.timer.phase === "PLANNING") {
         lobbyState.phase = ChampionSelectPhase.Planning;
         return lobbyState;

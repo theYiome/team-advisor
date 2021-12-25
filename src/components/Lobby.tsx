@@ -3,9 +3,14 @@ import React, { ReactElement, FC, useState, useContext } from 'react';
 import { Team, TeamProp } from './Team';
 
 import { LockfileContext } from './LockfileContext';
+import { ChampionsContext } from './ChampionsContext';
 
 import * as connections from '../libs/connections'
 import * as files from '../libs/files'
+
+import { ChampionSelectPhase, getChampionSelectState, hoverChampion } from '../componentLibs/championSelect';
+import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './ChampionSelectMessages';
+
 
 const initialState: any = {
     bans: [],
@@ -21,21 +26,22 @@ export const Lobby: FC<any> = (): ReactElement => {
     const [lobbyState, setLobbyState] = useState(initialState);
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
 
-    const tmp: TeamProp = {
-        summoners: [], 
-        localPlayerCellId: 1
-    }
+    const [champions, setChampions] = useContext(ChampionsContext);
 
     const updateLobby = async () => {
-        // console.log(lockfileContent);
-        const {protocol, port, username, password} = lockfileContent;
-        const lobbyState = await parsedLobbyState(port, password, username, protocol);
+        const lobbyState = await getChampionSelectState(lockfileContent);
         // const lobbyState = await mockedParsedLobbyState();
+
         console.log(lobbyState);
         setLobbyState(lobbyState);
     }
 
-    const bansView = lobbyState.bans.length > 0 ? lobbyState.bans.map((ban: any) => <Stack key={ban} sx={{p: 2, boxShadow: 2, textAlign: "center"}}>{ban}</Stack>) : <LinearProgress/>;
+    const bansView = lobbyState.bans.length > 0 ? 
+        lobbyState.bans.map((ban: any) => 
+            <Stack key={ban} sx={{p: 2, boxShadow: 2, textAlign: "center"}}>
+                {champions[ban]}
+            </Stack>) : 
+        <LinearProgress/>;
 
     return (
         <Stack divider={<Divider orientation="horizontal" flexItem />} spacing={2}>
@@ -63,64 +69,22 @@ export const Lobby: FC<any> = (): ReactElement => {
 }
 
 
-function getBans(lobbyState: any) {
-    const bans = [];
-    for (const phase of lobbyState.actions) {
-        for (const action of phase) {
-            if (action.type === "ban" && action.championId != 0)
-                bans.push(action.championId);
-        }
-    }
-    return bans;
-}
+// export async function mockedParsedLobbyState() {
 
+//     const clientResponse = await files.loadJSON("data/lol-champ-select--v1--session.json");
 
-async function parsedLobbyState(port: string, password: string, username: string, protocol: string) {
-    try {
-        const endpointName = "lol-champ-select/v1/session";
-        const urlWithAuth = connections.clientURL(port, password, username, protocol);
-        const url = urlWithAuth + endpointName;
+//     console.log(clientResponse);
+//     // if(!clientResponse) throw "Lobby state request failed";
 
-        const clientResponse: any = await connections.fetchJSON(url);
-        console.log(clientResponse);
-
-        // parse and return state
-        const playerTeamId = clientResponse.myTeam[0].team;
-        const leftTeam = playerTeamId === 1 ? clientResponse.myTeam : clientResponse.theirTeam;
-        const rightTeam = playerTeamId === 2 ? clientResponse.myTeam : clientResponse.theirTeam;
-        return {
-            bans: getBans(clientResponse),
-            gameId: clientResponse.gameId,
-            localPlayerCellId: clientResponse.localPlayerCellId,
-            localPlayerTeamId: playerTeamId,
-            leftTeam: leftTeam,
-            rightTeam: rightTeam
-        };
-    } 
-    catch(err) {
-        // parsing failed, return blank state
-        console.warn(err);
-        return initialState;
-    }
-}
-
-
-export async function mockedParsedLobbyState() {
-
-    const clientResponse = await files.loadJSON("data/lol-champ-select--v1--session.json");
-
-    console.log(clientResponse);
-    // if(!clientResponse) throw "Lobby state request failed";
-
-    const playerTeamId = clientResponse.myTeam[0].team;
-    const leftTeam = playerTeamId === 1 ? clientResponse.myTeam : clientResponse.theirTeam;
-    const rightTeam = playerTeamId === 2 ? clientResponse.myTeam : clientResponse.theirTeam;
-    return {
-        bans: getBans(clientResponse),
-        gameId: clientResponse.gameId,
-        localPlayerCellId: clientResponse.localPlayerCellId,
-        localPlayerTeamId: playerTeamId,
-        leftTeam: leftTeam,
-        rightTeam: rightTeam
-    };
-}
+//     const playerTeamId = clientResponse.myTeam[0].team;
+//     const leftTeam = playerTeamId === 1 ? clientResponse.myTeam : clientResponse.theirTeam;
+//     const rightTeam = playerTeamId === 2 ? clientResponse.myTeam : clientResponse.theirTeam;
+//     return {
+//         bans: getBans(clientResponse),
+//         gameId: clientResponse.gameId,
+//         localPlayerCellId: clientResponse.localPlayerCellId,
+//         localPlayerTeamId: playerTeamId,
+//         leftTeam: leftTeam,
+//         rightTeam: rightTeam
+//     };
+// }
