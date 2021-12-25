@@ -43,7 +43,7 @@ export const pickingMessage = (
 );
 
 export const pickedMessage = (
-    <Alert severity="info">
+    <Alert severity="success">
         <AlertTitle>No more actions</AlertTitle>
         You have picked your champion, nothing more to do. Good luck!
     </Alert>
