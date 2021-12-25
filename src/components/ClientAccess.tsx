@@ -4,11 +4,13 @@ import * as pathModule from 'path';
 import Container from '@mui/material/Container'
 import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup } from '@mui/material';
 import { LockfileContext } from './LockfileContext';
+
 import * as files from '../libs/files';
+import { rawClientRequest } from '../componentLibs/clientConnection';
 
 const filePath = "settings/lockfile.settings.json";
 
-export const Lockfile: FC<any> = (): ReactElement => {
+export const ClientAccess: FC<any> = (): ReactElement => {
 
     const defaultDirPath = "C:\\Riot Games\\League of Legends\\";
     const defaultFilename = "lockfile";
@@ -143,6 +145,19 @@ export const Lockfile: FC<any> = (): ReactElement => {
                     <Button sx={{ width: 1}} color="error" onClick={getLockfileData}>FORCE LOAD DATA FROM LOCKFILE</Button>
                     <Button sx={{ width: 1}} color="success" onClick={resetToDefault}>RESET TO DEFAULT</Button>
                 </ButtonGroup>
+
+                <Typography variant='h6'>
+                    Utilities
+                </Typography>
+                <Typography>
+                    Sometimes client may bug while using this app (annoying sounds or visual glitches).
+                    If that happens you can <strong>restart client UX</strong>, that is a visual part of the client.
+                    It will take around 10 seconds and <strong>it will not kick you out</strong> of lobby, game search or champion select. 
+                    Features like <strong>Smart Accept</strong> or <strong>Smart Ban</strong> will still work when client UX is offline.
+                </Typography>
+                <ButtonGroup sx={{ width: 1 }} variant="contained" aria-label="outlined primary button group">
+                    <Button sx={{ width: 1}} color="error" onClick={() => restartClientUX(lockfileContent)}>RESTART CLIENT UX</Button>
+                </ButtonGroup>
             </Stack>
         </Container>
     );
@@ -163,4 +178,9 @@ function parseLockfile(fileString: any) {
         username: "riot",
         password: fileArray[3],
     }
+}
+
+function restartClientUX(lockfileContent: any): void {
+    const endpointName = "riotclient/kill-and-restart-ux";
+    rawClientRequest(lockfileContent, endpointName, { method: 'POST' }).catch(error => console.warn(error));
 }

@@ -1,10 +1,11 @@
 import React, { ReactElement, FC, useState, useContext } from 'react';
 
-import { Lockfile } from './Lockfile';
+import { ClientAccess } from './ClientAccess';
 import { Lobby } from './Lobby';
 import { SmartAccept } from './SmartAccept';
 import { SmartBan } from './SmartBan';
 import { Settings } from './Settings';
+import { TeamBuilder } from './TeamBuilder';
 
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
@@ -22,7 +23,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
                             <Typography>
-                                Settings
+                                Champion Data
                             </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
@@ -33,11 +34,11 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
                             <Typography>
-                                Lockfile access
+                                League Client
                             </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <Lockfile></Lockfile>
+                            <ClientAccess></ClientAccess>
                         </AccordionDetails>
                     </Accordion>
 
@@ -71,6 +72,17 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                         </AccordionSummary>
                         <AccordionDetails>
                             <Lobby></Lobby>
+                        </AccordionDetails>
+                    </Accordion>
+
+                    <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+                            <Typography>
+                                Team Builder
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <TeamBuilder></TeamBuilder>
                         </AccordionDetails>
                     </Accordion>
 
