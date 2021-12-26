@@ -168,7 +168,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
                     </Alert>
                 </Stack>
                 <Stack>
-                    <Slider onChange={handleTimeChange} value={secondsToAccept} valueLabelDisplay="auto" step={1} marks min={1} max={12}/>
+                    <Slider onChange={handleTimeChange} value={secondsToAccept} valueLabelDisplay="auto" step={1} marks min={0} max={12}/>
                 </Stack>
             </Stack>
         </Container>
@@ -272,11 +272,13 @@ const noInQueueMessage = (
     </Alert>
 );
 
+// TODO: (Math.round(acceptTimeThreshold) === 1) ? "second" : "seconds"
+// this is somehow "0 second", makes me insane, please help
 const inQueueMessage = (acceptTimeThreshold: number) => (
     <Alert severity="info">
         <AlertTitle>You are in queue or in champion select</AlertTitle>
         Everthing looks good!<br/>
-        Worry not, any game will be <strong>accepted after {acceptTimeThreshold} {acceptTimeThreshold > 1.1 ? "seconds" : "second"}</strong> since found.
+        Worry not, any game will be <strong>accepted after {acceptTimeThreshold} {(Math.round(acceptTimeThreshold) === 1) ? "second" : "seconds"}</strong> since found.
         You will have some time to <strong>decline</strong>!
     </Alert>
 );
@@ -284,7 +286,7 @@ const inQueueMessage = (acceptTimeThreshold: number) => (
 const gameFoundMessage = (timeToAccept: number, lockfileContent: any) => (
     <Alert severity="success">
         <AlertTitle>Game found!</AlertTitle>
-        Game has been found, it will be accepted in <strong>{timeToAccept} {timeToAccept > 1.1 ? "seconds" : "second"}</strong>!
+        Game has been found, it will be accepted in <strong>{timeToAccept} {(Math.round(timeToAccept) === 1) ? "second" : "seconds"}</strong>!
         If you don't wish to play right now <strong>decline</strong> ASAP!
         <br/>
         <br/>

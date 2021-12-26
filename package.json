@@ -1,123 +1,123 @@
 {
-  "name": "team-advisor",
-  "productName": "team-advisor",
-  "version": "0.2.1",
-  "description": "My Electron application description",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/theYiome/team-advisor.git"
-  },
-  "main": ".webpack/main",
-  "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx ."
-  },
-  "keywords": [],
-  "author": {
-    "name": "Kamil Pasterczyk",
-    "email": "yiome@outlook.com"
-  },
-  "license": "MIT",
-  "config": {
-    "forge": {
-      "publishers": [
-        {
-          "name": "@electron-forge/publisher-github",
-          "platforms": [
-            "win32"
-          ],
-          "config": {
-            "repository": {
-              "owner": "theYiome",
-              "name": "team-advisor"
-            }
-          }
-        }
-      ],
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "team_advisor"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ],
-      "plugins": [
-        [
-          "@electron-forge/plugin-webpack",
-          {
-            "devContentSecurityPolicy": "default-src 'self' 'unsafe-inline' data:; script-src 'self' 'unsafe-eval'; img-src * data:",
-            "mainConfig": "./webpack.main.config.js",
-            "renderer": {
-              "config": "./webpack.renderer.config.js",
-              "entryPoints": [
+    "name": "team-advisor",
+    "productName": "team-advisor",
+    "version": "0.2.2",
+    "description": "My Electron application description",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/theYiome/team-advisor.git"
+    },
+    "main": ".webpack/main",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make",
+        "publish": "electron-forge publish",
+        "lint": "eslint --ext .ts,.tsx ."
+    },
+    "keywords": [],
+    "author": {
+        "name": "Kamil Pasterczyk",
+        "email": "yiome@outlook.com"
+    },
+    "license": "MIT",
+    "config": {
+        "forge": {
+            "publishers": [
                 {
-                  "html": "./src/index.html",
-                  "js": "./src/renderer.ts",
-                  "name": "main_window"
+                    "name": "@electron-forge/publisher-github",
+                    "platforms": [
+                        "win32"
+                    ],
+                    "config": {
+                        "repository": {
+                            "owner": "theYiome",
+                            "name": "team-advisor"
+                        }
+                    }
                 }
-              ]
-            }
-          }
-        ]
-      ]
+            ],
+            "packagerConfig": {},
+            "makers": [
+                {
+                    "name": "@electron-forge/maker-squirrel",
+                    "config": {
+                        "name": "team_advisor"
+                    }
+                },
+                {
+                    "name": "@electron-forge/maker-zip",
+                    "platforms": [
+                        "darwin"
+                    ]
+                },
+                {
+                    "name": "@electron-forge/maker-deb",
+                    "config": {}
+                },
+                {
+                    "name": "@electron-forge/maker-rpm",
+                    "config": {}
+                }
+            ],
+            "plugins": [
+                [
+                    "@electron-forge/plugin-webpack",
+                    {
+                        "devContentSecurityPolicy": "default-src 'self' 'unsafe-inline' data:; script-src 'self' 'unsafe-eval'; img-src * data:",
+                        "mainConfig": "./webpack.main.config.js",
+                        "renderer": {
+                            "config": "./webpack.renderer.config.js",
+                            "entryPoints": [
+                                {
+                                    "html": "./src/index.html",
+                                    "js": "./src/renderer.ts",
+                                    "name": "main_window"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            ]
+        }
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "^6.0.0-beta.61",
+        "@electron-forge/maker-deb": "^6.0.0-beta.61",
+        "@electron-forge/maker-rpm": "^6.0.0-beta.61",
+        "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
+        "@electron-forge/maker-zip": "^6.0.0-beta.61",
+        "@electron-forge/plugin-webpack": "^6.0.0-beta.61",
+        "@electron-forge/publisher-github": "^6.0.0-beta.61",
+        "@types/mkdirp": "^1.0.2",
+        "@types/react": "^17.0.35",
+        "@types/react-dom": "^17.0.11",
+        "@types/request": "^2.48.7",
+        "@typescript-eslint/eslint-plugin": "^4.33.0",
+        "@typescript-eslint/parser": "^4.33.0",
+        "@vercel/webpack-asset-relocator-loader": "^1.7.0",
+        "css-loader": "^6.5.1",
+        "electron": "16.0.1",
+        "eslint": "^7.32.0",
+        "eslint-plugin-import": "^2.25.3",
+        "fork-ts-checker-webpack-plugin": "^6.4.0",
+        "node-loader": "^2.0.0",
+        "request": "^2.88.2",
+        "style-loader": "^3.3.1",
+        "ts-loader": "^9.2.6",
+        "typescript": "^4.5.2"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.7.0",
+        "@emotion/styled": "^11.6.0",
+        "@fontsource/roboto": "^4.5.1",
+        "@mui/icons-material": "^5.2.0",
+        "@mui/material": "^5.2.1",
+        "@types/node": "^14.18.0",
+        "electron-localshortcut": "^3.2.1",
+        "electron-squirrel-startup": "^1.0.0",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "update-electron-app": "^2.0.1"
     }
-  },
-  "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.61",
-    "@electron-forge/maker-deb": "^6.0.0-beta.61",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.61",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
-    "@electron-forge/maker-zip": "^6.0.0-beta.61",
-    "@electron-forge/plugin-webpack": "^6.0.0-beta.61",
-    "@electron-forge/publisher-github": "^6.0.0-beta.61",
-    "@types/mkdirp": "^1.0.2",
-    "@types/react": "^17.0.35",
-    "@types/react-dom": "^17.0.11",
-    "@types/request": "^2.48.7",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "@vercel/webpack-asset-relocator-loader": "^1.7.0",
-    "css-loader": "^6.5.1",
-    "electron": "16.0.1",
-    "eslint": "^7.32.0",
-    "eslint-plugin-import": "^2.25.3",
-    "fork-ts-checker-webpack-plugin": "^6.4.0",
-    "node-loader": "^2.0.0",
-    "request": "^2.88.2",
-    "style-loader": "^3.3.1",
-    "ts-loader": "^9.2.6",
-    "typescript": "^4.5.2"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.7.0",
-    "@emotion/styled": "^11.6.0",
-    "@fontsource/roboto": "^4.5.1",
-    "@mui/icons-material": "^5.2.0",
-    "@mui/material": "^5.2.1",
-    "@types/node": "^14.18.0",
-    "electron-localshortcut": "^3.2.1",
-    "electron-squirrel-startup": "^1.0.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "update-electron-app": "^2.0.1"
-  }
 }
