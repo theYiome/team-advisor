@@ -36,11 +36,13 @@ export const TeamBuilder: FC<any> = (): ReactElement => {
             <Stack direction="row" spacing={3}>
                 <Stack spacing={2} sx={{width: 1}}>
                     <PickEntry championId={1} role={"top"} isPlayer={false}/>
+                    <PickEntry championId={37} role={"support"} isPlayer={false}/>
+                    <PickEntry championId={20} role={"jungle"} isPlayer={false}/>
                 </Stack>
 
                 <Stack spacing={2} sx={{width: 1}}>
                     <PickEntry championId={10} role={"middle"} isPlayer={false}/>
-                    <PickEntry championId={22} role={"botlane"} isPlayer={false}/>
+                    <PickEntry championId={22} role={"bottom"} isPlayer={false}/>
                 </Stack>
             </Stack>
             <Stack>
