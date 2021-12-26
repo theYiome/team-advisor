@@ -22,54 +22,49 @@ const roleImages: any = {
 
 
 export type PickEntryProp = {
-    isPlayer: boolean,
-    championId: number,
-    role: string,
+    championName: string,
+    roleName: string,
+    patch: string,
+    champions?: string[],
+    roles?: string[],
+    disabled?: boolean,
+    isPlayer?: boolean,
+    onChange?: any
 };
 
 const roles = ["top", "jungle", "middle", "bottom", "support"];
 
-export const PickEntry: FC<PickEntryProp> = (props: PickEntryProp): ReactElement => {
-
-    const [champions, setChampions] = useContext(ChampionsContext);
+export const PickEntry: FC<PickEntryProp> = ({
+    championName,
+    roleName,
+    patch,
+    champions = [],
+    roles = [],
+    disabled = false,
+    isPlayer = false,
+    onChange = (newChamionName: string, newRoleName: string) => {}
+}: PickEntryProp): ReactElement => {
 
     const style = { boxShadow: 1, p: 2, backgroundColor: "#EEE" };
-    !props.isPlayer ? style.backgroundColor = "#EEE" : style.backgroundColor = "gold";
+    !isPlayer ? style.backgroundColor = "#EEE" : style.backgroundColor = "gold";
 
-    const patch = champions["patch"];
-    const championName = champions[props.championId];
-    const role = props.role;
-
-    const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
 
     const avatarStyle = { width: 64, height: 64, boxShadow: 5, backgroundColor: "white" };
-    
+
     return (
         <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={2} sx={style}>
             <Stack spacing={2}>
-                <Avatar alt={championName} src={avatarURI(patch, championName)} sx={avatarStyle}/>
-                <Avatar alt={props.role} src={roleImages[role]} sx={avatarStyle} variant="rounded"/>
+                <Avatar alt={championName} src={championName ? avatarURI(patch, championName) : ""} sx={avatarStyle} />
+                <Avatar alt={roleName} src={roleImages[roleName]} sx={avatarStyle} variant="rounded" />
             </Stack>
 
-            <Stack spacing={1} sx={{width: 1 }}>
-
+            <Stack spacing={1} sx={{ width: 1 }}>
                 <Autocomplete
-                    options={roles}
+                    value={championName}
+                    onChange={(event: any, newValue: string | null) => onChange(newValue, roleName)}
+                    options={champions}
                     renderOption={(props, option) => (
-                        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 }}} {...props}>
-                            <img loading="lazy" width="20" src={roleImages[option]} alt={championName}/>
-                            {option.toString()}
-                        </Box>
-                    )}
-                    renderInput={(params) => (
-                        <TextField {...params} variant="standard" label="Role" />
-                    )}
-                />
-
-                <Autocomplete
-                    options={championNames}
-                    renderOption={(props, option) => (
-                        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 }}} {...props}>
+                        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
                             <img loading="lazy" width="20" src={avatarURI(patch, option)} alt={championName} />
                             {option.toString()}
                         </Box>
@@ -77,11 +72,28 @@ export const PickEntry: FC<PickEntryProp> = (props: PickEntryProp): ReactElement
                     renderInput={(params) => (
                         <TextField {...params} variant="standard" label="Champion" />
                     )}
+                    disabled={disabled}
+                />
+
+                <Autocomplete
+                    value={roleName}
+                    onChange={(event: any, newValue: string | null) => onChange(championName, newValue)}
+                    options={roles}
+                    renderOption={(props, option) => (
+                        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                            <img loading="lazy" width="20" src={roleImages[option]} alt={championName} />
+                            {option.toString()}
+                        </Box>
+                    )}
+                    renderInput={(params) => (
+                        <TextField {...params} variant="standard" label="Role" />
+                    )}
+                    disabled={disabled}
                 />
 
                 <Divider orientation="horizontal" flexItem />
                 <Typography>Suggestions from your champions</Typography>
-                
+
                 <Divider orientation="horizontal" flexItem />
                 <Typography>Suggestions from all champions</Typography>
             </Stack>

@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Autocomplete } from '@mui/material';
+import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Autocomplete, Box } from '@mui/material';
 
 import * as files from '../libs/files';
 
@@ -15,12 +15,36 @@ import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSele
 
 const filePath = "settings/teambuilder.settings.json";
 
+const roles = ["top", "jungle", "middle", "bottom", "support"];
+
 export const TeamBuilder: FC<any> = (): ReactElement => {
     const [banList, setBanList] = useState([]);
-    
+
+    const initialLeftTeam = roles.map(role => Object({ championName: null, roleName: role }));
+    const initialRightTeam = roles.map(role => Object({ championName: null, roleName: role }));
+    const [leftTeam, setLeftTeam] = useState(initialLeftTeam);
+    const [rightTeam, setRightTeam] = useState(initialRightTeam);
+
     const [champions, setChampions] = useContext(ChampionsContext);
-    
-    const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
+
+    const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).filter(championName => !banList.includes(championName)).sort();
+    const patch = champions["patch"];
+
+    const onLeftTeamEntryChange = (newChamionName: string, newRoleName: string, index: number) => {
+        console.log("left", index, newChamionName, newRoleName);
+        const newTeam = [...leftTeam];
+        newTeam[index].championName = newChamionName;
+        newTeam[index].roleName = newRoleName;
+        setLeftTeam(newTeam);
+    };
+
+    const onRightTeamEntryChange = (newChamionName: string, newRoleName: string, index: number) => {
+        console.log("right", index, newChamionName, newRoleName);
+        const newTeam = [...rightTeam];
+        newTeam[index].championName = newChamionName;
+        newTeam[index].roleName = newRoleName;
+        setRightTeam(newTeam);
+    };
 
     return (
         <Stack spacing={3}>
@@ -30,19 +54,42 @@ export const TeamBuilder: FC<any> = (): ReactElement => {
                     options={championNames}
                     value={banList}
                     onChange={(event, newValue) => setBanList(newValue)}
-                    renderInput={(params) => <TextField {...params} variant="standard" label="Bans"/>}
+                    renderOption={(props, option) => (
+                        <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+                            <img loading="lazy" width="20" src={avatarURI(patch, option)} alt={option} />
+                            {option.toString()}
+                        </Box>
+                    )}
+                    renderInput={(params) => <TextField {...params} variant="standard" label="Bans" />}
                 />
             </Stack>
             <Stack direction="row" spacing={3}>
-                <Stack spacing={2} sx={{width: 1}}>
-                    <PickEntry championId={1} role={"top"} isPlayer={false}/>
-                    <PickEntry championId={37} role={"support"} isPlayer={false}/>
-                    <PickEntry championId={20} role={"jungle"} isPlayer={false}/>
+                <Stack spacing={2} sx={{ width: 1 }}>
+                    {leftTeam.map((entry, index) => (
+                        <PickEntry
+                            key={index}
+                            championName={entry.championName}
+                            roleName={entry.roleName}
+                            patch={patch}
+                            champions={championNames}
+                            roles={roles}
+                            onChange={(newChamionName: string, newRoleName: string) => onLeftTeamEntryChange(newChamionName, newRoleName, index)}
+                        />
+                    ))}
                 </Stack>
 
-                <Stack spacing={2} sx={{width: 1}}>
-                    <PickEntry championId={10} role={"middle"} isPlayer={false}/>
-                    <PickEntry championId={22} role={"bottom"} isPlayer={false}/>
+                <Stack spacing={2} sx={{ width: 1 }}>
+                    {rightTeam.map((entry, index) => (
+                        <PickEntry
+                            key={index}
+                            championName={entry.championName}
+                            roleName={entry.roleName}
+                            patch={patch}
+                            champions={championNames}
+                            roles={roles}
+                            onChange={(newChamionName: string, newRoleName: string) => onRightTeamEntryChange(newChamionName, newRoleName, index)}
+                        />
+                    ))}
                 </Stack>
             </Stack>
             <Stack>
@@ -53,4 +100,8 @@ export const TeamBuilder: FC<any> = (): ReactElement => {
             </Stack>
         </Stack>
     );
+}
+
+function avatarURI(patch: string, championName: string) {
+    return `http://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${championName}.png`;
 }
