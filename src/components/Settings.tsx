@@ -1,17 +1,19 @@
 import React, { ReactElement, FC, useState, useEffect, useContext } from 'react';
-import { Button, ButtonGroup, Container, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { Button, ButtonGroup, Container, FormControlLabel, Paper, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import * as ddragon from '../jsutils/ddragon.js';
 import * as files from "../libs/files";
 
 import { ChampionsContext } from './ChampionsContext';
 import { protocol } from 'electron';
-
+import * as someutils from '../index';
+const autoLauncher: any = null;
 
 const filePath = "data/champions.json";
 
 
 export const Settings: FC<any> = (): ReactElement => {
 
+    const [autoLauncherEnabled, setAutoLauncherEnabled] = useState(false);
     const [champions, setChampions] = useContext(ChampionsContext);
 
     useEffect(() => {
@@ -19,7 +21,7 @@ export const Settings: FC<any> = (): ReactElement => {
             files.loadJSON(filePath).then((localChampionData) => {
                 setChampions(localChampionData);
             });
-        } catch(error) {
+        } catch (error) {
             console.warn(error);
         }
     }, []);
@@ -32,7 +34,7 @@ export const Settings: FC<any> = (): ReactElement => {
         // key -> val
         // val -> key
         for (const [key, value] of Object.entries(parsed_champions)) {
-            if(!isNaN(key as any))
+            if (!isNaN(key as any))
                 parsed_champions[value as any] = key;
         }
 
@@ -44,20 +46,20 @@ export const Settings: FC<any> = (): ReactElement => {
         <TableContainer component={Paper}>
             <Table sx={{ width: 1, fontSize: 1 }} size="small" aria-label="a dense table">
                 <TableHead>
-                    <TableRow sx={{backgroundColor: "#EEE"}}>
+                    <TableRow sx={{ backgroundColor: "#EEE" }}>
                         <TableCell>key</TableCell>
                         <TableCell>value</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {
-                        Object.keys(champions).map((key: string) => 
-                            (
-                                <TableRow key={key} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                    <TableCell component="th" scope="row">{key}</TableCell>
-                                    <TableCell component="th" scope="row">{champions[key]}</TableCell>
-                                </TableRow>
-                            )
+                        Object.keys(champions).map((key: string) =>
+                        (
+                            <TableRow key={key} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                <TableCell component="th" scope="row">{key}</TableCell>
+                                <TableCell component="th" scope="row">{champions[key]}</TableCell>
+                            </TableRow>
+                        )
                         )
                     }
                 </TableBody>
@@ -65,8 +67,28 @@ export const Settings: FC<any> = (): ReactElement => {
         </TableContainer>
     );
 
+
+    const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const isChecked = event.target.checked;
+
+        if (autoLauncher) {
+            autoLauncher.isEnabled().then(
+                (isEnabled: boolean) => {
+                    if (isEnabled && !isChecked)
+                        autoLauncher.disable().then(setAutoLauncherEnabled(isChecked));
+                    else if (!isEnabled && isChecked)
+                        autoLauncher.enable().then(setAutoLauncherEnabled(isChecked));
+                }
+            );
+        }
+    };
+
     return (
         <Stack spacing={3}>
+            <FormControlLabel
+                control={<Switch checked={autoLauncherEnabled} onChange={handleSwitchChange} />}
+                label={<Typography><strong>Launch on Startup</strong></Typography>}
+            />
             <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>
             <Typography variant='h6'>
                 Champions

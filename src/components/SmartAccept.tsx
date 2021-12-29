@@ -44,7 +44,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
     };
     const [queueState, setQueueState] = useState(initialQueueState);
 
-    const [secondsToAccept, setSecondsToAccept] = useState(8);
+    const [secondsToAccept, setSecondsToAccept] = useState(2);
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
 
     // load setting from file
@@ -66,9 +66,9 @@ export const SmartAccept: FC<any> = (): ReactElement => {
             secondsToAccept: secondsToAccept
         }
 
-        if(settingsLoaded)
+        if (settingsLoaded)
             files.saveJSON(dataToSave, filePath, 4);
-            
+
     }, [enabled, secondsToAccept])
 
     // pooling client status
@@ -95,67 +95,60 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
     // clearing state when turned off
     useEffect(() => {
-        if(!enabled)
+        if (!enabled)
             setQueueState(initialQueueState);
     }, [enabled]);
 
-    
+
     const handleTimeChange = (event: Event, newValue: number, activeThumb: number) => {
         setSecondsToAccept(newValue);
     };
 
     let currentMessage = unknownStateMessage;
 
-    switch(queueState.state) { 
-        case QueueStateEnum.NoClient: { 
+    switch (queueState.state) {
+        case QueueStateEnum.NoClient: {
             currentMessage = noClientMessage;
-            break; 
-        } 
-        case QueueStateEnum.NoInQueue: { 
-            currentMessage = noInQueueMessage;
-            break; 
-        } 
-        case QueueStateEnum.InQueue: { 
-            currentMessage = inQueueMessage(secondsToAccept);
-            break; 
+            break;
         }
-        case QueueStateEnum.GameFound: { 
+        case QueueStateEnum.NoInQueue: {
+            currentMessage = noInQueueMessage;
+            break;
+        }
+        case QueueStateEnum.InQueue: {
+            currentMessage = inQueueMessage(secondsToAccept);
+            break;
+        }
+        case QueueStateEnum.GameFound: {
             currentMessage = gameFoundMessage(secondsToAccept - queueState.timer, lockfileContent);
             break;
         }
-        case QueueStateEnum.Declined: { 
+        case QueueStateEnum.Declined: {
             currentMessage = gameDeclinedMessage(lockfileContent);
             break;
         }
-        case QueueStateEnum.Accepted: { 
+        case QueueStateEnum.Accepted: {
             currentMessage = gameAcceptedMessage(lockfileContent);
             break;
         }
-        case QueueStateEnum.Error: { 
+        case QueueStateEnum.Error: {
             currentMessage = errorStateMessage("Don't know what happened but it's not good! Maybe client isn't running?");
             break;
-        } 
+        }
     }
 
     const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setEnabled(event.target.checked);
     };
 
-    const enablingSwitch = (
-        <Switch
-            color='success'
-            checked={enabled}
-            onChange={handleSwitchChange}
-        />
-    );
-
-    const switchLabel = (<>Enable <strong>Smart Accept</strong></>);
-
     return (
         <Container>
             <Stack spacing={3}>
                 <Stack>
-                    <FormControlLabel control={enablingSwitch} label={switchLabel} />
+                    <FormControlLabel
+                        control={<Switch checked={enabled} onChange={handleSwitchChange} />}
+                        label={<Typography>Enable <strong>Smart Accept</strong></Typography>}
+                    />
                 </Stack>
                 <Stack>
                     {currentMessage}
@@ -163,12 +156,12 @@ export const SmartAccept: FC<any> = (): ReactElement => {
                 <Stack>
                     <Alert severity="info">
                         <AlertTitle>When my game will be accepted?</AlertTitle>
-                        After <strong>{secondsToAccept} {secondsToAccept > 1.1 ? "seconds" : "second"}</strong> since found, timing can adjust that with slider below. 
+                        After <strong> {secondsToAccept} {(Math.round(secondsToAccept) === 1) ? "second" : "seconds"}</strong> since found, timing can adjust that with slider below.
                         Keep in mind that 12 second mark is last moment and there sometimes might be a miss, threfore <strong>11 seconds are recommended</strong>.
                     </Alert>
                 </Stack>
                 <Stack>
-                    <Slider onChange={handleTimeChange} value={secondsToAccept} valueLabelDisplay="auto" step={1} marks min={0} max={12}/>
+                    <Slider onChange={handleTimeChange} value={secondsToAccept} valueLabelDisplay="auto" step={1} marks min={0} max={12} />
                 </Stack>
             </Stack>
         </Container>
@@ -177,7 +170,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
 async function getQueueState(lockfileContent: any): Promise<QueueState> {
 
-    const {protocol, port, username, password} = lockfileContent;
+    const { protocol, port, username, password } = lockfileContent;
 
     if (username === "") return {
         state: QueueStateEnum.NoClient,
@@ -202,11 +195,11 @@ async function getQueueState(lockfileContent: any): Promise<QueueState> {
         }
         else if (clientResponse.state === "InProgress") {
             // Game has been found, check whats user response
-            if(clientResponse.playerResponse === "Declined") return {
+            if (clientResponse.playerResponse === "Declined") return {
                 state: QueueStateEnum.Declined,
                 timer: clientResponse.timer
             }
-            else if(clientResponse.playerResponse === "Accepted") return {
+            else if (clientResponse.playerResponse === "Accepted") return {
                 state: QueueStateEnum.Accepted,
                 timer: clientResponse.timer
             }
@@ -219,8 +212,8 @@ async function getQueueState(lockfileContent: any): Promise<QueueState> {
             state: QueueStateEnum.Unknown,
             timer: 0
         }
-    } 
-    catch(err) {
+    }
+    catch (err) {
         console.warn(err);
         return {
             state: QueueStateEnum.Error,
@@ -231,7 +224,7 @@ async function getQueueState(lockfileContent: any): Promise<QueueState> {
 
 function acceptQueue(lockfileContent: any): void {
 
-    const {protocol, port, username, password} = lockfileContent;
+    const { protocol, port, username, password } = lockfileContent;
 
     try {
         const endpointName = "lol-matchmaking/v1/ready-check/accept";
@@ -241,15 +234,15 @@ function acceptQueue(lockfileContent: any): void {
         connections.fetchJSON(url, { method: 'POST' }).then((clientResponse) => {
             console.log(clientResponse);
         });
-    } 
-    catch(err) {
+    }
+    catch (err) {
         console.warn(err);
     }
 }
 
 function declineQueue(lockfileContent: any): void {
 
-    const {protocol, port, username, password} = lockfileContent;
+    const { protocol, port, username, password } = lockfileContent;
 
     try {
         const endpointName = "lol-matchmaking/v1/ready-check/decline";
@@ -259,8 +252,8 @@ function declineQueue(lockfileContent: any): void {
         connections.fetchJSON(url, { method: 'POST' }).then((clientResponse) => {
             console.log(clientResponse);
         });
-    } 
-    catch(err) {
+    }
+    catch (err) {
         console.warn(err);
     }
 }
@@ -277,7 +270,7 @@ const noInQueueMessage = (
 const inQueueMessage = (acceptTimeThreshold: number) => (
     <Alert severity="info">
         <AlertTitle>You are in queue or in champion select</AlertTitle>
-        Everthing looks good!<br/>
+        Everthing looks good!<br />
         Worry not, any game will be <strong>accepted after {acceptTimeThreshold} {(Math.round(acceptTimeThreshold) === 1) ? "second" : "seconds"}</strong> since found.
         You will have some time to <strong>decline</strong>!
     </Alert>
@@ -288,8 +281,8 @@ const gameFoundMessage = (timeToAccept: number, lockfileContent: any) => (
         <AlertTitle>Game found!</AlertTitle>
         Game has been found, it will be accepted in <strong>{timeToAccept} {(Math.round(timeToAccept) === 1) ? "second" : "seconds"}</strong>!
         If you don't wish to play right now <strong>decline</strong> ASAP!
-        <br/>
-        <br/>
+        <br />
+        <br />
         <Button onClick={() => declineQueue(lockfileContent)} variant="contained" color="error">DECLINE</Button>
     </Alert>
 );
@@ -298,8 +291,8 @@ const gameAcceptedMessage = (lockfileContent: any) => (
     <Alert severity="success">
         <AlertTitle>Game accepted</AlertTitle>
         Game has been <strong>accepted</strong>, have fun!
-        <br/>
-        <br/>
+        <br />
+        <br />
         <Button onClick={() => declineQueue(lockfileContent)} variant="contained" color="error">FORCE DECLINE ANYWAY</Button>
     </Alert>
 );
@@ -308,8 +301,8 @@ const gameDeclinedMessage = (lockfileContent: any) => (
     <Alert severity="error">
         <AlertTitle>Game declined</AlertTitle>
         Game has been <strong>declined</strong>, see you later!
-        <br/>
-        <br/>
+        <br />
+        <br />
         <Button onClick={() => acceptQueue(lockfileContent)} variant="contained" color="success">FORCE ACCEPT ANYWAY</Button>
     </Alert>
 );
@@ -317,8 +310,8 @@ const gameDeclinedMessage = (lockfileContent: any) => (
 const unknownStateMessage = (
     <Alert severity="info">
         <AlertTitle>State is unknown</AlertTitle>
-        Can't tell what is happening.<br/>
-        Smart Accept is likely <strong>disabled</strong>.<br/>
+        Can't tell what is happening.<br />
+        Smart Accept is likely <strong>disabled</strong>.<br />
         If Smart Accept is <strong>enabled</strong> and problem persists please <strong>restart</strong> your League client.
     </Alert>
 );

@@ -51,9 +51,9 @@ export const SmartBan: FC<any> = (): ReactElement => {
             banList: banList,
         }
 
-        if(settingsLoaded)
+        if (settingsLoaded)
             files.saveJSON(dataToSave, filePath, 4);
-            
+
     }, [enabled, banList])
 
     const giveUpControl = () => {
@@ -68,27 +68,27 @@ export const SmartBan: FC<any> = (): ReactElement => {
             getChampionSelectState(lockfileContent).then((state) => {
                 const phase = state.phase;
                 setChampionSelectPhase(phase);
-                
+
                 const championId = state.championId;
                 const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0;
-                
+
                 if (controlTakenNow)
                     setUserTookControl(true);
-                
+
                 setLastChampionId(championId);
-                console.log({state, lastChampionId, championId, controlTakenNow, phase});
-                    
+                console.log({ state, lastChampionId, championId, controlTakenNow, phase });
+
                 const isInBanningPhase = phase === ChampionSelectPhase.Banning || phase === ChampionSelectPhase.BanHovered;
-                
+
                 if (isInBanningPhase && !userTookControl && !controlTakenNow) {
                     const idBanList = banList.map(name => parseInt(champions[name]));
-                    
+
                     const picks = state.picks;
                     const bans = state.bans;
                     const noBanList = bans.concat(picks).filter(noBan => noBan !== championId);
-                    
-                    console.log({idBanList, bans, picks, noBanList, championId, lastChampionId});
-                    
+
+                    console.log({ idBanList, bans, picks, noBanList, championId, lastChampionId });
+
                     const championToBan = idBanList.find(ban => !noBanList.includes(ban));
 
                     if (championToBan) {
@@ -98,9 +98,9 @@ export const SmartBan: FC<any> = (): ReactElement => {
                         }
                     }
                     else
-                        console.warn({messaage: "No champion from ban list matches criteria", banList, noBanList});
+                        console.warn({ messaage: "No champion from ban list matches criteria", banList, noBanList });
                 }
-                
+
                 const idlePhases = [ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInChampionSelect, ChampionSelectPhase.InChampionSelect, ChampionSelectPhase.Unknown];
                 if (idlePhases.includes(phase) || championSelectPhase !== phase)
                     giveUpControl();
@@ -119,49 +119,49 @@ export const SmartBan: FC<any> = (): ReactElement => {
 
     // clearing state when turned off
     useEffect(() => {
-        if(!enabled)
+        if (!enabled)
             setChampionSelectPhase(initialPhase);
     }, [enabled]);
 
     let currentMessage = unknownMessage;
 
-    switch(championSelectPhase) { 
-        case ChampionSelectPhase.NoClient: { 
+    switch (championSelectPhase) {
+        case ChampionSelectPhase.NoClient: {
             currentMessage = noClientMessage;
-            break; 
-        } 
-        case ChampionSelectPhase.NoInChampionSelect: { 
+            break;
+        }
+        case ChampionSelectPhase.NoInChampionSelect: {
             currentMessage = noInChampionSelectMessage;
-            break; 
+            break;
         }
-        case ChampionSelectPhase.InChampionSelect: { 
+        case ChampionSelectPhase.InChampionSelect: {
             currentMessage = inChampionSelectMessage;
-            break; 
+            break;
         }
-        case ChampionSelectPhase.Planning: { 
+        case ChampionSelectPhase.Planning: {
             currentMessage = planningMessage;
-            break; 
+            break;
         }
-        case ChampionSelectPhase.Banning: 
+        case ChampionSelectPhase.Banning:
         case ChampionSelectPhase.BanHovered:
-        { 
-            currentMessage = banningMessage;
-            break;
-        }
-        case ChampionSelectPhase.Picking: 
+            {
+                currentMessage = banningMessage;
+                break;
+            }
+        case ChampionSelectPhase.Picking:
         case ChampionSelectPhase.PickHovered:
-        { 
-            currentMessage = pickingMessage;
-            break;
-        }
-        case ChampionSelectPhase.Picked: { 
+            {
+                currentMessage = pickingMessage;
+                break;
+            }
+        case ChampionSelectPhase.Picked: {
             currentMessage = pickedMessage;
             break;
         }
-        case ChampionSelectPhase.Error: { 
+        case ChampionSelectPhase.Error: {
             currentMessage = errorStateMessage("Don't know what happened but it's not good! Maybe client isn't running?");
             break;
-        } 
+        }
     }
 
 
@@ -169,15 +169,6 @@ export const SmartBan: FC<any> = (): ReactElement => {
         setEnabled(event.target.checked);
     };
 
-    const enablingSwitch = (
-        <Switch
-            color='success'
-            checked={enabled}
-            onChange={handleSwitchChange}
-        />
-    );
-
-    const switchLabel = (<>Enable <strong>Smart Ban</strong></>);
     const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
 
     const controlMessage = userTookControl ? userInControl(giveUpControl) : appInControl;
@@ -186,11 +177,14 @@ export const SmartBan: FC<any> = (): ReactElement => {
         <Container>
             <Stack spacing={3}>
                 <Stack>
-                    <FormControlLabel control={enablingSwitch} label={switchLabel} />
+                    <FormControlLabel
+                        control={<Switch checked={enabled} onChange={handleSwitchChange} />}
+                        label={<Typography>Enable <strong>Smart Ban</strong></Typography>}
+                    />
                 </Stack>
 
-                { enabled ? (<Stack>{controlMessage}</Stack>) : "" }
-                
+                {enabled ? (<Stack>{controlMessage}</Stack>) : ""}
+
                 <Stack>
                     {currentMessage}
                 </Stack>
@@ -216,8 +210,8 @@ export const SmartBan: FC<any> = (): ReactElement => {
                 <Stack>
                     <Alert severity="info">
                         <AlertTitle>How does it work?</AlertTitle>
-                        When banning phase starts, 
-                        app will hover first champion from your list that is not <strong>already banned</strong> and 
+                        When banning phase starts,
+                        app will hover first champion from your list that is not <strong>already banned</strong> and
                         is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally.
 
                         <ul>

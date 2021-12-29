@@ -23,7 +23,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
                             <Typography>
-                                Champion Data
+                                Settings
                             </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
