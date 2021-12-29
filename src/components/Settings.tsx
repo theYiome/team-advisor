@@ -1,15 +1,26 @@
 import React, { ReactElement, FC, useState, useEffect, useContext } from 'react';
-import { Button, ButtonGroup, Container, FormControlLabel, Paper, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, ButtonGroup, Chip, FormControlLabel, Paper, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import * as ddragon from '../jsutils/ddragon.js';
 import * as files from "../libs/files";
 
 import { ChampionsContext } from './ChampionsContext';
-import { protocol } from 'electron';
-import * as someutils from '../index';
-const autoLauncher: any = null;
+
+let autoLauncher: any = null;
+
+try {
+    const AutoLaunch = require('auto-launch');
+    console.log("Autloauner inaisfdthasdlf;asdfj;faskdjf")
+    autoLauncher = new AutoLaunch({
+        name: "Team Advisor",
+        isHidden: true
+    });
+} catch (error) {
+    console.warn("Initializing AutoLaunch failed!", error);
+}
+
 
 const filePath = "data/champions.json";
-
 
 export const Settings: FC<any> = (): ReactElement => {
 
@@ -17,13 +28,13 @@ export const Settings: FC<any> = (): ReactElement => {
     const [champions, setChampions] = useContext(ChampionsContext);
 
     useEffect(() => {
-        try {
-            files.loadJSON(filePath).then((localChampionData) => {
-                setChampions(localChampionData);
-            });
-        } catch (error) {
-            console.warn(error);
-        }
+
+        const loadChampionDataFromFile = () => files.loadJSON(filePath).then((localChampionData) => setChampions(localChampionData));
+
+        updateStaticChampionData().catch(loadChampionDataFromFile);
+
+        if (autoLauncher)
+            autoLauncher.isEnabled().then((isEnabled: boolean) => setAutoLauncherEnabled(isEnabled));
     }, []);
 
     const updateStaticChampionData = async () => {
@@ -88,12 +99,26 @@ export const Settings: FC<any> = (): ReactElement => {
             <FormControlLabel
                 control={<Switch checked={autoLauncherEnabled} onChange={handleSwitchChange} />}
                 label={<Typography><strong>Launch on Startup</strong></Typography>}
+                disabled={autoLauncher ? false : true}
             />
             <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>
-            <Typography variant='h6'>
-                Champions
-            </Typography>
-            {champions ? data_table : "Nothing to display"}
+            {
+                champions ? (
+                    <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography>
+                                Champion data for patch <strong>{champions["patch"]}</strong>
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            {data_table}
+                        </AccordionDetails>
+                    </Accordion>
+                )
+                    : (
+                        "Nothing to display"
+                    )
+            }
         </Stack>
     );
 }

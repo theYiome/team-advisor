@@ -24,16 +24,21 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 }
 
 const createWindow = (): void => {
+    console.log(process.argv);
+    const startHidden = process.argv.includes("--hidden");
+    
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         height: 700,
         width: 800,
+        show: !startHidden,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
             nodeIntegrationInWorker: true
         }
     });
+
 
     // and load the index.html of the app.
     console.log("MAIN_WINDOW_WEBPACK_ENTRY", MAIN_WINDOW_WEBPACK_ENTRY);
@@ -100,23 +105,3 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-
-let autoLauncher: any = null; 
-
-// if (!isDevelopment) {
-//     const AutoLaunch = require('auto-launch');
-//     console.log("Autloauner inaisfdthasdlf;asdfj;faskdjf")
-//     autoLauncher = new AutoLaunch({
-//         name: "Team Advisor",
-//         isHidden: true
-//     });
-// }
-
-export {autoLauncher};
-// Checking if autoLaunch is enabled, if not then enabling it.
-// autoLauncher.isEnabled().then(function (isEnabled: boolean) {
-//     if (isEnabled) return;
-//     autoLauncher.enable();
-// }).catch(function (err: any) {
-//     throw err;
-// });
