@@ -4,3 +4,39 @@ body {
     max-width: 100%;
     padding: 2rem;
 }
+
+
+/* https://stackoverflow.com/questions/59588519/how-do-you-make-your-own-customize-the-scroll-bar-in-electron */
+.scroll_enabled {
+    overflow: scroll;
+}
+
+.scroll_enabled::-webkit-scrollbar {
+    width: 20px;
+}
+
+.scroll_enabled::-webkit-scrollbar-corner {
+    background: rgba(0,0,0,0);
+}
+.scroll_enabled::-webkit-scrollbar-thumb {
+    background-image: linear-gradient(#195ad2, #083c9e, #9c27b0);
+    border-radius: 12px;
+    border: 5px solid rgba(0,0,0,0);
+    background-clip: content-box;
+    min-width: 32px;
+    min-height: 32px;
+}
+.scroll_enabled::-webkit-scrollbar-track {
+    background-color: rgba(0,0,0,0);
+}
+
+/* 
+some colors
+#a7caed
+#195ad2
+#083c9e
+
+#d9ace0
+#9c27b0
+#821895
+*/
