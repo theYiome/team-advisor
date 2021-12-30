@@ -15,7 +15,7 @@ export const Team: FC<TeamProp> = (props: TeamProp): ReactElement => {
 
     const renderSummoners = () => {
         // console.log(summoners, localPlayerCellId);
-        return (!summoners || summoners.length < 1) ? <LinearProgress color="secondary"/> : summoners.map(
+        return (!summoners || summoners.length < 1) ? <LinearProgress/> : summoners.map(
             (s: any) => {
                 console.log(s);
                 

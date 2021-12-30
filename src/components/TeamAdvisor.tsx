@@ -10,85 +10,91 @@ import { TeamBuilder } from './TeamBuilder';
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
 
-import { Accordion, AccordionDetails, AccordionSummary, Button, Paper, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Container, Paper, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import '@fontsource/roboto/400.css';
 
 
 export const TeamAdvisor: FC<any> = (): ReactElement => {
-    const headerStyle = {backgroundImage: "linear-gradient(to right, #FFF, #DDD, #EEE)"};
-    const headerStyle2 = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #CCC)"};
+    const headerStyle = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #a7caed)"};
+    const headerStyle2 = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #e0ebfa)"};
+    const expandIcon = (<ExpandMoreIcon color="action" sx={{ color: "black" }} fontSize="large"/>);
+    const accordionDetailsStyle = {mt: 2};
+    const headerVariant = "h6";
     return (
         <LockfileProvider>
             <ChampionsProvider>
-                <Stack sx={{boxShadow: 8, p: 8}} spacing={1}>
+                <Container sx={{boxShadow: 8, pl: 8, pr: 8, pt: 4, pb: 4}}>
+                    <Typography variant="h4" color="#083c9e" marginBottom={2}>
+                        Team Advisor
+                    </Typography>
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon/>} sx={headerStyle2} component={Paper}>
-                            <Typography>
+                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle2} component={Paper}>
+                            <Typography variant={headerVariant}>
                                 Settings
                             </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={accordionDetailsStyle}>
                             <Settings></Settings>
                         </AccordionDetails>
                     </Accordion>
 
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon/>} sx={headerStyle2} component={Paper}>
-                            <Typography>
+                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle2} component={Paper}>
+                            <Typography variant={headerVariant}>
                                 League Client
                             </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={accordionDetailsStyle}>
                             <ClientAccess></ClientAccess>
                         </AccordionDetails>
                     </Accordion>
 
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon/>} sx={headerStyle} component={Paper}>
-                            <Typography>
+                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle} component={Paper}>
+                            <Typography variant={headerVariant}>
                                 Smart Accept
                             </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={accordionDetailsStyle}>
                             <SmartAccept></SmartAccept>
                         </AccordionDetails>
                     </Accordion>
                     
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon/>} sx={headerStyle} component={Paper}>
-                            <Typography>
+                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle} component={Paper}>
+                            <Typography variant={headerVariant}>
                                 Smart Ban
                             </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={accordionDetailsStyle}>
                             <SmartBan></SmartBan>
                         </AccordionDetails>
                     </Accordion>
 
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon/>} sx={headerStyle} component={Paper}>
-                            <Typography>
+                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle} component={Paper}>
+                            <Typography variant={headerVariant}>
                                 Lobby State
                             </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={accordionDetailsStyle}>
                             <Lobby></Lobby>
                         </AccordionDetails>
                     </Accordion>
 
                     <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon/>} sx={headerStyle2} component={Paper}>
-                            <Typography>
+                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle2} component={Paper}>
+                            <Typography variant={headerVariant}>
                                 Team Builder
                             </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={accordionDetailsStyle}>
                             <TeamBuilder></TeamBuilder>
                         </AccordionDetails>
                     </Accordion>
 
-                </Stack>
+                </Container>
             </ChampionsProvider>
         </LockfileProvider>
     );

@@ -3,6 +3,7 @@ body {
     margin: auto;
     max-width: 100%;
     padding: 2rem;
+    /* background-image: linear-gradient(to right, #e0ebfa, #FFF, #FFF, #FFF); */
 }
 
 
@@ -19,7 +20,7 @@ body {
     background: rgba(0,0,0,0);
 }
 .scroll_enabled::-webkit-scrollbar-thumb {
-    background-image: linear-gradient(#195ad2, #083c9e, #9c27b0);
+    background-image: linear-gradient(#195ad2, #083c9e, #a7caed);
     border-radius: 12px;
     border: 5px solid rgba(0,0,0,0);
     background-clip: content-box;
