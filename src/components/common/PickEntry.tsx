@@ -45,7 +45,7 @@ const PickEntry: FC<PickEntryProp> = ({
     );
 
     const inputOutput = (
-        <Stack spacing={1} sx={{ width: 1 }}>
+        <Stack spacing={1} sx={{ width: 1 }} className="pick-entry">
             <Stack spacing={2}>
                 <SingleChampionPicker
                     championNames={champions}

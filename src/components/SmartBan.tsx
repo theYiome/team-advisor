@@ -24,7 +24,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
     const initialPhase = ChampionSelectPhase.Unknown;
 
     const [championSelectPhase, setChampionSelectPhase] = useState(initialPhase);
-    const [banList, setBanList] = useState(["Riven"]);
+    const [banList, setBanList] = useState(["Jax", "Viktor", "Kassadin"]);
 
     const [lastChampionId, setLastChampionId] = useState(0);
     const [userTookControl, setUserTookControl] = useState(false);

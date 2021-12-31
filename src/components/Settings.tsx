@@ -10,7 +10,6 @@ let autoLauncher: any = null;
 
 try {
     const AutoLaunch = require('auto-launch');
-    console.log("Autloauner inaisfdthasdlf;asdfj;faskdjf")
     autoLauncher = new AutoLaunch({
         name: "Team Advisor",
         isHidden: true

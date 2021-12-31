@@ -1,7 +1,9 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Autocomplete } from '@mui/material';
+import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Autocomplete, Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 
 import * as files from '../libs/files';
 
@@ -11,6 +13,8 @@ import { ChampionsContext } from './ChampionsContext';
 import { noClientMessage, errorStateMessage } from './common/CommonMessages';
 import { ChampionSelectPhase, getChampionSelectState, hoverChampion } from '../componentLibs/championSelect';
 import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './common/ChampionSelectMessages';
+
+import { MultipleChampionPicker } from './common/ChampionRolePicker';
 
 const filePath = "settings/smartpick.settings.json";
 
@@ -23,7 +27,12 @@ export const SmartPick: FC<any> = (): ReactElement => {
     const initialPhase = ChampionSelectPhase.Unknown;
 
     const [championSelectPhase, setChampionSelectPhase] = useState(initialPhase);
-    const [banList, setBanList] = useState(["Riven"]);
+
+    const [topChampionList, setTopChampionList] = useState(["DrMundo", "Shen"]);
+    const [jungleChampionList, setJungleChampionList] = useState(["Nunu", "Zac"]);
+    const [middleChampionList, setMiddleChampionList] = useState(["Viktor", "Zed"]);
+    const [bottomChampionList, setBottomChampionList] = useState(["Jinx", "Jhin"]);
+    const [supportChampionList, setSupportChampionList] = useState(["Pyke", "Thresh"]);
 
     const [lastChampionId, setLastChampionId] = useState(0);
     const [userTookControl, setUserTookControl] = useState(false);
@@ -36,7 +45,13 @@ export const SmartPick: FC<any> = (): ReactElement => {
     useEffect(() => {
         files.loadJSON(filePath).then((settings) => {
             setEnabled(settings.enabled);
-            setBanList(settings.banList);
+
+            setTopChampionList(settings.topChampionList);
+            setJungleChampionList(settings.jungleChampionList);
+            setMiddleChampionList(settings.middleChampionList);
+            setBottomChampionList(settings.bottomChampionList);
+            setSupportChampionList(settings.supportChampionList);
+
             setSettingsLoaded(true);
         }).catch(error => {
             console.warn(error);
@@ -47,14 +62,18 @@ export const SmartPick: FC<any> = (): ReactElement => {
     // save settings to file when settings are updated
     useEffect(() => {
         const dataToSave = {
-            enabled: enabled,
-            banList: banList,
+            enabled,
+            topChampionList,
+            jungleChampionList,
+            middleChampionList,
+            bottomChampionList,
+            supportChampionList
         }
 
         if (settingsLoaded)
             files.saveJSON(dataToSave, filePath, 4);
 
-    }, [enabled, banList])
+    }, [enabled, topChampionList, jungleChampionList, middleChampionList, bottomChampionList, supportChampionList])
 
     const giveUpControl = () => {
         setUserTookControl(false);
@@ -80,26 +99,26 @@ export const SmartPick: FC<any> = (): ReactElement => {
 
                 const isInBanningPhase = phase === ChampionSelectPhase.Banning || phase === ChampionSelectPhase.BanHovered;
 
-                if (isInBanningPhase && !userTookControl && !controlTakenNow) {
-                    const idBanList = banList.map(name => parseInt(champions[name]));
+                // if (isInBanningPhase && !userTookControl && !controlTakenNow) {
+                //     const idBanList = banList.map(name => parseInt(champions[name]));
 
-                    const picks = state.picks;
-                    const bans = state.bans;
-                    const noBanList = bans.concat(picks).filter(noBan => noBan !== championId);
+                //     const picks = state.picks;
+                //     const bans = state.bans;
+                //     const noBanList = bans.concat(picks).filter(noBan => noBan !== championId);
 
-                    console.log({ idBanList, bans, picks, noBanList, championId, lastChampionId });
+                //     console.log({ idBanList, bans, picks, noBanList, championId, lastChampionId });
 
-                    const championToBan = idBanList.find(ban => !noBanList.includes(ban));
+                //     const championToBan = idBanList.find(ban => !noBanList.includes(ban));
 
-                    if (championToBan) {
-                        if (championToBan !== championId) {
-                            setLastChampionId(championToBan);
-                            hoverChampion(lockfileContent, state.actionId, championToBan);
-                        }
-                    }
-                    else
-                        console.warn({ messaage: "No champion from ban list matches criteria", banList, noBanList });
-                }
+                //     if (championToBan) {
+                //         if (championToBan !== championId) {
+                //             setLastChampionId(championToBan);
+                //             hoverChampion(lockfileContent, state.actionId, championToBan);
+                //         }
+                //     }
+                //     else
+                //         console.warn({ messaage: "No champion from ban list matches criteria", banList, noBanList });
+                // }
 
                 const idlePhases = [ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInChampionSelect, ChampionSelectPhase.InChampionSelect, ChampionSelectPhase.Unknown];
                 if (idlePhases.includes(phase) || championSelectPhase !== phase)
@@ -115,7 +134,7 @@ export const SmartPick: FC<any> = (): ReactElement => {
 
         return () => clearInterval(periodicUpdate);
 
-    }, [enabled, lockfileContent, settingsLoaded, banList, userTookControl, lastChampionId, championSelectPhase]);
+    }, [enabled, lockfileContent, settingsLoaded, userTookControl, lastChampionId, championSelectPhase]);
 
     // clearing state when turned off
     useEffect(() => {
@@ -171,6 +190,8 @@ export const SmartPick: FC<any> = (): ReactElement => {
 
     const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
 
+    const patch = champions["patch"];
+
     const controlMessage = userTookControl ? userInControl(giveUpControl) : appInControl;
 
     return (
@@ -179,7 +200,7 @@ export const SmartPick: FC<any> = (): ReactElement => {
                 <Stack>
                     <FormControlLabel
                         control={<Switch checked={enabled} onChange={handleSwitchChange} />}
-                        label={<Typography>Enable <strong>Smart Ban</strong></Typography>}
+                        label={<Typography>Enable <strong>Smart Pick</strong></Typography>}
                     />
                 </Stack>
 
@@ -188,28 +209,54 @@ export const SmartPick: FC<any> = (): ReactElement => {
                 <Stack>
                     {currentMessage}
                 </Stack>
-                <Stack>
-                    <Typography variant="h6">Your champion pool</Typography>
-                    <Autocomplete
-                        multiple
-                        options={championNames}
-                        value={banList}
-                        onChange={(event, newValue) => {
-                            console.log(newValue);
-                            setBanList(newValue);
-                        }}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                variant="standard"
-                                label="Ban list"
-                                placeholder="champions to ban in order"
-                            />
-                        )}
+                <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography>
+                            Champion pool
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                <Stack spacing={2}>
+                    <MultipleChampionPicker
+                        championNames={championNames}
+                        currentList={topChampionList}
+                        patch={patch}
+                        onChange={(newList) => setTopChampionList(newList)}
+                        label="Top"
+                    />
+                    <MultipleChampionPicker
+                        championNames={championNames}
+                        currentList={jungleChampionList}
+                        patch={patch}
+                        onChange={(newList) => setJungleChampionList(newList)}
+                        label="Jungle"
+                    />
+                    <MultipleChampionPicker
+                        championNames={championNames}
+                        currentList={middleChampionList}
+                        patch={patch}
+                        onChange={(newList) => setMiddleChampionList(newList)}
+                        label="Middle"
+                    />
+                    <MultipleChampionPicker
+                        championNames={championNames}
+                        currentList={bottomChampionList}
+                        patch={patch}
+                        onChange={(newList) => setBottomChampionList(newList)}
+                        label="Bottom"
+                    />
+                    <MultipleChampionPicker
+                        championNames={championNames}
+                        currentList={supportChampionList}
+                        patch={patch}
+                        onChange={(newList) => setSupportChampionList(newList)}
+                        label="Support"
                     />
                 </Stack>
+                        </AccordionDetails>
+                    </Accordion>
                 <Stack>
-                    <Alert severity="info">
+                    {/* <Alert severity="info">
                         <AlertTitle>How does it work?</AlertTitle>
                         When banning phase starts,
                         app will hover first champion from your list that is not <strong>already banned</strong> and
@@ -220,7 +267,7 @@ export const SmartPick: FC<any> = (): ReactElement => {
                             <li>App will adjust this hover in real time.</li>
                             <li>Hovering something by yourself takes control from the app.</li>
                         </ul>
-                    </Alert>
+                    </Alert> */}
                 </Stack>
             </Stack>
         </Container>

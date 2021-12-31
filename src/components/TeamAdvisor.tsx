@@ -13,6 +13,7 @@ import { ChampionsProvider } from './ChampionsContext';
 import { Accordion, AccordionDetails, AccordionSummary, Container, Paper, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import '@fontsource/roboto/400.css';
+import { SmartPick } from './SmartPick';
 
 
 export const TeamAdvisor: FC<any> = (): ReactElement => {
@@ -77,11 +78,11 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                     <Accordion>
                         <AccordionSummary expandIcon={expandIcon} sx={headerStyle} component={Paper}>
                             <Typography variant={headerVariant}>
-                                Lobby State
+                                Smart Pick
                             </Typography>
                         </AccordionSummary>
                         <AccordionDetails sx={accordionDetailsStyle}>
-                            <Lobby></Lobby>
+                            <SmartPick></SmartPick>
                         </AccordionDetails>
                     </Accordion>
 

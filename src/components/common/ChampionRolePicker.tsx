@@ -43,6 +43,7 @@ const MultipleChampionPicker: FC<MultipleChampionPickerProp> = ({
             />
         }
         disabled={disabled}
+        groupBy={(option) => option[0]}
     />
 );
 
@@ -89,6 +90,7 @@ const SingleChampionPicker: FC<SingleChampionPickerProp> = ({
             />
         }
         disabled={disabled}
+        groupBy={(option) => option[0]}
     />
 );
 
