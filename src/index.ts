@@ -26,7 +26,7 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 const createWindow = (): void => {
     console.log(process.argv);
     const startHidden = process.argv.includes("--hidden");
-    
+
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         height: 700,
@@ -65,12 +65,12 @@ const createWindow = (): void => {
 
     const contextMenu = Menu.buildFromTemplate([
         {
-            label: 'Show App', click: function () {
-                mainWindow.show();
-            }
+            label: 'Show App',
+            click: () => mainWindow.show()
         },
         {
-            label: 'Quit', click: function () {
+            label: 'Quit',
+            click: () => {
                 mainWindow.destroy();
                 app.quit();
             }
@@ -78,11 +78,10 @@ const createWindow = (): void => {
     ]);
 
     tray.on('click', function (e) {
-        if (mainWindow.isVisible()) {
+        if (mainWindow.isVisible())
             mainWindow.hide()
-        } else {
+        else
             mainWindow.show()
-        }
     });
 
     tray.setToolTip('Team Advisor');
