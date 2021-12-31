@@ -71,6 +71,7 @@ export const TeamBuilder: FC<any> = (): ReactElement => {
                             champions={availableChampionNames}
                             roles={roles}
                             onChange={(newChamionName: string, newRoleName: string) => onLeftTeamEntryChange(newChamionName, newRoleName, index)}
+                            reverse
                         />
                     ))}
                 </Stack>
