@@ -1,6 +1,6 @@
 import { Container, Button, Stack, Divider, LinearProgress } from '@mui/material';
 import React, { ReactElement, FC, useState, useContext } from 'react';
-import { Team, TeamProp } from './Team';
+import { Team, TeamProp } from './common/Team';
 
 import { LockfileContext } from './LockfileContext';
 import { ChampionsContext } from './ChampionsContext';
@@ -9,7 +9,7 @@ import * as connections from '../libs/connections'
 import * as files from '../libs/files'
 
 import { ChampionSelectPhase, getChampionSelectState, hoverChampion } from '../componentLibs/championSelect';
-import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './ChampionSelectMessages';
+import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './common/ChampionSelectMessages';
 
 
 const initialState: any = {

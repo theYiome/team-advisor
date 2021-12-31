@@ -1,7 +1,7 @@
 import { LinearProgress, CircularProgress, Avatar, Divider, Stack, Typography } from '@mui/material';
 import React, {FC, ReactElement, useContext, useState} from 'react';
 
-import { ChampionsContext } from './ChampionsContext';
+import { ChampionsContext } from '../ChampionsContext';
 
 export type TeamProp = {
     summoners: Array<any>,

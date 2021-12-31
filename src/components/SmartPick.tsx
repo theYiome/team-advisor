@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Typography, Stack, Alert, AlertTitle, Switch, FormControlLabel } from '@mui/material';
+import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Autocomplete } from '@mui/material';
 
 import * as files from '../libs/files';
 
@@ -11,11 +11,10 @@ import { ChampionsContext } from './ChampionsContext';
 import { noClientMessage, errorStateMessage } from './common/CommonMessages';
 import { ChampionSelectPhase, getChampionSelectState, hoverChampion } from '../componentLibs/championSelect';
 import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './common/ChampionSelectMessages';
-import { MultipleChampionPicker } from './common/ChampionRolePicker';
 
-const filePath = "settings/smartban.settings.json";
+const filePath = "settings/smartpick.settings.json";
 
-export const SmartBan: FC<any> = (): ReactElement => {
+export const SmartPick: FC<any> = (): ReactElement => {
 
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [enabled, setEnabled] = useState(false);
@@ -172,8 +171,6 @@ export const SmartBan: FC<any> = (): ReactElement => {
 
     const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
 
-    const patch = champions["patch"];
-
     const controlMessage = userTookControl ? userInControl(giveUpControl) : appInControl;
 
     return (
@@ -192,12 +189,23 @@ export const SmartBan: FC<any> = (): ReactElement => {
                     {currentMessage}
                 </Stack>
                 <Stack>
-                    <MultipleChampionPicker
-                        championNames={championNames}
-                        currentList={banList}
-                        patch={patch}
-                        onChange={(newBanList) => setBanList(newBanList)}
-                        label="Ban list"
+                    <Typography variant="h6">Your champion pool</Typography>
+                    <Autocomplete
+                        multiple
+                        options={championNames}
+                        value={banList}
+                        onChange={(event, newValue) => {
+                            console.log(newValue);
+                            setBanList(newValue);
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="standard"
+                                label="Ban list"
+                                placeholder="champions to ban in order"
+                            />
+                        )}
                     />
                 </Stack>
                 <Stack>

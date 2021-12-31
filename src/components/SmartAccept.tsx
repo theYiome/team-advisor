@@ -1,12 +1,12 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel } from '@mui/material';
+import { Button, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel } from '@mui/material';
 import { LockfileContext } from './LockfileContext';
 import * as files from '../libs/files';
 import * as connections from '../libs/connections'
 
-import { noClientMessage, errorStateMessage } from './CommonMessages';
+import { noClientMessage, errorStateMessage } from './common/CommonMessages';
 
 /*
     GET /lol-matchmaking/v1/ready-check	

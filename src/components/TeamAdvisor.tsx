@@ -1,4 +1,4 @@
-import React, { ReactElement, FC, useState, useContext } from 'react';
+import React, { ReactElement, FC } from 'react';
 
 import { ClientAccess } from './ClientAccess';
 import { Lobby } from './Lobby';
@@ -18,6 +18,8 @@ import '@fontsource/roboto/400.css';
 export const TeamAdvisor: FC<any> = (): ReactElement => {
     const headerStyle = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #a7caed)"};
     const headerStyle2 = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #e0ebfa)"};
+    const headerStyle3 = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #fff4e5)"};
+    const headerStyle4 = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #e6f0ff)"};
     const expandIcon = (<ExpandMoreIcon color="action" sx={{ color: "black" }} fontSize="large"/>);
     const accordionDetailsStyle = {mt: 2};
     const headerVariant = "h6";
@@ -84,7 +86,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                     </Accordion>
 
                     <Accordion>
-                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle2} component={Paper}>
+                        <AccordionSummary expandIcon={expandIcon} sx={headerStyle3} component={Paper}>
                             <Typography variant={headerVariant}>
                                 Team Builder
                             </Typography>
