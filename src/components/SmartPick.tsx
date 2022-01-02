@@ -11,7 +11,7 @@ import { LockfileContext } from './LockfileContext';
 import { ChampionsContext } from './ChampionsContext';
 
 import { noClientMessage, errorStateMessage } from './common/CommonMessages';
-import { ChampionSelectPhase, getChampionSelectState, hoverChampion } from '../componentLibs/championSelect';
+import { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAction } from '../componentLibs/championSelect';
 import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './common/ChampionSelectMessages';
 
 import { MultipleChampionPicker } from './common/ChampionRolePicker';
@@ -27,12 +27,28 @@ export const SmartPick: FC<any> = (): ReactElement => {
     const initialPhase = ChampionSelectPhase.Unknown;
 
     const [championSelectPhase, setChampionSelectPhase] = useState(initialPhase);
+    
+    // https://stackoverflow.com/questions/41632942/how-to-measure-time-elapsed-on-javascript
+    const [championSelectActionStartTime, setChampionSelectActionStartTime] = useState(new Date());
+    const [championSelectActionElapsedTime, setChampionSelectActionElapsedTime] = useState(-1);
+
+    const elapsedTimeSinceLastAction = () =>  ((new Date() as any) - (championSelectActionStartTime as any)) / 1000;
 
     const [topChampionList, setTopChampionList] = useState(["DrMundo", "Shen"]);
     const [jungleChampionList, setJungleChampionList] = useState(["Nunu", "Zac"]);
     const [middleChampionList, setMiddleChampionList] = useState(["Viktor", "Zed"]);
     const [bottomChampionList, setBottomChampionList] = useState(["Jinx", "Jhin"]);
     const [supportChampionList, setSupportChampionList] = useState(["Pyke", "Thresh"]);
+
+    const [secondsToAction, setSecondsToAction] = useState(30.5);
+
+    const roleToChampionList: any = {
+        "top": topChampionList,
+        "jungle": jungleChampionList,
+        "middle": middleChampionList,
+        "bottom": bottomChampionList,
+        "utility": supportChampionList
+    };
 
     const [lastChampionId, setLastChampionId] = useState(0);
     const [userTookControl, setUserTookControl] = useState(false);
@@ -87,42 +103,63 @@ export const SmartPick: FC<any> = (): ReactElement => {
             getChampionSelectState(lockfileContent).then((state) => {
                 const phase = state.phase;
                 setChampionSelectPhase(phase);
+                setChampionSelectActionElapsedTime(elapsedTimeSinceLastAction());
 
                 const championId = state.championId;
-                const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0;
-
+                const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0 && championId !== 0;
+                
                 if (controlTakenNow)
-                    setUserTookControl(true);
-
+                setUserTookControl(true);
+                
                 setLastChampionId(championId);
                 console.log({ state, lastChampionId, championId, controlTakenNow, phase });
+                
+                const isInPickingPhase = phase === ChampionSelectPhase.Picking;
+                
+                if (isInPickingPhase && !userTookControl && !controlTakenNow) {
+                    const allPlayers = state.leftTeam.concat(state.rightTeam);
+                    const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
+                    const role = user.assignedPosition as string;
 
-                const isInBanningPhase = phase === ChampionSelectPhase.Banning || phase === ChampionSelectPhase.BanHovered;
+                    let championList: string[] = null;
 
-                // if (isInBanningPhase && !userTookControl && !controlTakenNow) {
-                //     const idBanList = banList.map(name => parseInt(champions[name]));
+                    championList = roleToChampionList[role];
+                    if (!championList) {
+                        console.warn("No assigned role!");
+                        // https://stackoverflow.com/questions/10865025/merge-flatten-an-array-of-arrays
+                        championList = [].concat.apply([], Object.values(roleToChampionList));
+                    }
 
-                //     const picks = state.picks;
-                //     const bans = state.bans;
-                //     const noBanList = bans.concat(picks).filter(noBan => noBan !== championId);
+                    console.log({ championList })
+                    
+                    const idChampionList = championList.map(name => parseInt(champions[name]));
+                    
+                    const picks = state.picks;
+                    const bans = state.bans;
+                    const unavailableChampions = bans.concat(picks).filter(unavailable => unavailable !== championId);
+                    
+                    const choosenChampion = idChampionList.find(pick => !unavailableChampions.includes(pick));
 
-                //     console.log({ idBanList, bans, picks, noBanList, championId, lastChampionId });
+                    console.log({allPlayers, user, role, championList, unavailableChampions, choosenChampion});
 
-                //     const championToBan = idBanList.find(ban => !noBanList.includes(ban));
-
-                //     if (championToBan) {
-                //         if (championToBan !== championId) {
-                //             setLastChampionId(championToBan);
-                //             hoverChampion(lockfileContent, state.actionId, championToBan);
-                //         }
-                //     }
-                //     else
-                //         console.warn({ messaage: "No champion from ban list matches criteria", banList, noBanList });
-                // }
+                    if (choosenChampion) {
+                        if (choosenChampion !== championId) {
+                            setLastChampionId(choosenChampion);
+                            hoverChampion(lockfileContent, state.actionId, choosenChampion);
+                        }
+                    }
+                    else
+                        console.warn({ messaage: "No champion matches criteria", idChampionList, unavailableChampions });
+                }
 
                 const idlePhases = [ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInChampionSelect, ChampionSelectPhase.InChampionSelect, ChampionSelectPhase.Unknown];
-                if (idlePhases.includes(phase) || championSelectPhase !== phase)
+                if (idlePhases.includes(phase) || championSelectPhase !== phase) {
                     giveUpControl();
+                    setChampionSelectActionStartTime(new Date());
+                }
+
+                if (isInPickingPhase && elapsedTimeSinceLastAction() >= secondsToAction)
+                    completeAction(lockfileContent, state.actionId);
             });
         }
 
@@ -130,7 +167,7 @@ export const SmartPick: FC<any> = (): ReactElement => {
             clearInterval(periodicUpdate);
 
         if (enabled)
-            setPeriodicUpdate(setInterval(updateFunction, 500));
+            setPeriodicUpdate(setInterval(updateFunction, 300));
 
         return () => clearInterval(periodicUpdate);
 
@@ -138,6 +175,7 @@ export const SmartPick: FC<any> = (): ReactElement => {
 
     // clearing state when turned off
     useEffect(() => {
+        setChampionSelectActionStartTime(new Date());
         if (!enabled)
             setChampionSelectPhase(initialPhase);
     }, [enabled]);
@@ -162,18 +200,16 @@ export const SmartPick: FC<any> = (): ReactElement => {
             break;
         }
         case ChampionSelectPhase.Banning:
-        case ChampionSelectPhase.BanHovered:
-            {
-                currentMessage = banningMessage;
-                break;
-            }
+        {
+            currentMessage = banningMessage;
+            break;
+        }
         case ChampionSelectPhase.Picking:
-        case ChampionSelectPhase.PickHovered:
-            {
-                currentMessage = pickingMessage;
-                break;
-            }
-        case ChampionSelectPhase.Picked: {
+        {
+            currentMessage = pickingMessage((secondsToAction - championSelectActionElapsedTime).toFixed(1));
+            break;
+        }
+        case ChampionSelectPhase.Done: {
             currentMessage = pickedMessage;
             break;
         }
@@ -217,6 +253,9 @@ export const SmartPick: FC<any> = (): ReactElement => {
                         </AccordionSummary>
                         <AccordionDetails>
                 <Stack spacing={2}>
+                    <Typography>
+                        Remember that you have to own them! App won't work properly if some of the listed champions are unowned.
+                    </Typography>
                     <MultipleChampionPicker
                         championNames={championNames}
                         currentList={topChampionList}

@@ -30,7 +30,7 @@ const PickEntry: FC<PickEntryProp> = ({
     reverse = false
 }: PickEntryProp): ReactElement => {
 
-    const gradientDirection = reverse ? "to right" : "to left";
+    const gradientDirection = reverse ? "to right top" : "to left top";
     const gradientColor = isPlayer ? "#fff4e5" : "#e6f0ff";
     const style = { boxShadow: 1, p: 2, backgroundImage: `linear-gradient(${gradientDirection}, #FFF, #FFF, ${gradientColor})` };
 

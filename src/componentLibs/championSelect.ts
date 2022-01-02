@@ -6,10 +6,8 @@ enum ChampionSelectPhase {
     InChampionSelect,
     Planning,
     Banning,
-    BanHovered,
     Picking,
-    PickHovered,
-    Picked,
+    Done,
     Unknown,
     Error
 }
@@ -20,6 +18,7 @@ async function getChampionSelectState(lockfileContent: any) {
         phase: undefined as ChampionSelectPhase,
         actionId: undefined as number,
         championId: 0 as number,
+        isHovering: false as boolean,
         counter: undefined as number,
         picks: [] as number[],
         bans: [] as number[],
@@ -53,7 +52,7 @@ async function getChampionSelectState(lockfileContent: any) {
     lobbyState.rightTeam = playerTeamId === 2 ? session.myTeam : session.theirTeam;
     
     lobbyState.localPlayerCellId = session.localPlayerCellId;
-    lobbyState.localPlayerTeamId = session.playerTeamId;
+    lobbyState.localPlayerTeamId = session.localPlayerCellId >= 5 ? 1 : 0;
     lobbyState.gameId = session.gameId,
     lobbyState.counter = session.counter;
     
@@ -71,7 +70,7 @@ async function getChampionSelectState(lockfileContent: any) {
     const userActions = getUserActions(session);
     const uncompletedActions = userActions.filter(action => !action.completed);
     if(uncompletedActions.length < 1) {
-        lobbyState.phase = ChampionSelectPhase.Picked;
+        lobbyState.phase = ChampionSelectPhase.Done;
         return lobbyState;
     }
 
@@ -82,19 +81,14 @@ async function getChampionSelectState(lockfileContent: any) {
     else {
         lobbyState.actionId = activeAction.id;
         lobbyState.championId = activeAction.championId;
-        const isHovering = activeAction.championId > 0;
-        
+
+        if (activeAction.championId > 0)
+            lobbyState.isHovering = true;
+
         if(activeAction.type === "ban") 
-            if(isHovering) 
-                lobbyState.phase = ChampionSelectPhase.BanHovered;
-            else 
-                lobbyState.phase = ChampionSelectPhase.Banning;
-        else 
-        if (activeAction.type === "pick")
-            if(isHovering) 
-                lobbyState.phase = ChampionSelectPhase.PickHovered;
-            else 
-                lobbyState.phase = ChampionSelectPhase.Picking;
+            lobbyState.phase = ChampionSelectPhase.Banning;
+        else if (activeAction.type === "pick")
+            lobbyState.phase = ChampionSelectPhase.Picking;
         else
             lobbyState.phase = ChampionSelectPhase.Unknown;
     }
@@ -155,4 +149,4 @@ function getPicks(session: any): number[] {
     return picks;
 }
 
-export { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAction, instantCompleteAction, };
+export { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAction, instantCompleteAction };

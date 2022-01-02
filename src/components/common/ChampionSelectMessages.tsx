@@ -35,10 +35,11 @@ export const banningMessage = (
     </Alert>
 );
 
-export const pickingMessage = (
+export const pickingMessage = (timer: any = null) => (
     <Alert severity="success">
         <AlertTitle>You are picking</AlertTitle>
-        Now it is time to pick your champion.
+        Now it is time to pick your champion.<br/>
+        {timer ? `Lockin in ${timer} seconds` : ""}
     </Alert>
 );
 

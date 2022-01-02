@@ -10,11 +10,13 @@ import { TeamBuilder } from './TeamBuilder';
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
 
-import { Accordion, AccordionDetails, AccordionSummary, Container, Paper, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Container, Paper, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import '@fontsource/roboto/400.css';
 import { SmartPick } from './SmartPick';
 
+
+import { trayIcon228 as icon } from '../imagesBase64';
 
 export const TeamAdvisor: FC<any> = (): ReactElement => {
     const headerStyle = {backgroundImage: "linear-gradient(to right, #FFF, #FFF, #a7caed)"};
@@ -28,9 +30,14 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
         <LockfileProvider>
             <ChampionsProvider>
                 <Container sx={{boxShadow: 8, pl: 8, pr: 8, pt: 4, pb: 4}}>
-                    <Typography variant="h4" color="#083c9e" marginBottom={2}>
-                        Team Advisor
-                    </Typography>
+
+                    <Stack direction="row" spacing={2} sx={{mb: 2}}>
+                        <Avatar src={icon}/>
+                        <Typography variant="h4" color="#083c9e" marginBottom={2}>
+                            Team Advisor
+                        </Typography>
+                    </Stack>
+
                     <Accordion>
                         <AccordionSummary expandIcon={expandIcon} sx={headerStyle2} component={Paper}>
                             <Typography variant={headerVariant}>

@@ -231,7 +231,7 @@ function acceptQueue(lockfileContent: any): void {
         const urlWithAuth = connections.clientURL(port, password, username, protocol);
         const url = urlWithAuth + endpointName;
 
-        connections.fetchJSON(url, { method: 'POST' }).then((clientResponse) => {
+        connections.fetchRaw(url, { method: 'POST' }).then((clientResponse) => {
             console.log(clientResponse);
         });
     }
@@ -249,7 +249,7 @@ function declineQueue(lockfileContent: any): void {
         const urlWithAuth = connections.clientURL(port, password, username, protocol);
         const url = urlWithAuth + endpointName;
 
-        connections.fetchJSON(url, { method: 'POST' }).then((clientResponse) => {
+        connections.fetchRaw(url, { method: 'POST' }).then((clientResponse) => {
             console.log(clientResponse);
         });
     }

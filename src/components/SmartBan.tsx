@@ -71,7 +71,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
                 setChampionSelectPhase(phase);
 
                 const championId = state.championId;
-                const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0;
+                const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0 && championId !== 0;
 
                 if (controlTakenNow)
                     setUserTookControl(true);
@@ -79,7 +79,7 @@ export const SmartBan: FC<any> = (): ReactElement => {
                 setLastChampionId(championId);
                 console.log({ state, lastChampionId, championId, controlTakenNow, phase });
 
-                const isInBanningPhase = phase === ChampionSelectPhase.Banning || phase === ChampionSelectPhase.BanHovered;
+                const isInBanningPhase = phase === ChampionSelectPhase.Banning;
 
                 if (isInBanningPhase && !userTookControl && !controlTakenNow) {
                     const idBanList = banList.map(name => parseInt(champions[name]));
@@ -144,18 +144,16 @@ export const SmartBan: FC<any> = (): ReactElement => {
             break;
         }
         case ChampionSelectPhase.Banning:
-        case ChampionSelectPhase.BanHovered:
-            {
-                currentMessage = banningMessage;
-                break;
-            }
+        {
+            currentMessage = banningMessage;
+            break;
+        }
         case ChampionSelectPhase.Picking:
-        case ChampionSelectPhase.PickHovered:
-            {
-                currentMessage = pickingMessage;
-                break;
-            }
-        case ChampionSelectPhase.Picked: {
+        {
+            currentMessage = pickingMessage();
+            break;
+        }
+        case ChampionSelectPhase.Done: {
             currentMessage = pickedMessage;
             break;
         }
