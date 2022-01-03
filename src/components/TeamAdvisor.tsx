@@ -32,8 +32,8 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                 <Container sx={{boxShadow: 8, pl: 8, pr: 8, pt: 4, pb: 4}}>
 
                     <Stack direction="row" spacing={2} sx={{mb: 2}}>
-                        <Avatar src={icon}/>
-                        <Typography variant="h4" color="#083c9e" marginBottom={2}>
+                        <Avatar src={icon} sx={{boxShadow: 1}}/>
+                        <Typography variant="h4" color="#252523" marginBottom={2}>
                             Team Advisor
                         </Typography>
                     </Stack>

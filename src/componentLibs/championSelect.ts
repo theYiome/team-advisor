@@ -19,6 +19,7 @@ async function getChampionSelectState(lockfileContent: any) {
         actionId: undefined as number,
         championId: 0 as number,
         isHovering: false as boolean,
+        isDraft: true as boolean,
         counter: undefined as number,
         picks: [] as number[],
         bans: [] as number[],
@@ -46,26 +47,28 @@ async function getChampionSelectState(lockfileContent: any) {
         return lobbyState;
     }
 
-    // parse and return state
-    const playerTeamId = session.myTeam[0].team;
-    lobbyState.leftTeam = playerTeamId === 1 ? session.myTeam : session.theirTeam;
-    lobbyState.rightTeam = playerTeamId === 2 ? session.myTeam : session.theirTeam;
-    
-    lobbyState.localPlayerCellId = session.localPlayerCellId;
-    lobbyState.localPlayerTeamId = session.localPlayerCellId >= 5 ? 1 : 0;
-    lobbyState.gameId = session.gameId,
-    lobbyState.counter = session.counter;
-    
+    // parse non crutial state
+    try {
+        const playerTeamId = session.myTeam[0].team;
+        lobbyState.leftTeam = playerTeamId === 1 ? session.myTeam : session.theirTeam;
+        lobbyState.rightTeam = playerTeamId === 2 ? session.myTeam : session.theirTeam;
+        
+        lobbyState.localPlayerCellId = session.localPlayerCellId;
+        lobbyState.localPlayerTeamId = session.localPlayerCellId >= 5 ? 1 : 0;
+        lobbyState.gameId = session.gameId,
+        lobbyState.counter = session.counter;
+        lobbyState.isDraft = !session.isCustomGame && session.hasSimultaneousBans && !session.hasSimultaneousPicks;
+
+        lobbyState.bans = getBans(session);
+        lobbyState.picks = getPicks(session);
+    }
+    catch(error) { console.warn(error) }
+
+
     if (session.timer.phase === "PLANNING") {
         lobbyState.phase = ChampionSelectPhase.Planning;
         return lobbyState;
     }
-
-    const bans = getBans(session);
-    lobbyState.bans = bans;
-
-    const picks = getPicks(session);
-    lobbyState.picks = picks;
 
     const userActions = getUserActions(session);
     const uncompletedActions = userActions.filter(action => !action.completed);

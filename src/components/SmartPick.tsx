@@ -15,6 +15,7 @@ import { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAct
 import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './common/ChampionSelectMessages';
 
 import { MultipleChampionPicker } from './common/ChampionRolePicker';
+import { session } from 'electron';
 
 const filePath = "settings/smartpick.settings.json";
 
@@ -41,6 +42,8 @@ export const SmartPick: FC<any> = (): ReactElement => {
     const [supportChampionList, setSupportChampionList] = useState(["Pyke", "Thresh"]);
 
     const [secondsToAction, setSecondsToAction] = useState(30.5);
+
+    const [failedToPick, setFailedToPick] = useState([]);
 
     const roleToChampionList: any = {
         "top": topChampionList,
@@ -136,7 +139,7 @@ export const SmartPick: FC<any> = (): ReactElement => {
                     
                     const picks = state.picks;
                     const bans = state.bans;
-                    const unavailableChampions = bans.concat(picks).filter(unavailable => unavailable !== championId);
+                    const unavailableChampions = bans.concat(picks).concat(failedToPick).filter(unavailable => unavailable !== championId);
                     
                     const choosenChampion = idChampionList.find(pick => !unavailableChampions.includes(pick));
 
@@ -145,7 +148,15 @@ export const SmartPick: FC<any> = (): ReactElement => {
                     if (choosenChampion) {
                         if (choosenChampion !== championId) {
                             setLastChampionId(choosenChampion);
-                            hoverChampion(lockfileContent, state.actionId, choosenChampion);
+                            hoverChampion(lockfileContent, state.actionId, choosenChampion).then((response: any) => {
+                                console.log({failedToPick});
+                                try {
+                                    if(response.errorCode)
+                                        setFailedToPick([...failedToPick, choosenChampion]);
+                                } catch (error) {
+                                    console.warn(error);
+                                }
+                            });
                         }
                     }
                     else
@@ -158,7 +169,7 @@ export const SmartPick: FC<any> = (): ReactElement => {
                     setChampionSelectActionStartTime(new Date());
                 }
 
-                if (isInPickingPhase && elapsedTimeSinceLastAction() >= secondsToAction)
+                if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= secondsToAction))
                     completeAction(lockfileContent, state.actionId);
             });
         }
@@ -253,9 +264,6 @@ export const SmartPick: FC<any> = (): ReactElement => {
                         </AccordionSummary>
                         <AccordionDetails>
                 <Stack spacing={2}>
-                    <Typography>
-                        Remember that you have to own them! App won't work properly if some of the listed champions are unowned.
-                    </Typography>
                     <MultipleChampionPicker
                         championNames={championNames}
                         currentList={topChampionList}
