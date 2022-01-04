@@ -12,6 +12,7 @@ type MultipleChampionPickerProp = {
     onChange?: (newList: string[]) => void,
     disabled?: boolean,
     special?: boolean
+    variant?: "standard" | "filled" | "outlined"
 };
 
 const MultipleChampionPicker: FC<MultipleChampionPickerProp> = ({
@@ -21,7 +22,8 @@ const MultipleChampionPicker: FC<MultipleChampionPickerProp> = ({
     label = "Multiple champion picker",
     onChange = (newList: string[]) => console.log(newList),
     disabled = false,
-    special = false
+    special = false,
+    variant = "standard"
 }) => (
     <Autocomplete
         multiple
@@ -37,7 +39,7 @@ const MultipleChampionPicker: FC<MultipleChampionPickerProp> = ({
         renderInput={
             (params) => <TextField
                 {...params}
-                variant="standard"
+                variant={variant}
                 label={label}
                 color={special ? "primary" : "info"}
             />

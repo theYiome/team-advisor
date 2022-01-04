@@ -1,5 +1,5 @@
 import React, { ReactElement, FC, useState, useEffect, useContext } from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Button, FormControlLabel, Paper, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, FormControlLabel, Paper, Stack, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import * as ddragon from '../jsutils/ddragon.js';
 import * as files from "../libs/files";
@@ -94,30 +94,33 @@ export const Settings: FC<any> = (): ReactElement => {
     };
 
     return (
-        <Stack spacing={3}>
-            <FormControlLabel
-                control={<Switch checked={autoLauncherEnabled} onChange={handleSwitchChange} />}
-                label={<Typography><strong>Launch on Startup</strong></Typography>}
-                disabled={autoLauncher ? false : true}
-            />
-            <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>
-            {
-                champions ? (
-                    <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography>
-                                Champion data for patch <strong>{champions["patch"]}</strong>
-                            </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            {data_table}
-                        </AccordionDetails>
-                    </Accordion>
-                )
-                    : (
-                        "Nothing to display"
+        <Container>
+            <Stack spacing={3}>
+                <FormControlLabel
+                    control={<Switch checked={autoLauncherEnabled} onChange={handleSwitchChange} />}
+                    label={<Typography><strong>Launch on Startup</strong></Typography>}
+                    disabled={autoLauncher ? false : true}
+                />
+                <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>
+                {
+                    champions ? (
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography>
+                                    Champion data for patch <strong>{champions["patch"]}</strong>
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                {data_table}
+                            </AccordionDetails>
+                        </Accordion>
                     )
-            }
-        </Stack>
+                        : (
+                            "Nothing to display"
+                        )
+                }
+            </Stack>
+        </Container>
     );
 }
+

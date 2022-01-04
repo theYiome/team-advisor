@@ -75,6 +75,14 @@ export const SmartAccept: FC<any> = (): ReactElement => {
     useEffect(() => {
 
         const updateFunction = () => {
+            if (lockfileContent.port === "") {
+                setQueueState({
+                    state: QueueStateEnum.NoClient,
+                    timer: 0
+                });
+                return;
+            }
+
             getQueueState(lockfileContent).then((state) => {
                 setQueueState(state);
 
@@ -147,7 +155,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
                 <Stack>
                     <FormControlLabel
                         control={<Switch checked={enabled} onChange={handleSwitchChange} />}
-                        label={<Typography>Enable <strong>Smart Accept</strong></Typography>}
+                        label={<Typography>Smart Accept</Typography>}
                     />
                 </Stack>
                 <Stack>
