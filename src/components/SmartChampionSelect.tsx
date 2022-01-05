@@ -16,6 +16,7 @@ import { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAct
 import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './common/ChampionSelectMessages';
 
 import { MultipleChampionPicker } from './common/ChampionRolePicker';
+import { ErrorBoundary } from 'react-error-boundary';
 
 const filePath = "settings/smartchampionselect.settings.json";
 
@@ -63,11 +64,11 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
 
     // load setting from file
-    useEffect(() => {
+    const loadSettings = () => {
         files.loadJSON(filePath).then((settings) => {
             setSmartPickEnabled(settings.smartPickEnabled);
             setSmartBanEnabled(settings.smartBanEnabled);
-
+    
             setBanList(settings.banList);
             setTopChampionList(settings.topChampionList);
             setJungleChampionList(settings.jungleChampionList);
@@ -75,15 +76,20 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             setBottomChampionList(settings.bottomChampionList);
             setSupportChampionList(settings.supportChampionList);
 
+            setLockinAt(settings.lockinAt);
+    
             setSettingsLoaded(true);
         }).catch(error => {
             console.warn(error);
             setSettingsLoaded(true);
         });
+    }
+
+    useEffect(() => {
+        loadSettings();
     }, [])
 
-    // save settings to file when settings are updated
-    useEffect(() => {
+    const saveSettings = () => {
         const dataToSave = {
             smartPickEnabled,
             smartBanEnabled,
@@ -92,11 +98,18 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             jungleChampionList,
             middleChampionList,
             bottomChampionList,
-            supportChampionList
+            supportChampionList,
+            lockinAt
         }
-
+    
         if (settingsLoaded)
             files.saveJSON(dataToSave, filePath, 4);
+    }
+
+    // save settings to file when settings are updated
+    useEffect(() => {
+
+        saveSettings();
 
     }, [smartPickEnabled,
         smartBanEnabled,
@@ -105,7 +118,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         jungleChampionList,
         middleChampionList,
         bottomChampionList,
-        supportChampionList])
+        supportChampionList,
+        lockinAt])
 
     const regainConctrol = () => {
         setUserTookControl(false);
@@ -354,57 +368,86 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                         </Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <Stack spacing={2}>
-                            <Typography>
-                                Ban list
-                            </Typography>
-                            <MultipleChampionPicker
-                                championNames={championNames}
-                                currentList={banList}
-                                patch={patch}
-                                onChange={(newBanList) => setBanList(newBanList)}
-                                label="Ban list"
-                                variant="outlined"
-                            />
-                            <Typography>
-                                Champion lists
-                            </Typography>
-                            <MultipleChampionPicker
-                                championNames={championNames}
-                                currentList={topChampionList}
-                                patch={patch}
-                                onChange={(newList) => setTopChampionList(newList)}
-                                label="Top"
-                            />
-                            <MultipleChampionPicker
-                                championNames={championNames}
-                                currentList={jungleChampionList}
-                                patch={patch}
-                                onChange={(newList) => setJungleChampionList(newList)}
-                                label="Jungle"
-                            />
-                            <MultipleChampionPicker
-                                championNames={championNames}
-                                currentList={middleChampionList}
-                                patch={patch}
-                                onChange={(newList) => setMiddleChampionList(newList)}
-                                label="Middle"
-                            />
-                            <MultipleChampionPicker
-                                championNames={championNames}
-                                currentList={bottomChampionList}
-                                patch={patch}
-                                onChange={(newList) => setBottomChampionList(newList)}
-                                label="Bottom"
-                            />
-                            <MultipleChampionPicker
-                                championNames={championNames}
-                                currentList={supportChampionList}
-                                patch={patch}
-                                onChange={(newList) => setSupportChampionList(newList)}
-                                label="Support"
-                            />
-                        </Stack>
+                        <ErrorBoundary
+                            FallbackComponent={(error, resetErrorBoundary) => <Typography>Failed to load. Please restart the app: {error.error.message}</Typography>}
+                            onError={() => {
+                                setSmartBanEnabled(false);
+                                setSmartBanEnabled(false);
+                                setBanList([]);
+                                setTopChampionList([]);
+                                setBottomChampionList([]);
+                                setMiddleChampionList([]);
+                                setJungleChampionList([]);
+                                setSupportChampionList([]);
+                                setLockinAt(29.5);
+                            }}
+                        >
+
+                            <Stack spacing={2}>
+                                <Typography>
+                                    Ban list
+                                </Typography>
+                                <MultipleChampionPicker
+                                    championNames={championNames}
+                                    currentList={banList}
+                                    patch={patch}
+                                    onChange={(newBanList) => setBanList(newBanList)}
+                                    label="Ban list"
+                                    variant="outlined"
+                                />
+                                <Typography>
+                                    Champion lists
+                                </Typography>
+                                <MultipleChampionPicker
+                                    championNames={championNames}
+                                    currentList={topChampionList}
+                                    patch={patch}
+                                    onChange={(newList) => setTopChampionList(newList)}
+                                    label="Top"
+                                />
+                                <MultipleChampionPicker
+                                    championNames={championNames}
+                                    currentList={jungleChampionList}
+                                    patch={patch}
+                                    onChange={(newList) => setJungleChampionList(newList)}
+                                    label="Jungle"
+                                />
+                                <MultipleChampionPicker
+                                    championNames={championNames}
+                                    currentList={middleChampionList}
+                                    patch={patch}
+                                    onChange={(newList) => setMiddleChampionList(newList)}
+                                    label="Middle"
+                                />
+                                <MultipleChampionPicker
+                                    championNames={championNames}
+                                    currentList={bottomChampionList}
+                                    patch={patch}
+                                    onChange={(newList) => setBottomChampionList(newList)}
+                                    label="Bottom"
+                                />
+                                <MultipleChampionPicker
+                                    championNames={championNames}
+                                    currentList={supportChampionList}
+                                    patch={patch}
+                                    onChange={(newList) => setSupportChampionList(newList)}
+                                    label="Support"
+                                />
+                                <Container sx={{ p: 2 }}>
+                                    <Typography>Auto lockin timer adjustment (better don't touch)</Typography>
+                                    <Slider
+                                        sx={{ width: "90%" }}
+                                        value={lockinAt}
+                                        onChange={(event: Event, newValue: number) => setLockinAt(newValue)}
+                                        marks={[{ value: 0, label: "Instant lockin" }, { value: 31, label: "To late" }]}
+                                        min={0}
+                                        max={40}
+                                        step={0.5}
+                                        valueLabelDisplay="auto"
+                                    />
+                                </Container>
+                            </Stack>
+                        </ErrorBoundary>
                     </AccordionDetails>
                 </Accordion>
             </Stack>
