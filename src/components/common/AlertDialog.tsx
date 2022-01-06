@@ -23,7 +23,7 @@ export function AlertDialog({
 
     return (
         <Box>
-            <IconButton aria-label="Help" size="large" onClick={handleClickOpen}>
+            <IconButton aria-label="Help" size="medium" onClick={handleClickOpen} sx={{ml: -2}}>
                 <HelpOutlineIcon color='primary' fontSize='medium'/>
             </IconButton>
             <Dialog

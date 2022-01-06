@@ -67,13 +67,12 @@ const PickEntry: FC<PickEntryProp> = ({
                 />
             </Stack>
 
-            <Divider orientation="horizontal" flexItem />
 
-            <Stack spacing={1}>
+            {/* <Stack spacing={1}>
                 <Typography>Suggestions from your champions</Typography>
                 <Divider orientation="horizontal" flexItem />
                 <Typography>Suggestions from all champions</Typography>
-            </Stack>
+            </Stack> */}
         </Stack>
     );
 

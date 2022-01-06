@@ -48,6 +48,9 @@ export const Settings: FC<any> = (): ReactElement => {
                 parsed_champions[value as any] = key;
         }
 
+        parsed_champions[""] = 0;
+        parsed_champions["0"] = "";
+
         setChampions(parsed_champions);
         files.saveJSON(parsed_champions, filePath, 4);
     }

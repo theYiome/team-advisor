@@ -191,7 +191,7 @@ async function getQueueState(lockfileContent: any): Promise<QueueState> {
         const url = urlWithAuth + endpointName;
 
         const clientResponse: any = await connections.fetchJSON(url);
-        console.log(clientResponse);
+        // console.log(clientResponse);
 
         if (clientResponse.message === "Not attached to a matchmaking queue.") return {
             state: QueueStateEnum.NoInQueue,
@@ -239,9 +239,7 @@ function acceptQueue(lockfileContent: any): void {
         const urlWithAuth = connections.clientURL(port, password, username, protocol);
         const url = urlWithAuth + endpointName;
 
-        connections.fetchRaw(url, { method: 'POST' }).then((clientResponse) => {
-            console.log(clientResponse);
-        });
+        connections.fetchRaw(url, { method: 'POST' }).catch(error => console.error(error));
     }
     catch (err) {
         console.warn(err);
@@ -257,9 +255,7 @@ function declineQueue(lockfileContent: any): void {
         const urlWithAuth = connections.clientURL(port, password, username, protocol);
         const url = urlWithAuth + endpointName;
 
-        connections.fetchRaw(url, { method: 'POST' }).then((clientResponse) => {
-            console.log(clientResponse);
-        });
+        connections.fetchRaw(url, { method: 'POST' }).catch(error => console.error(error));
     }
     catch (err) {
         console.warn(err);
