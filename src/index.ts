@@ -35,7 +35,8 @@ const createWindow = (): void => {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            nodeIntegrationInWorker: true
+            nodeIntegrationInWorker: true,
+            backgroundThrottling: false
         }
     });
 
