@@ -39,7 +39,7 @@ const PickEntry: FC<PickEntryProp> = ({
 
     const championRoleAvatars = (
         <Stack spacing={2}>
-            <Avatar alt={championName} src={championName ? avatarURI(patch, championName) : ""} sx={avatarStyle} />
+            <Avatar alt={championName} src={championName ? avatarURI(patch, championName) : ""} sx={avatarStyle} variant='rounded'/>
             <Avatar alt={roleName} src={roleImages[roleName]} sx={avatarStyle} variant="rounded" />
         </Stack>
     );

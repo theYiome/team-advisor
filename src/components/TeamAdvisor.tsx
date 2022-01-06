@@ -54,7 +54,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                         <Tab label="Smart Accept" {...a11yProps(1)} />
                         <Tab label="League Client" {...a11yProps(2)} />
                         <Tab label="Settings" {...a11yProps(3)} />
-                        <Tab label="Team Builder" {...a11yProps(4)} />
+                        {/* <Tab label="Team Builder" {...a11yProps(4)} /> */}
                     </Tabs>
                 </Box>
 

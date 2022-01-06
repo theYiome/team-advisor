@@ -5,7 +5,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import React from 'react';
-import { Box, Button, IconButton } from '@mui/material';
+import { Box, Button, IconButton, Typography } from '@mui/material';
 
 export function AlertDialog({
     children = "" as any,
@@ -36,9 +36,7 @@ export function AlertDialog({
                     {title}
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        {children}
-                    </DialogContentText>
+                    {children}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Close</Button>

@@ -21,7 +21,17 @@ export async function fetchRaw(url: string, options: any = {}) {
 }
 
 export async function fetchJSON(url: string, options: any = {}) {
-    return asyncFetch(url, options).then(rawData => JSON.parse(rawData));
+    return asyncFetch(url, options).then(rawData => {
+        try {
+            if (typeof(rawData) === typeof("string"))
+                return JSON.parse(rawData);
+            else
+                return rawData;
+        }
+        catch(error) {
+            throw {error, rawData};
+        }
+    });
 }
 
 export function clientURL(port: string, password: any, username: any, protocol: string) {

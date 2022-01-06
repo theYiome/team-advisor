@@ -7,6 +7,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { AlertDialog } from './common/AlertDialog';
 
 import * as files from '../libs/files';
+import * as connections from '../libs/connections'
 
 import { LockfileContext } from './LockfileContext';
 import { ChampionsContext } from './ChampionsContext';
@@ -21,6 +22,8 @@ import { avatarURI } from '../componentLibs/leagueImages';
 import { PickEntry } from './common/PickEntry';
 
 const filePath = "settings/smartchampionselect.settings.json";
+
+const unsafeCompare = (a: any, b: any) => JSON.stringify(a) == JSON.stringify(b);
 
 export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
@@ -55,7 +58,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         "jungle": jungleChampionList,
         "middle": middleChampionList,
         "bottom": bottomChampionList,
-        "utility": supportChampionList
+        "support": supportChampionList
     };
 
     const [lastChampionId, setLastChampionId] = useState(0);
@@ -63,7 +66,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
     const [champions, setChampions] = useContext(ChampionsContext);
-    
+
     const [leftTeam, setLeftTeam] = useState([]);
     const [rightTeam, setRightTeam] = useState([]);
     const [bans, setBans] = useState([]);
@@ -71,19 +74,61 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [localPlayerTeamId, setLocalPlayerTeamId] = useState(0);
 
     const [preferredChampionList, setPreferredChampionList] = useState([]);
-
     const [predictions, setPredictions] = useState([]);
 
+    const clearTeamState = () => {
+        if(leftTeam.length > 0)
+            setLeftTeam([]);
+
+        if(rightTeam.length > 0)
+            setRightTeam([]);
+
+        if(bans.length > 0)
+            setBans([]);
+
+        if(predictions.length > 0)
+            setPredictions([]);
+            
+        if(preferredChampionList.length > 0)
+            setPreferredChampionList([]);
+
+        if(localPlayerCellId !== 0)
+            setLocalPlayerCellId(0);
+
+        if(localPlayerTeamId !== 0)
+            setLocalPlayerTeamId(0);
+    }
+
+    const makePrediction = () => {
+        const options = {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: { leftTeam, rightTeam, bans, localPlayerCellId, localPlayerTeamId, preferredChampionList },
+            json: true
+        }
+    
+        console.log(options);
+        connections.fetchJSON("https://tomage.eu.pythonanywhere.com/team-advisor/", options).then((response: any) => {
+            console.log({response, options, type: typeof(response)});
+            const content = response["sorted_champion_ids"];
+            if (content)
+                setPredictions(content);
+        }).catch(error => console.warn(error));
+    }
+
     useEffect(() => {
-        // console.log({leftTeam, rightTeam, bans, localPlayerCellId, localPlayerTeamId, preferredChampionList});
-    }, [leftTeam, rightTeam, bans, localPlayerCellId, localPlayerTeamId, preferredChampionList])
+        if (championSelectPhase === ChampionSelectPhase.Picking)
+            makePrediction();
+    }, [championSelectPhase])
 
     // load setting from file
     const loadSettings = () => {
         files.loadJSON(filePath).then((settings) => {
             setSmartPickEnabled(settings.smartPickEnabled);
             setSmartBanEnabled(settings.smartBanEnabled);
-    
+
             setBanList(settings.banList);
             setTopChampionList(settings.topChampionList);
             setJungleChampionList(settings.jungleChampionList);
@@ -92,7 +137,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             setSupportChampionList(settings.supportChampionList);
 
             setLockinAt(settings.lockinAt);
-    
+
             setSettingsLoaded(true);
         }).catch(error => {
             console.warn(error);
@@ -116,7 +161,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             supportChampionList,
             lockinAt
         }
-    
+
         if (settingsLoaded)
             files.saveJSON(dataToSave, filePath, 4);
     }
@@ -154,85 +199,95 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             getChampionSelectState(lockfileContent).then((state) => {
 
                 const phase = state.phase;
-                setChampionSelectPhase(phase);
+                if (phase !== championSelectPhase)
+                    setChampionSelectPhase(phase);
+                
                 setChampionSelectActionElapsedTime(elapsedTimeSinceLastAction());
-
-                const championId = state.championId;
-                const picks = state.picks;
-
-                const bans = state.bans;
-                setBans(bans);
-                
-                const unavailableChampions = bans.concat(picks).concat(failedToHover).filter(unavailable => unavailable !== championId);
-                
-                setLocalPlayerCellId(state.localPlayerCellId);
-                setLocalPlayerTeamId(state.localPlayerTeamId);
-
-                const allPlayers = state.leftTeam.concat(state.rightTeam);
-                
-                setLeftTeam(state.leftTeam);
-                setRightTeam(state.rightTeam);
-                
-                const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
-                const role = user ? user.assignedPosition as string : "";
-
-                let preferredChampionList: string[] = roleToChampionList[role];
-                if (!preferredChampionList) {
-                    // console.warn("No assigned role!");
-                    // https://stackoverflow.com/questions/10865025/merge-flatten-an-array-of-arrays
-                    preferredChampionList = [].concat.apply([], Object.values(roleToChampionList));
-                }
-
-                const idPreferredChampionList = preferredChampionList.map(name => parseInt(champions[name]));
-                setPreferredChampionList(idPreferredChampionList);
-
-                const isInPickingPhase = phase === ChampionSelectPhase.Picking;
-                const isInBanningPhase = phase === ChampionSelectPhase.Banning;
-
-                const attemptToHover = (championIdToHover: number) => {
-                    if (championIdToHover && championIdToHover !== championId) {
-                        setLastChampionId(championIdToHover);
-                        hoverChampion(lockfileContent, state.actionId, championIdToHover).then((response: any) => {
-                            try {
-                                if (response["errorCode"])
-                                    setFailedToHover([...failedToHover, championIdToHover]);
-                            } catch (error) { console.warn(error); }
-                        });
-                    }
-                }
-
-                // check if user made any action
-                const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0 && championId !== 0;
-                if (controlTakenNow)
-                    setUserTookControl(true);
-
-                setLastChampionId(championId);
-
-                if (!userTookControl && !controlTakenNow) {
-                    // if control not taken app can perform an action
-                    if (isInPickingPhase) {
-                        const championToPick = idPreferredChampionList.find(pick => !unavailableChampions.includes(pick));
-
-                        console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
-
-                        attemptToHover(championToPick);
-                    }
-                    else if (isInBanningPhase) {
-                        const idBanList = banList.map(name => parseInt(champions[name]));
-                        const championToBan = idBanList.find(ban => !unavailableChampions.includes(ban));
-                        attemptToHover(championToBan);
-                    }
-                }
-
-                // lockin when reaches 30 seconds in picking phase - draft only
-                if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt))
-                    completeAction(lockfileContent, state.actionId);
 
                 const offlinePhases = [
                     ChampionSelectPhase.NoClient,
                     ChampionSelectPhase.NoInChampionSelect,
                     ChampionSelectPhase.Unknown
                 ];
+
+                if (!offlinePhases.includes(phase)) {
+                    const championId = state.championId;
+                    const picks = state.picks;
+
+                    const bans = state.bans;
+                    setBans(bans);
+
+                    const unavailableChampions = bans.concat(picks).concat(failedToHover).filter(unavailable => unavailable !== championId);
+
+                    setLocalPlayerCellId(state.localPlayerCellId);
+                    setLocalPlayerTeamId(state.localPlayerTeamId);
+
+                    const allPlayers = state.leftTeam.concat(state.rightTeam);
+
+                    if(!unsafeCompare(state.leftTeam, leftTeam))
+                        setLeftTeam(state.leftTeam);
+                    if(!unsafeCompare(state.rightTeam, rightTeam))
+                        setRightTeam(state.rightTeam);
+
+                    const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
+                    const role = user ? user.assignedPosition : "";
+
+                    let preferredChampionList: string[] = roleToChampionList[role];
+                    if (!preferredChampionList) {
+                        console.warn("No assigned role!");
+                        console.warn({user, role, allPlayers, roleToChampionList});
+                        // https://stackoverflow.com/questions/10865025/merge-flatten-an-array-of-arrays
+                        preferredChampionList = [].concat.apply([], Object.values(roleToChampionList));
+                    }
+
+                    const newIdPreferredChampionList = preferredChampionList.map(name => parseInt(champions[name]));
+                    setPreferredChampionList(newIdPreferredChampionList);
+
+                    const isInPickingPhase = phase === ChampionSelectPhase.Picking;
+                    const isInBanningPhase = phase === ChampionSelectPhase.Banning;
+
+                    const attemptToHover = (championIdToHover: number) => {
+                        if (championIdToHover && championIdToHover !== championId) {
+                            setLastChampionId(championIdToHover);
+                            hoverChampion(lockfileContent, state.actionId, championIdToHover).then((response: any) => {
+                                try {
+                                    if (response["errorCode"])
+                                        setFailedToHover([...failedToHover, championIdToHover]);
+                                } catch (error) { console.warn(error); }
+                            });
+                        }
+                    }
+
+                    // check if user made any action
+                    const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0 && championId !== 0;
+                    if (controlTakenNow)
+                        setUserTookControl(true);
+
+                    setLastChampionId(championId);
+
+                    if (!userTookControl && !controlTakenNow) {
+                        // if control not taken app can perform an action
+                        if (isInPickingPhase) {
+                            const championToPick = newIdPreferredChampionList.find(pick => !unavailableChampions.includes(pick));
+
+                            console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
+
+                            attemptToHover(championToPick);
+                        }
+                        else if (isInBanningPhase) {
+                            const idBanList = banList.map(name => parseInt(champions[name]));
+                            const championToBan = idBanList.find(ban => !unavailableChampions.includes(ban));
+                            attemptToHover(championToBan);
+                        }
+                    }
+
+                    // lockin when reaches 30 seconds in picking phase - draft only
+                    if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt))
+                        completeAction(lockfileContent, state.actionId);
+                }
+                else {
+                    clearTeamState();
+                }
 
                 // next phase cleanup
                 const idlePhases = [
@@ -252,7 +307,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             clearInterval(periodicUpdate);
 
         if (smartPickEnabled || smartBanEnabled)
-            setPeriodicUpdate(setInterval(updateFunction, 350));
+            setPeriodicUpdate(setInterval(updateFunction, 300));
 
         return () => clearInterval(periodicUpdate);
 
@@ -320,8 +375,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const roles = ["top", "jungle", "middle", "bottom", "support", ""];
 
-    const predictionsPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7].map(index => <Skeleton key={index} variant="circular" width={42} height={42}/>);
-    const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index => <Skeleton key={index} variant="circular" width={42} height={42}/>);
+    const predictionsPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7].map(index => <Skeleton key={index} variant="circular" width={42} height={42} />);
+    const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index => <Skeleton key={index} variant="circular" width={42} height={42} />);
     const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} />);
 
     return (
@@ -465,7 +520,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                     onChange={(newList) => setSupportChampionList(newList)}
                                     label="Support"
                                 />
-                                <Container sx={{ p: 2}}>
+                                <Container sx={{ p: 2 }}>
                                     <Typography>Auto lockin timer adjustment (better leave as is, 29.5 is recommended)</Typography>
                                     <Slider
                                         sx={{ width: "90%", ml: "5%" }}
@@ -482,32 +537,35 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                         </ErrorBoundary>
                     </AccordionDetails>
                 </Accordion>
-                
+
                 <Typography variant="h6">Pick suggestions</Typography>
-                <Stack direction="row" spacing={2} justifyContent="center" alignItems="center">
+                <Button variant="contained" onClick={() => makePrediction()}>MAKE PREDICTION</Button>
+                <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ flexWrap: "wrap" }}>
                     {
-                        predictions.length > 0 ? 
-                        predictions.map(ban => <Avatar 
-                            key={ban}
-                            alt={champions[ban]} 
-                            src={avatarURI(patch, champions[ban])}
-                            sx={{boxShadow: 5, backgroundColor: "white", width: 42, height: 42}}
-                        />) :
-                        predictionsPlaceholder
+                        predictions.length > 0 ?
+                            predictions.map((ban, index) => <Avatar
+                                key={index}
+                                alt={champions[ban]}
+                                src={avatarURI(patch, champions[ban])}
+                                sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
+                                variant='rounded'
+                            />) :
+                            predictionsPlaceholder
                     }
                 </Stack>
                 <Stack spacing={2}>
                     <Typography>Bans</Typography>
-                    <Stack direction="row" spacing={2} justifyContent="center" alignItems="center">
+                    <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ flexWrap: "wrap" }}>
                         {
-                            bans.length > 0 ? 
-                            bans.map((ban, index) => <Avatar 
-                                key={index}
-                                alt={champions[ban]} 
-                                src={avatarURI(patch, champions[ban])}
-                                sx={{boxShadow: 5, backgroundColor: "white", width: 42, height: 42}}
-                            />) :
-                            bansPlaceholder
+                            bans.length > 0 ?
+                                bans.map((ban, index) => <Avatar
+                                    key={index}
+                                    alt={champions[ban]}
+                                    src={avatarURI(patch, champions[ban])}
+                                    sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
+                                    variant='rounded'
+                                />) :
+                                bansPlaceholder
                         }
                     </Stack>
 
@@ -515,35 +573,35 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     <Stack direction="row" spacing={3}>
                         <Stack spacing={2} sx={{ width: 1 }}>
                             {
-                                leftTeam.length > 0 ? 
-                                leftTeam.map(pick => <PickEntry
-                                    key={pick.cellId}
-                                    champions={championNames}
-                                    championName={champions[pick.championId ? pick.championId : pick.championPickIntent]} 
-                                    roleName={pick.assignedPosition}
-                                    roles={roles}
-                                    patch={patch}
-                                    isPlayer={pick.cellId === localPlayerCellId}
-                                    disabled
-                                    reverse
-                                />) :
-                                picksPlaceholder
+                                leftTeam.length > 0 ?
+                                    leftTeam.map(pick => <PickEntry
+                                        key={pick.cellId}
+                                        champions={championNames}
+                                        championName={champions[pick.championId ? pick.championId : pick.championPickIntent]}
+                                        roleName={pick.assignedPosition}
+                                        roles={roles}
+                                        patch={patch}
+                                        isPlayer={pick.cellId === localPlayerCellId}
+                                        disabled
+                                        reverse
+                                    />) :
+                                    picksPlaceholder
                             }
                         </Stack>
                         <Stack spacing={2} sx={{ width: 1 }}>
-                        {
-                                rightTeam.length > 0 ? 
-                                rightTeam.map(pick => <PickEntry
-                                    key={pick.cellId}
-                                    champions={championNames}
-                                    championName={champions[pick.championId ? pick.championId : pick.championPickIntent]} 
-                                    roleName={pick.assignedPosition}
-                                    roles={roles}
-                                    patch={patch}
-                                    isPlayer={pick.cellId === localPlayerCellId}
-                                    disabled
-                                />) :
-                                picksPlaceholder
+                            {
+                                rightTeam.length > 0 ?
+                                    rightTeam.map(pick => <PickEntry
+                                        key={pick.cellId}
+                                        champions={championNames}
+                                        championName={champions[pick.championId ? pick.championId : pick.championPickIntent]}
+                                        roleName={pick.assignedPosition}
+                                        roles={roles}
+                                        patch={patch}
+                                        isPlayer={pick.cellId === localPlayerCellId}
+                                        disabled
+                                    />) :
+                                    picksPlaceholder
                             }
                         </Stack>
                     </Stack>
