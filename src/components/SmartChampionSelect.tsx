@@ -3,11 +3,13 @@ import React, { ReactElement, FC, useState, useContext, useEffect } from 'react'
 import Container from '@mui/material/Container'
 import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Box, Accordion, AccordionDetails, AccordionSummary, IconButton, LinearProgress, Avatar, CircularProgress, Skeleton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 import { AlertDialog } from './common/AlertDialog';
 
 import * as files from '../libs/files';
 import * as connections from '../libs/connections'
+import { defaultRoles, defaultChampionsForRole } from '../componentLibs/championSelectConstants';
 
 import { LockfileContext } from './LockfileContext';
 import { ChampionsContext } from './ChampionsContext';
@@ -41,13 +43,13 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [championSelectActionElapsedTime, setChampionSelectActionElapsedTime] = useState(-1);
     const elapsedTimeSinceLastAction = () => ((new Date() as any) - (championSelectActionStartTime as any)) / 1000;
 
-    const [banList, setBanList] = useState(["Jax", "Viktor", "Kassadin"]);
+    const [banList, setBanList] = useState(["Jax", "Viktor", "Lulu"]);
 
-    const [topChampionList, setTopChampionList] = useState(["DrMundo", "Shen"]);
-    const [jungleChampionList, setJungleChampionList] = useState(["Nunu", "Zac"]);
-    const [middleChampionList, setMiddleChampionList] = useState(["Viktor", "Zed"]);
-    const [bottomChampionList, setBottomChampionList] = useState(["Jinx", "Jhin"]);
-    const [supportChampionList, setSupportChampionList] = useState(["Pyke", "Thresh"]);
+    const [topChampionList, setTopChampionList] = useState(defaultChampionsForRole.top);
+    const [jungleChampionList, setJungleChampionList] = useState(defaultChampionsForRole.jungle);
+    const [middleChampionList, setMiddleChampionList] = useState(defaultChampionsForRole.middle);
+    const [bottomChampionList, setBottomChampionList] = useState(defaultChampionsForRole.bottom);
+    const [supportChampionList, setSupportChampionList] = useState(defaultChampionsForRole.support);
 
     const [lockinAt, setLockinAt] = useState(29.5);
 
@@ -74,53 +76,63 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [localPlayerTeamId, setLocalPlayerTeamId] = useState(0);
 
     const [preferredChampionList, setPreferredChampionList] = useState([]);
+
+    const [preferrNormalized, setPreferrNormalized] = useState(0);
     const [predictions, setPredictions] = useState([]);
 
     const clearTeamState = () => {
-        if(leftTeam.length > 0)
+        if (leftTeam.length > 0)
             setLeftTeam([]);
 
-        if(rightTeam.length > 0)
+        if (rightTeam.length > 0)
             setRightTeam([]);
 
-        if(bans.length > 0)
+        if (bans.length > 0)
             setBans([]);
 
-        if(predictions.length > 0)
+        if (predictions.length > 0)
             setPredictions([]);
-            
-        if(preferredChampionList.length > 0)
+
+        if (preferredChampionList.length > 0)
             setPreferredChampionList([]);
 
-        if(localPlayerCellId !== 0)
+        if (localPlayerCellId !== 0)
             setLocalPlayerCellId(0);
 
-        if(localPlayerTeamId !== 0)
+        if (localPlayerTeamId !== 0)
             setLocalPlayerTeamId(0);
     }
 
-    const makePrediction = () => {
+    const getPredictions = async () => {
         const options = {
             method: "POST",
             headers: {
                 "content-type": "application/json",
             },
-            body: { leftTeam, rightTeam, bans, localPlayerCellId, localPlayerTeamId, preferredChampionList },
+            body: { leftTeam, rightTeam, bans, localPlayerCellId, localPlayerTeamId, preferredChampionList, preferrNormalized },
             json: true
         }
-    
+
         console.log(options);
-        connections.fetchJSON("https://tomage.eu.pythonanywhere.com/team-advisor/", options).then((response: any) => {
-            console.log({response, options, type: typeof(response)});
+
+        try {
+            const response = await connections.fetchJSON("https://tomage.eu.pythonanywhere.com/team-advisor/", options);
+            console.log({ response, options, type: typeof (response) });
             const content = response["sorted_champion_ids"];
             if (content)
-                setPredictions(content);
-        }).catch(error => console.warn(error));
+                return content;
+            else
+                return [];
+        }
+        catch (error) {
+            console.warn(error);
+            return [];
+        }
     }
 
     useEffect(() => {
         if (championSelectPhase === ChampionSelectPhase.Picking)
-            makePrediction();
+            getPredictions().then(newPredictions => setPredictions(newPredictions));
     }, [championSelectPhase])
 
     // load setting from file
@@ -201,7 +213,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 const phase = state.phase;
                 if (phase !== championSelectPhase)
                     setChampionSelectPhase(phase);
-                
+
                 setChampionSelectActionElapsedTime(elapsedTimeSinceLastAction());
 
                 const offlinePhases = [
@@ -224,9 +236,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
                     const allPlayers = state.leftTeam.concat(state.rightTeam);
 
-                    if(!unsafeCompare(state.leftTeam, leftTeam))
+                    if (!unsafeCompare(state.leftTeam, leftTeam))
                         setLeftTeam(state.leftTeam);
-                    if(!unsafeCompare(state.rightTeam, rightTeam))
+                    if (!unsafeCompare(state.rightTeam, rightTeam))
                         setRightTeam(state.rightTeam);
 
                     const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
@@ -235,7 +247,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     let preferredChampionList: string[] = roleToChampionList[role];
                     if (!preferredChampionList) {
                         console.warn("No assigned role!");
-                        console.warn({user, role, allPlayers, roleToChampionList});
+                        console.warn({ user, role, allPlayers, roleToChampionList });
                         // https://stackoverflow.com/questions/10865025/merge-flatten-an-array-of-arrays
                         preferredChampionList = [].concat.apply([], Object.values(roleToChampionList));
                     }
@@ -268,11 +280,13 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     if (!userTookControl && !controlTakenNow) {
                         // if control not taken app can perform an action
                         if (isInPickingPhase) {
-                            const championToPick = newIdPreferredChampionList.find(pick => !unavailableChampions.includes(pick));
-
-                            console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
-
-                            attemptToHover(championToPick);
+                            if (predictions.length > 0) {
+                                const championToPick = predictions.find(pick => !unavailableChampions.includes(pick));
+    
+                                console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
+    
+                                attemptToHover(championToPick);
+                            }
                         }
                         else if (isInBanningPhase) {
                             const idBanList = banList.map(name => parseInt(champions[name]));
@@ -363,21 +377,22 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         }
     }
 
-    const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).map((goodKey: string) => champions[goodKey]).sort();
-
+    const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).filter(key => key !== "0").map((goodKey: string) => champions[goodKey]).sort();
     const patch = champions["patch"];
+
+    const championsWithEmpty = champions;
+    championsWithEmpty[0] = "null";
 
     const controlMessage = userTookControl ? userInControl(regainConctrol) : appInControl;
 
-    const smartBanLabel = (<Typography>Smart Ban</Typography>);
-
-    const smartPickLabel = (<Typography>Smart Pick</Typography>);
-
-    const roles = ["top", "jungle", "middle", "bottom", "support", ""];
+    const roles = [...defaultRoles, ""];
 
     const predictionsPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7].map(index => <Skeleton key={index} variant="circular" width={42} height={42} />);
     const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index => <Skeleton key={index} variant="circular" width={42} height={42} />);
     const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} />);
+
+    const onPreferrNormalizedChange = (event: Event, newValue: number) => setPreferrNormalized(newValue);
+    const onLockinAtChange = (event: Event, newValue: number) => setLockinAt(newValue);
 
     return (
         <Container>
@@ -396,7 +411,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                     onChange={(event) => setSmartBanEnabled(event.target.checked)}
                                 />
                             }
-                            label={smartBanLabel}
+                            label={<Typography>Smart Ban</Typography>}
                         />
                         <AlertDialog title="How does it work?">
                             <Typography>
@@ -421,7 +436,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                     onChange={(event) => setSmartPickEnabled(event.target.checked)}
                                 />
                             }
-                            label={smartPickLabel}
+                            label={<Typography>Smart Pick</Typography>}
                         />
                         <AlertDialog title="How does it work?">
                             <Typography>
@@ -485,47 +500,97 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                 <Typography>
                                     Champion lists
                                 </Typography>
-                                <MultipleChampionPicker
-                                    championNames={championNames}
-                                    currentList={topChampionList}
-                                    patch={patch}
-                                    onChange={(newList) => setTopChampionList(newList)}
-                                    label="Top"
-                                />
-                                <MultipleChampionPicker
-                                    championNames={championNames}
-                                    currentList={jungleChampionList}
-                                    patch={patch}
-                                    onChange={(newList) => setJungleChampionList(newList)}
-                                    label="Jungle"
-                                />
-                                <MultipleChampionPicker
-                                    championNames={championNames}
-                                    currentList={middleChampionList}
-                                    patch={patch}
-                                    onChange={(newList) => setMiddleChampionList(newList)}
-                                    label="Middle"
-                                />
-                                <MultipleChampionPicker
-                                    championNames={championNames}
-                                    currentList={bottomChampionList}
-                                    patch={patch}
-                                    onChange={(newList) => setBottomChampionList(newList)}
-                                    label="Bottom"
-                                />
-                                <MultipleChampionPicker
-                                    championNames={championNames}
-                                    currentList={supportChampionList}
-                                    patch={patch}
-                                    onChange={(newList) => setSupportChampionList(newList)}
-                                    label="Support"
-                                />
+
+                                <Stack direction="row">
+                                    <IconButton
+                                        aria-label="Reset top to defaults"
+                                        onClick={() => setTopChampionList(defaultChampionsForRole.top)}
+                                    >
+                                        <RestartAltIcon />
+                                    </IconButton>
+
+                                    <MultipleChampionPicker
+                                        championNames={championNames}
+                                        currentList={topChampionList}
+                                        patch={patch}
+                                        onChange={(newList) => setTopChampionList(newList)}
+                                        label="Top"
+                                    />
+                                </Stack>
+
+                                <Stack direction="row">
+                                    <IconButton
+                                        aria-label="Reset jungle to defaults"
+                                        onClick={() => setJungleChampionList(defaultChampionsForRole.jungle)}
+                                    >
+                                        <RestartAltIcon />
+                                    </IconButton>
+
+                                    <MultipleChampionPicker
+                                        championNames={championNames}
+                                        currentList={jungleChampionList}
+                                        patch={patch}
+                                        onChange={(newList) => setJungleChampionList(newList)}
+                                        label="Jungle"
+                                    />
+                                </Stack>
+
+                                <Stack direction="row">
+                                    <IconButton
+                                        aria-label="Reset middle to defaults"
+                                        onClick={() => setMiddleChampionList(defaultChampionsForRole.middle)}
+                                    >
+                                        <RestartAltIcon />
+                                    </IconButton>
+
+                                    <MultipleChampionPicker
+                                        championNames={championNames}
+                                        currentList={middleChampionList}
+                                        patch={patch}
+                                        onChange={(newList) => setMiddleChampionList(newList)}
+                                        label="Middle"
+                                    />
+                                </Stack>
+
+
+                                <Stack direction="row">
+                                    <IconButton
+                                        aria-label="Reset bottom to defaults"
+                                        onClick={() => setBottomChampionList(defaultChampionsForRole.bottom)}>
+                                        <RestartAltIcon />
+                                    </IconButton>
+
+                                    <MultipleChampionPicker
+                                        championNames={championNames}
+                                        currentList={bottomChampionList}
+                                        patch={patch}
+                                        onChange={(newList) => setBottomChampionList(newList)}
+                                        label="Bottom"
+                                    />
+                                </Stack>
+
+                                <Stack direction="row">
+                                    <IconButton
+                                        aria-label="Reset support to defaults"
+                                        onClick={() => setSupportChampionList(defaultChampionsForRole.support)}>
+                                        <RestartAltIcon />
+                                    </IconButton>
+
+                                    <MultipleChampionPicker
+                                        championNames={championNames}
+                                        currentList={supportChampionList}
+                                        patch={patch}
+                                        onChange={(newList) => setSupportChampionList(newList)}
+                                        label="Support"
+                                    />
+                                </Stack>
+
                                 <Container sx={{ p: 2 }}>
                                     <Typography>Auto lockin timer adjustment (better leave as is, 29.5 is recommended)</Typography>
                                     <Slider
                                         sx={{ width: "90%", ml: "5%" }}
                                         value={lockinAt}
-                                        onChange={(event: Event, newValue: number) => setLockinAt(newValue)}
+                                        onChange={onLockinAtChange}
                                         marks={[{ value: 0, label: "Instant lockin" }, { value: 31, label: "To late" }]}
                                         min={0}
                                         max={40}
@@ -539,7 +604,24 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 </Accordion>
 
                 <Typography variant="h6">Pick suggestions</Typography>
-                <Button variant="contained" onClick={() => makePrediction()}>MAKE PREDICTION</Button>
+                <Stack direction="row">
+                    <Button
+                        variant="contained"
+                        // sx={{ width: "30%", ml: "5%" }}
+                        onClick={() => getPredictions().then(newPredictions => setPredictions(newPredictions))}>
+                        MAKE PREDICTION
+                    </Button>
+                    {/* <Slider
+                        sx={{ width: "45%", ml: "10%" }}
+                        value={preferrNormalized}
+                        onChange={onPreferrNormalizedChange}
+                        marks={[{ value: 0, label: "I'm dumb" }, { value: 1, label: "I'm smart" }]}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        valueLabelDisplay="auto"
+                    /> */}
+                </Stack>
                 <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ flexWrap: "wrap" }}>
                     {
                         predictions.length > 0 ?
@@ -577,7 +659,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                     leftTeam.map(pick => <PickEntry
                                         key={pick.cellId}
                                         champions={championNames}
-                                        championName={champions[pick.championId ? pick.championId : pick.championPickIntent]}
+                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
                                         roleName={pick.assignedPosition}
                                         roles={roles}
                                         patch={patch}
@@ -594,7 +676,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                     rightTeam.map(pick => <PickEntry
                                         key={pick.cellId}
                                         champions={championNames}
-                                        championName={champions[pick.championId ? pick.championId : pick.championPickIntent]}
+                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
                                         roleName={pick.assignedPosition}
                                         roles={roles}
                                         patch={patch}
