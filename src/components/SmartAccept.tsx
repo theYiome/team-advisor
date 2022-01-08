@@ -87,7 +87,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
         getQueueState(lockfileContent).then((state) => {
             if(queuePhase !== state.state)
-                setQueuePhase(QueuePhase.NoClient);
+                setQueuePhase(state.state);
             
             if(queueTimer !== state.timer)
                 setQueueTimer(state.timer);

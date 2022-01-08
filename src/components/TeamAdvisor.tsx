@@ -8,24 +8,23 @@ import { TeamBuilder } from './TeamBuilder';
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
 
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import '@fontsource/roboto/400.css';
-import { SmartChampionSelect, MemoizedSmartChampionSelect } from './SmartChampionSelect';
+import { SmartChampionSelect } from './SmartChampionSelect';
 
 import { trayIcon228 as icon } from '../imagesBase64';
 
+import { app, getCurrentWindow } from '@electron/remote';
+
 export const TeamAdvisor: FC<any> = (): ReactElement => {
     const [tabId, setTabId] = React.useState(0);
-
-    // const headerStyle = { backgroundImage: "linear-gradient(to right, #FFF, #FFF, #a7caed)" };
-    // const headerStyle2 = { backgroundImage: "linear-gradient(to right, #FFF, #FFF, #e0ebfa)" };
-    // const headerStyle3 = { backgroundImage: "linear-gradient(to right, #FFF, #FFF, #fff4e5)" };
-    // const headerStyle4 = { backgroundImage: "linear-gradient(to right, #FFF, #FFF, #e6f0ff)" };
-    // const expandIcon = (<ExpandMoreIcon color="action" sx={{ color: "black" }} fontSize="large" />);
-    // const accordionDetailsStyle = { mt: 2 };
-    // const headerVariant = "h6";
+    
+    const quitRequest = () => {
+        getCurrentWindow().destroy();
+        app.quit();
+    };
 
     return (
 
@@ -40,6 +39,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                 <Typography variant="h5" color="#252523" marginBottom={2}>
                     Team Advisor
                 </Typography>
+                <Button size='small' color="error" onClick={quitRequest}>QUIT</Button>
             </Stack>
 
             <Box sx={{ width: '100%' }}>
