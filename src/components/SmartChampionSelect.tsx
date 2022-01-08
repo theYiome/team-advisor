@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Box, Accordion, AccordionDetails, AccordionSummary, IconButton, LinearProgress, Avatar, CircularProgress, Skeleton, Grid } from '@mui/material';
+import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
@@ -74,7 +74,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [bottomChampionList, setBottomChampionList] = useState(defaultChampionsForRole.bottom);
     const [supportChampionList, setSupportChampionList] = useState(defaultChampionsForRole.support);
 
-    const defaultLockinAt = 30;
+    const defaultLockinAt = 31.0;
     const [lockinAt, setLockinAt] = useState(defaultLockinAt);
 
     const [failedToHover, setFailedToHover] = useState([]);
@@ -150,7 +150,6 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     useEffect(() => {
         appRegainControl();
-        setChampionSelectActionStartTime(new Date());
 
         if ([ChampionSelectPhase.Picking, ChampionSelectPhase.Banning].includes(currentChampionSelectPhase)) {
             if (failedToHover.length > 0)
@@ -237,29 +236,30 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const updateFunction = () => {
 
-        // console.log("updateFunction");
+        console.log({elapsed: elapsedTimeSinceLastAction()});
         if (lockfileContent.port === "") {
             if (currentChampionSelectPhase !== ChampionSelectPhase.NoClient)
                 setCurrentChampionSelectPhase(ChampionSelectPhase.NoClient);
             return;
         }
 
+        
         getChampionSelectState(lockfileContent).then((state) => {
-
             const phase = state.phase;
             const isInPickingPhase = phase === ChampionSelectPhase.Picking;
             const isInBanningPhase = phase === ChampionSelectPhase.Banning;
 
             // lockin when reaches ~30 seconds in picking phase - draft only
-            if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt) && (phase === currentChampionSelectPhase))
-                completeAction(lockfileContent, state.actionId);
-
-            if (phase !== currentChampionSelectPhase)
+            if (phase !== currentChampionSelectPhase) {
+                setChampionSelectActionStartTime(new Date());
                 setCurrentChampionSelectPhase(phase);
+            }
+            else if (isInPickingPhase && smartPickEnabled && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt))
+                completeAction(lockfileContent, state.actionId);
 
             // check if worth updating
             if (offlinePhases.includes(phase))
-            return;
+                return;
 
             const championId = state.championId;
             const picks = state.picks;
@@ -321,7 +321,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
             if (!userTookControl && !controlTakenNow) {
                 // if control not taken app can perform an action
-                if (isInPickingPhase) {
+                if (isInPickingPhase && smartPickEnabled) {
                     if (predictions.length > 0) {
                         const championToPick = predictions.find(pick => !unavailableChampions.includes(pick));
 
@@ -330,7 +330,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                         attemptToHover(championToPick);
                     }
                 }
-                else if (isInBanningPhase) {
+                else if (isInBanningPhase && smartBanEnabled) {
                     const idBanList = banList.map(name => parseInt(champions[name]));
                     const championToBan = idBanList.find(ban => !unavailableChampions.includes(ban));
                     attemptToHover(championToBan);

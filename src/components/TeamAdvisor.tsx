@@ -3,14 +3,12 @@ import React, { ReactElement, FC } from 'react';
 import { ClientAccess } from './ClientAccess';
 import { SmartAccept } from './SmartAccept';
 import { Settings } from './Settings';
-import { TeamBuilder } from './TeamBuilder';
 
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
 
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Button, Container, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Avatar, Box, Button, Container, Stack, Tab, Tabs, Typography } from '@mui/material';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import '@fontsource/roboto/400.css';
 import { SmartChampionSelect } from './SmartChampionSelect';
 

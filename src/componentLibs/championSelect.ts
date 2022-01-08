@@ -40,8 +40,6 @@ async function getChampionSelectState(lockfileContent: any) {
         return lobbyState;
     }
 
-    // console.log(session);
-
     if (session.message === "No active delegate") {
         lobbyState.phase = ChampionSelectPhase.NoInChampionSelect;
         return lobbyState;
