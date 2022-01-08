@@ -12,7 +12,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Container, 
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import '@fontsource/roboto/400.css';
-import { SmartChampionSelect } from './SmartChampionSelect';
+import { SmartChampionSelect, MemoizedSmartChampionSelect } from './SmartChampionSelect';
 
 import { trayIcon228 as icon } from '../imagesBase64';
 
@@ -54,7 +54,6 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                         <Tab label="Smart Accept" {...a11yProps(1)} />
                         <Tab label="League Client" {...a11yProps(2)} />
                         <Tab label="Settings" {...a11yProps(3)} />
-                        {/* <Tab label="Team Builder" {...a11yProps(4)} /> */}
                     </Tabs>
                 </Box>
 
@@ -72,9 +71,6 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                         </TabPanel>
                         <TabPanel value={tabId} index={3}>
                             <Settings></Settings>
-                        </TabPanel>
-                        <TabPanel value={tabId} index={4}>
-                            <TeamBuilder></TeamBuilder>
                         </TabPanel>
 
                     </ChampionsProvider>
