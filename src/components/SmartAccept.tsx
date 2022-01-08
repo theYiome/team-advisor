@@ -16,7 +16,7 @@ import { noClientMessage, errorStateMessage } from './common/CommonMessages';
 
 const filePath = "settings/smartaccept.settings.json";
 
-enum QueueStateEnum {
+enum QueuePhase {
     NoClient,
     NoInQueue,
     InQueue,
@@ -28,7 +28,7 @@ enum QueueStateEnum {
 }
 
 type QueueState = {
-    state: QueueStateEnum,
+    state: QueuePhase,
     timer: number
 }
 
@@ -36,13 +36,17 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [enabled, setEnabled] = useState(false);
-    const [periodicUpdate, setPeriodicUpdate] = useState(null);
 
-    const initialQueueState = {
-        state: QueueStateEnum.Unknown,
-        timer: 0
-    };
-    const [queueState, setQueueState] = useState(initialQueueState);
+    const slowUpdateInterval = 1500;
+    const fastUpdateInterval = 300;
+    const [periodicUpdate, setPeriodicUpdate] = useState(null);
+    const [updateInterval, setUpdateInterval] = useState(slowUpdateInterval);
+
+    const initialQueueState = QueuePhase.Unknown;
+    const initialQueueTimer = 0;
+
+    const [queuePhase, setQueuePhase] = useState(initialQueueState);
+    const [queueTimer, setQueueTimer] = useState(initialQueueTimer);
 
     const [secondsToAccept, setSecondsToAccept] = useState(2);
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
@@ -71,75 +75,90 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
     }, [enabled, secondsToAccept])
 
+
+    const updateFunction = () => {
+        if (lockfileContent.port === "") {
+            if(queuePhase !== QueuePhase.NoClient) {
+                setQueuePhase(QueuePhase.NoClient);
+                setQueueTimer(initialQueueTimer);
+            }
+            return;
+        }
+
+        getQueueState(lockfileContent).then((state) => {
+            if(queuePhase !== state.state)
+                setQueuePhase(state.state);
+            
+            if(queueTimer !== state.timer)
+                setQueueTimer(state.timer);
+
+            if (state.state === QueuePhase.GameFound && state.timer >= secondsToAccept)
+                acceptQueue(lockfileContent);
+        });
+    }
+
+    useEffect(() => {
+        if([QueuePhase.InQueue, QueuePhase.GameFound].includes(queuePhase)) {
+            if(updateInterval !== fastUpdateInterval)
+                setUpdateInterval(fastUpdateInterval);
+        }
+        else if (updateInterval !== slowUpdateInterval)
+                setUpdateInterval(slowUpdateInterval)
+    }, [queuePhase]);
+
     // pooling client status
     useEffect(() => {
-
-        const updateFunction = () => {
-            if (lockfileContent.port === "") {
-                setQueueState({
-                    state: QueueStateEnum.NoClient,
-                    timer: 0
-                });
-                return;
-            }
-
-            getQueueState(lockfileContent).then((state) => {
-                setQueueState(state);
-
-                if (state.state === QueueStateEnum.GameFound && state.timer >= secondsToAccept)
-                    acceptQueue(lockfileContent);
-            });
-        }
+        updateFunction();
 
         if (periodicUpdate)
             clearInterval(periodicUpdate);
 
         if (enabled)
-            setPeriodicUpdate(setInterval(updateFunction, 500));
+            setPeriodicUpdate(setInterval(updateFunction, updateInterval));
 
         return () => clearInterval(periodicUpdate);
 
-    }, [enabled, lockfileContent, settingsLoaded]);
+    }, [enabled, lockfileContent, settingsLoaded, updateInterval]);
 
     // clearing state when turned off
     useEffect(() => {
-        if (!enabled)
-            setQueueState(initialQueueState);
+        if (!enabled) {
+            setQueuePhase(initialQueueState);
+            setQueueTimer(initialQueueTimer);
+        }
     }, [enabled]);
 
 
-    const handleTimeChange = (event: Event, newValue: number, activeThumb: number) => {
-        setSecondsToAccept(newValue);
-    };
+    const handleTimeChange = (event: Event, newValue: number, activeThumb: number) => setSecondsToAccept(newValue);
 
     let currentMessage = unknownStateMessage;
 
-    switch (queueState.state) {
-        case QueueStateEnum.NoClient: {
+    switch (queuePhase) {
+        case QueuePhase.NoClient: {
             currentMessage = noClientMessage;
             break;
         }
-        case QueueStateEnum.NoInQueue: {
+        case QueuePhase.NoInQueue: {
             currentMessage = noInQueueMessage;
             break;
         }
-        case QueueStateEnum.InQueue: {
+        case QueuePhase.InQueue: {
             currentMessage = inQueueMessage(secondsToAccept);
             break;
         }
-        case QueueStateEnum.GameFound: {
-            currentMessage = gameFoundMessage(secondsToAccept - queueState.timer, lockfileContent);
+        case QueuePhase.GameFound: {
+            currentMessage = gameFoundMessage(secondsToAccept - queueTimer, lockfileContent);
             break;
         }
-        case QueueStateEnum.Declined: {
+        case QueuePhase.Declined: {
             currentMessage = gameDeclinedMessage(lockfileContent);
             break;
         }
-        case QueueStateEnum.Accepted: {
+        case QueuePhase.Accepted: {
             currentMessage = gameAcceptedMessage(lockfileContent);
             break;
         }
-        case QueueStateEnum.Error: {
+        case QueuePhase.Error: {
             currentMessage = errorStateMessage("Don't know what happened but it's not good! Maybe client isn't running?");
             break;
         }
@@ -181,7 +200,7 @@ async function getQueueState(lockfileContent: any): Promise<QueueState> {
     const { protocol, port, username, password } = lockfileContent;
 
     if (username === "") return {
-        state: QueueStateEnum.NoClient,
+        state: QueuePhase.NoClient,
         timer: 0
     }
 
@@ -194,37 +213,37 @@ async function getQueueState(lockfileContent: any): Promise<QueueState> {
         // console.log(clientResponse);
 
         if (clientResponse.message === "Not attached to a matchmaking queue.") return {
-            state: QueueStateEnum.NoInQueue,
+            state: QueuePhase.NoInQueue,
             timer: 0
         }
         else if (clientResponse.state === "Invalid") return {
-            state: QueueStateEnum.InQueue,
+            state: QueuePhase.InQueue,
             timer: 0
         }
         else if (clientResponse.state === "InProgress") {
             // Game has been found, check whats user response
             if (clientResponse.playerResponse === "Declined") return {
-                state: QueueStateEnum.Declined,
+                state: QueuePhase.Declined,
                 timer: clientResponse.timer
             }
             else if (clientResponse.playerResponse === "Accepted") return {
-                state: QueueStateEnum.Accepted,
+                state: QueuePhase.Accepted,
                 timer: clientResponse.timer
             }
             else return {
-                state: QueueStateEnum.GameFound,
+                state: QueuePhase.GameFound,
                 timer: clientResponse.timer
             }
         }
         else return {
-            state: QueueStateEnum.Unknown,
+            state: QueuePhase.Unknown,
             timer: 0
         }
     }
     catch (err) {
         console.warn(err);
         return {
-            state: QueueStateEnum.Error,
+            state: QueuePhase.Error,
             timer: 0
         }
     }
@@ -269,8 +288,6 @@ const noInQueueMessage = (
     </Alert>
 );
 
-// TODO: (Math.round(acceptTimeThreshold) === 1) ? "second" : "seconds"
-// this is somehow "0 second", makes me insane, please help
 const inQueueMessage = (acceptTimeThreshold: number) => (
     <Alert severity="info">
         <AlertTitle>You are in queue or in champion select</AlertTitle>

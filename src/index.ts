@@ -4,7 +4,7 @@ import { trayIcon228 as trayIcon } from './imagesBase64';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 // attempts to update the app
-require('update-electron-app')();
+require('update-electron-app')({notifyUser: false});
 
 // create required dir structure
 import * as fsPromises from 'node:fs/promises';
@@ -23,6 +23,7 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
     app.quit();
 }
 
+
 const createWindow = (): void => {
     console.log(process.argv);
     const startHidden = process.argv.includes("--hidden");
@@ -40,6 +41,7 @@ const createWindow = (): void => {
         }
     });
 
+    require("@electron/remote/main").enable(mainWindow.webContents);
 
     // and load the index.html of the app.
     console.log("MAIN_WINDOW_WEBPACK_ENTRY", MAIN_WINDOW_WEBPACK_ENTRY);
@@ -105,3 +107,5 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+require('@electron/remote/main').initialize();

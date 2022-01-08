@@ -10,6 +10,8 @@ import { rawClientRequest } from '../componentLibs/clientConnection';
 
 const filePath = "settings/lockfile.settings.json";
 
+const compareLockfiles = (a: any, b: any) => (a.username === b.username && a.password === b.password && a.port === b.port && a.port === b.port && a.protocol === b.protocol);
+
 export const ClientAccess: FC<any> = (): ReactElement => {
 
     const defaultDirPath = "C:\\Riot Games\\League of Legends\\";
@@ -21,22 +23,24 @@ export const ClientAccess: FC<any> = (): ReactElement => {
 
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
     const { protocol, port, username, password } = lockfileContent;
+    const emtpyLockfile = {
+        protocol: "",
+        port: "",
+        username: "",
+        password: "",
+    };
     
     const getLockfileData = async () => {
         const lockfilePath = pathModule.join(dirPath, filename);
         try {
             const fileData = await files.loadString(lockfilePath);
             const parsedData = parseLockfile(fileData);
-            setLockfileContent(parsedData);
-
+            if(!compareLockfiles(parsedData, lockfileContent))
+                setLockfileContent(parsedData);
         } catch (err) {
             console.info(err);
-            setLockfileContent({
-                protocol: "",
-                port: "",
-                username: "",
-                password: "",
-            });
+            if(!compareLockfiles(emtpyLockfile, lockfileContent))
+                setLockfileContent(emtpyLockfile);
         }
     }
 

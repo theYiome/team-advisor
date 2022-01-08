@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Box, Accordion, AccordionDetails, AccordionSummary, IconButton, LinearProgress, Avatar, CircularProgress, Skeleton } from '@mui/material';
+import { Button, TextField, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel, Box, Accordion, AccordionDetails, AccordionSummary, IconButton, LinearProgress, Avatar, CircularProgress, Skeleton, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
@@ -25,7 +25,28 @@ import { PickEntry } from './common/PickEntry';
 
 const filePath = "settings/smartchampionselect.settings.json";
 
-const unsafeCompare = (a: any, b: any) => JSON.stringify(a) == JSON.stringify(b);
+const compareTeams = (a: any[], b: any[]) => {
+    return a.length === b.length && a.every((value, index) => (
+        value.championId === b[index].championId &&
+        value.championPickIntent === b[index].championPickIntent &&
+        value.summonerId === b[index].summonerId &&
+        value.assignedPosition === b[index].assignedPosition
+    ));
+};
+
+const compareArrays = (a: any[], b: any[]) => a.length === b.length && a.every((value, index) => value === b[index]);
+
+const offlinePhases = [
+    ChampionSelectPhase.NoClient,
+    ChampionSelectPhase.NoInChampionSelect,
+    ChampionSelectPhase.Unknown
+];
+
+const idlePhases = [
+    ...offlinePhases,
+    ChampionSelectPhase.InChampionSelect
+];
+
 
 export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
@@ -33,14 +54,16 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const [smartPickEnabled, setSmartPickEnabled] = useState(false);
     const [smartBanEnabled, setSmartBanEnabled] = useState(false);
+
+    const verySlowUpdateInterval = 3000;
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
+    const [updateInterval, setUpdateInterval] = useState(verySlowUpdateInterval);
 
     const initialPhase = ChampionSelectPhase.Unknown;
-    const [championSelectPhase, setChampionSelectPhase] = useState(initialPhase);
+    const [currentChampionSelectPhase, setCurrentChampionSelectPhase] = useState(initialPhase);
 
     // https://stackoverflow.com/questions/41632942/how-to-measure-time-elapsed-on-javascript
     const [championSelectActionStartTime, setChampionSelectActionStartTime] = useState(new Date());
-    const [championSelectActionElapsedTime, setChampionSelectActionElapsedTime] = useState(-1);
     const elapsedTimeSinceLastAction = () => ((new Date() as any) - (championSelectActionStartTime as any)) / 1000;
 
     const [banList, setBanList] = useState(["Jax", "Viktor", "Lulu"]);
@@ -51,7 +74,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [bottomChampionList, setBottomChampionList] = useState(defaultChampionsForRole.bottom);
     const [supportChampionList, setSupportChampionList] = useState(defaultChampionsForRole.support);
 
-    const [lockinAt, setLockinAt] = useState(29.5);
+    const defaultLockinAt = 30;
+    const [lockinAt, setLockinAt] = useState(defaultLockinAt);
 
     const [failedToHover, setFailedToHover] = useState([]);
 
@@ -71,34 +95,28 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const [leftTeam, setLeftTeam] = useState([]);
     const [rightTeam, setRightTeam] = useState([]);
-    const [bans, setBans] = useState([]);
+    const [currentBans, setCurrentBans] = useState([]);
     const [localPlayerCellId, setLocalPlayerCellId] = useState(0);
     const [localPlayerTeamId, setLocalPlayerTeamId] = useState(0);
 
     const [preferredChampionList, setPreferredChampionList] = useState([]);
 
-    const [preferrNormalized, setPreferrNormalized] = useState(0);
     const [predictions, setPredictions] = useState([]);
+
 
     const clearTeamState = () => {
         if (leftTeam.length > 0)
             setLeftTeam([]);
-
         if (rightTeam.length > 0)
             setRightTeam([]);
-
-        if (bans.length > 0)
-            setBans([]);
-
+        if (currentBans.length > 0)
+            setCurrentBans([]);
         if (predictions.length > 0)
             setPredictions([]);
-
         if (preferredChampionList.length > 0)
             setPreferredChampionList([]);
-
         if (localPlayerCellId !== 0)
             setLocalPlayerCellId(0);
-
         if (localPlayerTeamId !== 0)
             setLocalPlayerTeamId(0);
     }
@@ -109,7 +127,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             headers: {
                 "content-type": "application/json",
             },
-            body: { leftTeam, rightTeam, bans, localPlayerCellId, localPlayerTeamId, preferredChampionList, preferrNormalized },
+            body: { leftTeam, rightTeam, bans: currentBans, localPlayerCellId, localPlayerTeamId, preferredChampionList },
             json: true
         }
 
@@ -131,9 +149,25 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     }
 
     useEffect(() => {
-        if (championSelectPhase === ChampionSelectPhase.Picking)
-            getPredictions().then(newPredictions => setPredictions(newPredictions));
-    }, [championSelectPhase])
+        appRegainControl();
+        setChampionSelectActionStartTime(new Date());
+
+        if ([ChampionSelectPhase.Picking, ChampionSelectPhase.Banning].includes(currentChampionSelectPhase)) {
+            if (failedToHover.length > 0)
+                setFailedToHover([]);
+
+            if (currentChampionSelectPhase === ChampionSelectPhase.Picking)
+                getPredictions().then(newPredictions => setPredictions(newPredictions)).then(() => setLastChampionId(0));
+
+            setUpdateInterval(250);
+        }
+        else if ([ChampionSelectPhase.InChampionSelect, ChampionSelectPhase.Planning, ChampionSelectPhase.Done].includes(currentChampionSelectPhase))
+            setUpdateInterval(500);
+        else {
+            clearTeamState();
+            setUpdateInterval(verySlowUpdateInterval);
+        }
+    }, [currentChampionSelectPhase])
 
     // load setting from file
     const loadSettings = () => {
@@ -179,170 +213,169 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     }
 
     // save settings to file when settings are updated
-    useEffect(() => {
+    useEffect(
+        () => saveSettings(),
+        [
+            smartPickEnabled,
+            smartBanEnabled,
+            banList,
+            topChampionList,
+            jungleChampionList,
+            middleChampionList,
+            bottomChampionList,
+            supportChampionList,
+            lockinAt
+        ]
+    );
 
-        saveSettings();
-
-    }, [smartPickEnabled,
-        smartBanEnabled,
-        banList,
-        topChampionList,
-        jungleChampionList,
-        middleChampionList,
-        bottomChampionList,
-        supportChampionList,
-        lockinAt])
-
-    const regainConctrol = () => {
-        setUserTookControl(false);
-        setLastChampionId(0);
+    const appRegainControl = () => {
+        if (userTookControl || lastChampionId !== 0) {
+            setUserTookControl(false);
+            setLastChampionId(0);
+        }
     };
+
+    const updateFunction = () => {
+
+        // console.log("updateFunction");
+        if (lockfileContent.port === "") {
+            if (currentChampionSelectPhase !== ChampionSelectPhase.NoClient)
+                setCurrentChampionSelectPhase(ChampionSelectPhase.NoClient);
+            return;
+        }
+
+        getChampionSelectState(lockfileContent).then((state) => {
+
+            const phase = state.phase;
+            const isInPickingPhase = phase === ChampionSelectPhase.Picking;
+            const isInBanningPhase = phase === ChampionSelectPhase.Banning;
+
+            // lockin when reaches ~30 seconds in picking phase - draft only
+            if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt) && (phase === currentChampionSelectPhase))
+                completeAction(lockfileContent, state.actionId);
+
+            if (phase !== currentChampionSelectPhase)
+                setCurrentChampionSelectPhase(phase);
+
+            // check if worth updating
+            if (offlinePhases.includes(phase))
+            return;
+
+            const championId = state.championId;
+            const picks = state.picks;
+            const bans = state.bans;
+            
+            if(!compareArrays(bans, currentBans))
+                setCurrentBans(bans);
+            
+            const unavailableChampions = bans.concat(picks).concat(failedToHover).filter(unavailable => unavailable !== championId);
+
+            if (localPlayerCellId !== state.localPlayerCellId)
+                setLocalPlayerCellId(state.localPlayerCellId);
+
+            if (localPlayerTeamId !== state.localPlayerTeamId)
+                setLocalPlayerTeamId(state.localPlayerTeamId);
+
+            if (!compareTeams(state.leftTeam, leftTeam))
+                setLeftTeam(state.leftTeam);
+            if (!compareTeams(state.rightTeam, rightTeam))
+                setRightTeam(state.rightTeam);
+
+            const allPlayers = state.leftTeam.concat(state.rightTeam);
+            const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
+            const role = user ? user.assignedPosition : "";
+
+            let preferredChampionList: string[] = roleToChampionList[role];
+            if (!preferredChampionList) {
+                console.warn("No assigned role!");
+                console.warn({ user, role, allPlayers, roleToChampionList });
+                // https://stackoverflow.com/questions/10865025/merge-flatten-an-array-of-arrays
+                preferredChampionList = [].concat.apply([], Object.values(roleToChampionList));
+            }
+
+            const newIdPreferredChampionList = preferredChampionList.map(name => parseInt(champions[name]));
+            if (!compareArrays(preferredChampionList, newIdPreferredChampionList))
+                setPreferredChampionList(newIdPreferredChampionList);
+
+
+            const attemptToHover = (championIdToHover: number) => {
+                if (championIdToHover && championIdToHover !== championId) {
+
+                    if (lastChampionId !== championId)
+                        setLastChampionId(championIdToHover);
+
+                    hoverChampion(lockfileContent, state.actionId, championIdToHover).then((response: any) => {
+                        if (response && response.errorCode)
+                            setFailedToHover([...failedToHover, championIdToHover]);
+                    });
+                }
+            }
+
+            // check if user made any action
+            const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0 && championId !== 0;
+            if (controlTakenNow)
+                setUserTookControl(true);
+
+            if (lastChampionId !== championId)
+                setLastChampionId(championId);
+
+            if (!userTookControl && !controlTakenNow) {
+                // if control not taken app can perform an action
+                if (isInPickingPhase) {
+                    if (predictions.length > 0) {
+                        const championToPick = predictions.find(pick => !unavailableChampions.includes(pick));
+
+                        console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
+
+                        attemptToHover(championToPick);
+                    }
+                }
+                else if (isInBanningPhase) {
+                    const idBanList = banList.map(name => parseInt(champions[name]));
+                    const championToBan = idBanList.find(ban => !unavailableChampions.includes(ban));
+                    attemptToHover(championToBan);
+                }
+            }
+
+        });
+    }
+
 
     // pooling client status
     useEffect(() => {
-
-        const updateFunction = () => {
-
-            if (lockfileContent.port === "") {
-                setChampionSelectPhase(ChampionSelectPhase.NoClient);
-                return;
-            }
-
-            getChampionSelectState(lockfileContent).then((state) => {
-
-                const phase = state.phase;
-                if (phase !== championSelectPhase)
-                    setChampionSelectPhase(phase);
-
-                setChampionSelectActionElapsedTime(elapsedTimeSinceLastAction());
-
-                const offlinePhases = [
-                    ChampionSelectPhase.NoClient,
-                    ChampionSelectPhase.NoInChampionSelect,
-                    ChampionSelectPhase.Unknown
-                ];
-
-                if (!offlinePhases.includes(phase)) {
-                    const championId = state.championId;
-                    const picks = state.picks;
-
-                    const bans = state.bans;
-                    setBans(bans);
-
-                    const unavailableChampions = bans.concat(picks).concat(failedToHover).filter(unavailable => unavailable !== championId);
-
-                    setLocalPlayerCellId(state.localPlayerCellId);
-                    setLocalPlayerTeamId(state.localPlayerTeamId);
-
-                    const allPlayers = state.leftTeam.concat(state.rightTeam);
-
-                    if (!unsafeCompare(state.leftTeam, leftTeam))
-                        setLeftTeam(state.leftTeam);
-                    if (!unsafeCompare(state.rightTeam, rightTeam))
-                        setRightTeam(state.rightTeam);
-
-                    const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
-                    const role = user ? user.assignedPosition : "";
-
-                    let preferredChampionList: string[] = roleToChampionList[role];
-                    if (!preferredChampionList) {
-                        console.warn("No assigned role!");
-                        console.warn({ user, role, allPlayers, roleToChampionList });
-                        // https://stackoverflow.com/questions/10865025/merge-flatten-an-array-of-arrays
-                        preferredChampionList = [].concat.apply([], Object.values(roleToChampionList));
-                    }
-
-                    const newIdPreferredChampionList = preferredChampionList.map(name => parseInt(champions[name]));
-                    setPreferredChampionList(newIdPreferredChampionList);
-
-                    const isInPickingPhase = phase === ChampionSelectPhase.Picking;
-                    const isInBanningPhase = phase === ChampionSelectPhase.Banning;
-
-                    const attemptToHover = (championIdToHover: number) => {
-                        if (championIdToHover && championIdToHover !== championId) {
-                            setLastChampionId(championIdToHover);
-                            hoverChampion(lockfileContent, state.actionId, championIdToHover).then((response: any) => {
-                                try {
-                                    if (response["errorCode"])
-                                        setFailedToHover([...failedToHover, championIdToHover]);
-                                } catch (error) { console.warn(error); }
-                            });
-                        }
-                    }
-
-                    // check if user made any action
-                    const controlTakenNow = lastChampionId !== championId && lastChampionId !== 0 && championId !== 0;
-                    if (controlTakenNow)
-                        setUserTookControl(true);
-
-                    setLastChampionId(championId);
-
-                    if (!userTookControl && !controlTakenNow) {
-                        // if control not taken app can perform an action
-                        if (isInPickingPhase) {
-                            if (predictions.length > 0) {
-                                const championToPick = predictions.find(pick => !unavailableChampions.includes(pick));
-    
-                                console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
-    
-                                attemptToHover(championToPick);
-                            }
-                        }
-                        else if (isInBanningPhase) {
-                            const idBanList = banList.map(name => parseInt(champions[name]));
-                            const championToBan = idBanList.find(ban => !unavailableChampions.includes(ban));
-                            attemptToHover(championToBan);
-                        }
-                    }
-
-                    // lockin when reaches 30 seconds in picking phase - draft only
-                    if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt))
-                        completeAction(lockfileContent, state.actionId);
-                }
-                else {
-                    clearTeamState();
-                }
-
-                // next phase cleanup
-                const idlePhases = [
-                    ...offlinePhases,
-                    ChampionSelectPhase.InChampionSelect
-                ];
-
-                if (idlePhases.includes(phase) || championSelectPhase !== phase) {
-                    regainConctrol();
-                    setChampionSelectActionStartTime(new Date());
-                    setFailedToHover([]);
-                }
-            });
-        }
+        updateFunction();
 
         if (periodicUpdate)
             clearInterval(periodicUpdate);
 
-        if (smartPickEnabled || smartBanEnabled)
-            setPeriodicUpdate(setInterval(updateFunction, 300));
+        if (smartBanEnabled || smartPickEnabled)
+            setPeriodicUpdate(setInterval(updateFunction, updateInterval));
 
         return () => clearInterval(periodicUpdate);
 
     }, [smartPickEnabled,
         smartBanEnabled,
-        lockfileContent,
         settingsLoaded,
-        userTookControl,
         lastChampionId,
-        championSelectPhase]);
+        lockfileContent,
+        userTookControl,
+        currentChampionSelectPhase,
+        topChampionList,
+        jungleChampionList,
+        middleChampionList,
+        bottomChampionList,
+        supportChampionList,
+        updateInterval]);
 
     // clearing state when turned off
     useEffect(() => {
         setChampionSelectActionStartTime(new Date());
         if (!smartPickEnabled && !smartBanEnabled)
-            setChampionSelectPhase(initialPhase);
+            setCurrentChampionSelectPhase(initialPhase);
     }, [smartPickEnabled, smartBanEnabled]);
 
     let currentMessage = unknownMessage;
-
-    switch (championSelectPhase) {
+    switch (currentChampionSelectPhase) {
         case ChampionSelectPhase.NoClient: {
             currentMessage = noClientMessage;
             break;
@@ -364,7 +397,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             break;
         }
         case ChampionSelectPhase.Picking: {
-            currentMessage = pickingMessage((lockinAt - championSelectActionElapsedTime).toFixed(1));
+            currentMessage = pickingMessage();
             break;
         }
         case ChampionSelectPhase.Done: {
@@ -383,7 +416,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const championsWithEmpty = champions;
     championsWithEmpty[0] = "null";
 
-    const controlMessage = userTookControl ? userInControl(regainConctrol) : appInControl;
+    const championNamesWithEmpty = [...championNames, "null"];
+
+    const controlMessage = userTookControl ? userInControl(appRegainControl) : appInControl;
 
     const roles = [...defaultRoles, ""];
 
@@ -391,7 +426,6 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index => <Skeleton key={index} variant="circular" width={42} height={42} />);
     const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} />);
 
-    const onPreferrNormalizedChange = (event: Event, newValue: number) => setPreferrNormalized(newValue);
     const onLockinAtChange = (event: Event, newValue: number) => setLockinAt(newValue);
 
     return (
@@ -481,7 +515,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                 setMiddleChampionList([]);
                                 setJungleChampionList([]);
                                 setSupportChampionList([]);
-                                setLockinAt(29.5);
+                                setLockinAt(defaultLockinAt);
                             }}
                         >
 
@@ -586,7 +620,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                 </Stack>
 
                                 <Container sx={{ p: 2 }}>
-                                    <Typography>Auto lockin timer adjustment (better leave as is, 29.5 is recommended)</Typography>
+                                    <Typography>Auto lockin timer adjustment (better leave as is, {defaultLockinAt.toFixed(1)} is recommended)</Typography>
                                     <Slider
                                         sx={{ width: "90%", ml: "5%" }}
                                         value={lockinAt}
@@ -604,43 +638,33 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 </Accordion>
 
                 <Typography variant="h6">Pick suggestions</Typography>
-                <Stack direction="row">
-                    <Button
-                        variant="contained"
-                        // sx={{ width: "30%", ml: "5%" }}
-                        onClick={() => getPredictions().then(newPredictions => setPredictions(newPredictions))}>
-                        MAKE PREDICTION
-                    </Button>
-                    {/* <Slider
-                        sx={{ width: "45%", ml: "10%" }}
-                        value={preferrNormalized}
-                        onChange={onPreferrNormalizedChange}
-                        marks={[{ value: 0, label: "I'm dumb" }, { value: 1, label: "I'm smart" }]}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        valueLabelDisplay="auto"
-                    /> */}
-                </Stack>
-                <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ flexWrap: "wrap" }}>
+                <Button
+                    variant="contained"
+                    onClick={() => getPredictions().then(newPredictions => setPredictions(newPredictions))}>
+                    MAKE PREDICTION
+                </Button>
+                <Grid container spacing={1}>
                     {
                         predictions.length > 0 ?
-                            predictions.map((ban, index) => <Avatar
-                                key={index}
-                                alt={champions[ban]}
-                                src={avatarURI(patch, champions[ban])}
-                                sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
-                                variant='rounded'
-                            />) :
+                            predictions.map((prediction, index) => 
+                            <Grid key={prediction} item xs={1}>
+                                <Avatar
+                                    key={prediction}
+                                    alt={champions[prediction]}
+                                    src={avatarURI(patch, champions[prediction])}
+                                    sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
+                                    variant='rounded'
+                                />
+                            </Grid>) :
                             predictionsPlaceholder
                     }
-                </Stack>
+                </Grid>
                 <Stack spacing={2}>
                     <Typography>Bans</Typography>
-                    <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ flexWrap: "wrap" }}>
+                    <Stack direction="row" spacing={2} justifyContent="flex-start" alignItems="flex-start" sx={{ flexWrap: "wrap" }}>
                         {
-                            bans.length > 0 ?
-                                bans.map((ban, index) => <Avatar
+                            currentBans.length > 0 ?
+                                currentBans.map((ban, index) => <Avatar
                                     key={index}
                                     alt={champions[ban]}
                                     src={avatarURI(patch, champions[ban])}
@@ -658,7 +682,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                 leftTeam.length > 0 ?
                                     leftTeam.map(pick => <PickEntry
                                         key={pick.cellId}
-                                        champions={championNames}
+                                        champions={championNamesWithEmpty}
                                         championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
                                         roleName={pick.assignedPosition}
                                         roles={roles}
@@ -675,7 +699,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                 rightTeam.length > 0 ?
                                     rightTeam.map(pick => <PickEntry
                                         key={pick.cellId}
-                                        champions={championNames}
+                                        champions={championNamesWithEmpty}
                                         championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
                                         roleName={pick.assignedPosition}
                                         roles={roles}
