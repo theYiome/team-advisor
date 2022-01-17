@@ -97,7 +97,7 @@ export const Settings: FC<any> = (): ReactElement => {
             <Stack spacing={3}>
                 <FormControlLabel
                     control={<Switch checked={autoLauncherEnabled} onChange={handleSwitchChange} />}
-                    label={<Typography><strong>Launch on Startup</strong></Typography>}
+                    label={<Typography><strong>Launch on system startup</strong></Typography>}
                     disabled={autoLauncher ? false : true}
                 />
                 <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>

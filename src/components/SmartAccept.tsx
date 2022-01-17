@@ -37,7 +37,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [enabled, setEnabled] = useState(false);
 
-    const slowUpdateInterval = 1500;
+    const slowUpdateInterval = 2000;
     const fastUpdateInterval = 300;
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
     const [updateInterval, setUpdateInterval] = useState(slowUpdateInterval);

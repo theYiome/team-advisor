@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid } from '@mui/material';
+import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
@@ -55,7 +55,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [smartPickEnabled, setSmartPickEnabled] = useState(false);
     const [smartBanEnabled, setSmartBanEnabled] = useState(false);
 
-    const verySlowUpdateInterval = 3000;
+    const verySlowUpdateInterval = 4000;
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
     const [updateInterval, setUpdateInterval] = useState(verySlowUpdateInterval);
 
@@ -236,14 +236,14 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const updateFunction = () => {
 
-        console.log({elapsed: elapsedTimeSinceLastAction()});
+        console.log({ elapsed: elapsedTimeSinceLastAction() });
         if (lockfileContent.port === "") {
             if (currentChampionSelectPhase !== ChampionSelectPhase.NoClient)
                 setCurrentChampionSelectPhase(ChampionSelectPhase.NoClient);
             return;
         }
 
-        
+
         getChampionSelectState(lockfileContent).then((state) => {
             const phase = state.phase;
             const isInPickingPhase = phase === ChampionSelectPhase.Picking;
@@ -264,10 +264,10 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             const championId = state.championId;
             const picks = state.picks;
             const bans = state.bans;
-            
-            if(!compareArrays(bans, currentBans))
+
+            if (!compareArrays(bans, currentBans))
                 setCurrentBans(bans);
-            
+
             const unavailableChampions = bans.concat(picks).concat(failedToHover).filter(unavailable => unavailable !== championId);
 
             if (localPlayerCellId !== state.localPlayerCellId)
@@ -422,9 +422,43 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const roles = [...defaultRoles, ""];
 
-    const predictionsPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7].map(index => <Skeleton key={index} variant="circular" width={42} height={42} />);
-    const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index => <Skeleton key={index} variant="circular" width={42} height={42} />);
-    const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} />);
+    const predictionsPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(index =>
+        <Grid key={index} item xs={1}>
+            <Skeleton key={index} variant="rectangular" sx={{ boxShadow: 5, width: 42, height: 42 }} />
+        </Grid>
+    );
+
+    const renderedPredictions = predictions.map((prediction, index) =>
+        <Grid key={prediction} item xs={1}>
+            <Avatar
+                key={prediction}
+                alt={champions[prediction]}
+                src={avatarURI(patch, champions[prediction])}
+                sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
+                variant='rounded'
+            />
+        </Grid>
+    );
+
+    const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index =>
+        <Grid key={index} item xs={1}>
+            <Skeleton key={index} variant="rectangular" sx={{ boxShadow: 5, width: 42, height: 42 }} />
+        </Grid>
+    );
+
+    const renderedBans = currentBans.map((ban, index) =>
+        <Grid key={index} item xs={1}>
+            <Avatar
+                key={index}
+                alt={champions[ban]}
+                src={avatarURI(patch, champions[ban])}
+                sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
+                variant='rounded'
+            />
+        </Grid>
+    );
+
+    const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} sx={{ boxShadow: 5 }}/>);
 
     const onLockinAtChange = (event: Event, newValue: number) => setLockinAt(newValue);
 
@@ -625,7 +659,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                         sx={{ width: "90%", ml: "5%" }}
                                         value={lockinAt}
                                         onChange={onLockinAtChange}
-                                        marks={[{ value: 0, label: "Instant lockin" }, { value: 31, label: "To late" }]}
+                                        marks={[{ value: 0, label: "Instant lockin" }, { value: 32, label: "To late" }]}
                                         min={0}
                                         max={40}
                                         step={0.5}
@@ -643,73 +677,58 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     onClick={() => getPredictions().then(newPredictions => setPredictions(newPredictions))}>
                     MAKE PREDICTION
                 </Button>
+
+                <Typography>Pick suggestions</Typography>
+
                 <Grid container spacing={1}>
                     {
-                        predictions.length > 0 ?
-                            predictions.map((prediction, index) => 
-                            <Grid key={prediction} item xs={1}>
-                                <Avatar
-                                    key={prediction}
-                                    alt={champions[prediction]}
-                                    src={avatarURI(patch, champions[prediction])}
-                                    sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
-                                    variant='rounded'
-                                />
-                            </Grid>) :
-                            predictionsPlaceholder
+                        predictions.length > 0 ? renderedPredictions : predictionsPlaceholder
                     }
                 </Grid>
-                <Stack spacing={2}>
-                    <Typography>Bans</Typography>
-                    <Stack direction="row" spacing={2} justifyContent="flex-start" alignItems="flex-start" sx={{ flexWrap: "wrap" }}>
+
+                <Typography>Bans</Typography>
+
+                <Grid container spacing={1}>
+                    {
+                        currentBans.length > 0 ? renderedBans : bansPlaceholder
+                    }
+                </Grid>
+
+
+                <Typography>Picks</Typography>
+                <Stack direction="row" spacing={3}>
+                    <Stack spacing={2} sx={{ width: 1 }}>
                         {
-                            currentBans.length > 0 ?
-                                currentBans.map((ban, index) => <Avatar
-                                    key={index}
-                                    alt={champions[ban]}
-                                    src={avatarURI(patch, champions[ban])}
-                                    sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
-                                    variant='rounded'
+                            leftTeam.length > 0 ?
+                                leftTeam.map(pick => <PickEntry
+                                    key={pick.cellId}
+                                    champions={championNamesWithEmpty}
+                                    championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                                    roleName={pick.assignedPosition}
+                                    roles={roles}
+                                    patch={patch}
+                                    isPlayer={pick.cellId === localPlayerCellId}
+                                    disabled
+                                    reverse
                                 />) :
-                                bansPlaceholder
+                                picksPlaceholder
                         }
                     </Stack>
-
-                    <Typography>Picks</Typography>
-                    <Stack direction="row" spacing={3}>
-                        <Stack spacing={2} sx={{ width: 1 }}>
-                            {
-                                leftTeam.length > 0 ?
-                                    leftTeam.map(pick => <PickEntry
-                                        key={pick.cellId}
-                                        champions={championNamesWithEmpty}
-                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
-                                        roleName={pick.assignedPosition}
-                                        roles={roles}
-                                        patch={patch}
-                                        isPlayer={pick.cellId === localPlayerCellId}
-                                        disabled
-                                        reverse
-                                    />) :
-                                    picksPlaceholder
-                            }
-                        </Stack>
-                        <Stack spacing={2} sx={{ width: 1 }}>
-                            {
-                                rightTeam.length > 0 ?
-                                    rightTeam.map(pick => <PickEntry
-                                        key={pick.cellId}
-                                        champions={championNamesWithEmpty}
-                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
-                                        roleName={pick.assignedPosition}
-                                        roles={roles}
-                                        patch={patch}
-                                        isPlayer={pick.cellId === localPlayerCellId}
-                                        disabled
-                                    />) :
-                                    picksPlaceholder
-                            }
-                        </Stack>
+                    <Stack spacing={2} sx={{ width: 1 }}>
+                        {
+                            rightTeam.length > 0 ?
+                                rightTeam.map(pick => <PickEntry
+                                    key={pick.cellId}
+                                    champions={championNamesWithEmpty}
+                                    championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                                    roleName={pick.assignedPosition}
+                                    roles={roles}
+                                    patch={patch}
+                                    isPlayer={pick.cellId === localPlayerCellId}
+                                    disabled
+                                />) :
+                                picksPlaceholder
+                        }
                     </Stack>
                 </Stack>
             </Stack>

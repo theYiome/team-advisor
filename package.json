@@ -1,7 +1,7 @@
 {
     "name": "team-advisor",
     "productName": "team-advisor",
-    "version": "0.6.3",
+    "version": "0.6.4",
     "description": "My Electron application description",
     "repository": {
         "type": "git",
@@ -20,7 +20,7 @@
         "name": "Kamil Pasterczyk",
         "email": "yiome@outlook.com"
     },
-    "license": "MIT",
+    "license": "",
     "config": {
         "forge": {
             "publishers": [
