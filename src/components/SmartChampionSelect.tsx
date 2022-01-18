@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box } from '@mui/material';
+import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
@@ -46,6 +46,13 @@ const idlePhases = [
     ...offlinePhases,
     ChampionSelectPhase.InChampionSelect
 ];
+
+
+const suggestionsEndpoints: any = {
+    "default": "http://tomage.eu.pythonanywhere.com/team-advisor/",
+    "strong": "http://tomage.eu.pythonanywhere.com/team-advisor/strong",
+    "fit": "http://tomage.eu.pythonanywhere.com/team-advisor/fit "
+};
 
 
 export const SmartChampionSelect: FC<any> = (): ReactElement => {
@@ -102,6 +109,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [preferredChampionList, setPreferredChampionList] = useState([]);
 
     const [predictions, setPredictions] = useState([]);
+    const [predictionEndpoint, setPredictionEndpoint] = useState("default");
+    const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
 
     const clearTeamState = () => {
@@ -122,6 +131,17 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     }
 
     const getPredictions = async () => {
+
+        // do role swap if selected by the user
+        if (roleSwappedWith !== "") {
+            const allPlayers = leftTeam.concat(rightTeam);
+            const user = allPlayers.find(x => (x.cellId === localPlayerCellId));
+            const userRole = user ? user.assignedPosition : "";
+            
+            if (roleSwappedWith !== userRole)
+                localPlayerTeamId === 0 ? swapRolesInTeam(userRole, roleSwappedWith, leftTeam) : swapRolesInTeam(userRole, roleSwappedWith, rightTeam);
+        }
+
         const options = {
             method: "POST",
             headers: {
@@ -134,7 +154,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         console.log(options);
 
         try {
-            const response = await connections.fetchJSON("https://tomage.eu.pythonanywhere.com/team-advisor/", options);
+            const response = await connections.fetchJSON(suggestionsEndpoints[predictionEndpoint], options);
             console.log({ response, options, type: typeof (response) });
             const content = response["sorted_champion_ids"];
             if (content)
@@ -147,6 +167,15 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             return [];
         }
     }
+
+    const swapRolesInTeam = (firstRole: string, secondRole: string, team: any[]) => {
+        team.forEach(x => {
+            if(x.assignedPosition === firstRole)
+                x.assignedPosition = secondRole;
+            else if (x.assignedPosition === secondRole)
+                x.assignedPosition = firstRole;
+        })
+    };
 
     useEffect(() => {
         appRegainControl();
@@ -182,6 +211,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             setSupportChampionList(settings.supportChampionList);
 
             setLockinAt(settings.lockinAt);
+            setPredictionEndpoint(settings.predictionEndpoint);
 
             setSettingsLoaded(true);
         }).catch(error => {
@@ -204,7 +234,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             middleChampionList,
             bottomChampionList,
             supportChampionList,
-            lockinAt
+            lockinAt,
+            predictionEndpoint
         }
 
         if (settingsLoaded)
@@ -223,7 +254,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             middleChampionList,
             bottomChampionList,
             supportChampionList,
-            lockinAt
+            lockinAt,
+            predictionEndpoint
         ]
     );
 
@@ -283,7 +315,10 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
             const allPlayers = state.leftTeam.concat(state.rightTeam);
             const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
-            const role = user ? user.assignedPosition : "";
+            const roleFromChampionSelect = user ? user.assignedPosition : "";
+            
+            const role = roleSwappedWith !== "" ? roleSwappedWith : roleFromChampionSelect;
+            
 
             let preferredChampionList: string[] = roleToChampionList[role];
             if (!preferredChampionList) {
@@ -422,9 +457,15 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const roles = [...defaultRoles, ""];
 
+    const avatarStyle = { boxShadow: 3, width: 42, height: 42 };
+
     const predictionsPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(index =>
         <Grid key={index} item xs={1}>
-            <Skeleton key={index} variant="rectangular" sx={{ boxShadow: 5, width: 42, height: 42 }} />
+            <Skeleton
+                key={index}
+                variant="rectangular"
+                sx={avatarStyle}
+            />
         </Grid>
     );
 
@@ -434,7 +475,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 key={prediction}
                 alt={champions[prediction]}
                 src={avatarURI(patch, champions[prediction])}
-                sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
+                sx={{ avatarStyle, outlineWidth: 1, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
                 variant='rounded'
             />
         </Grid>
@@ -442,7 +483,11 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index =>
         <Grid key={index} item xs={1}>
-            <Skeleton key={index} variant="rectangular" sx={{ boxShadow: 5, width: 42, height: 42 }} />
+            <Skeleton
+                key={index}
+                variant="rectangular"
+                sx={avatarStyle}
+            />
         </Grid>
     );
 
@@ -452,13 +497,13 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 key={index}
                 alt={champions[ban]}
                 src={avatarURI(patch, champions[ban])}
-                sx={{ boxShadow: 5, backgroundColor: "white", width: 42, height: 42 }}
+                sx={avatarStyle}
                 variant='rounded'
             />
         </Grid>
     );
 
-    const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} sx={{ boxShadow: 5 }}/>);
+    const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} sx={{ boxShadow: 5 }} />);
 
     const onLockinAtChange = (event: Event, newValue: number) => setLockinAt(newValue);
 
@@ -469,7 +514,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     direction="row"
                     justifyContent="center"
                     alignItems="center"
-                    spacing={10}>
+                    spacing={10}
+                >
 
                     <Stack direction="row">
                         <FormControlLabel
@@ -672,15 +718,50 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 </Accordion>
 
                 <Typography variant="h6">Pick suggestions</Typography>
-                <Button
-                    variant="contained"
-                    onClick={() => getPredictions().then(newPredictions => setPredictions(newPredictions))}>
-                    MAKE PREDICTION
-                </Button>
 
-                <Typography>Pick suggestions</Typography>
+                <Stack direction="row" spacing={2}>
+                    <Button
+                        variant="contained"
+                        sx={{ width: "100%" }}
+                        onClick={() => getPredictions().then(newPredictions => setPredictions(newPredictions))}
+                    >
+                        MAKE PREDICTION
+                    </Button>
 
-                <Grid container spacing={1}>
+                    <FormControl fullWidth>
+                        <InputLabel>Role swap</InputLabel>
+                        <Select
+                            value={roleSwappedWith}
+                            label="Role swap"
+                            onChange={(event: any) => setRoleSwaptWith(event.target.value as string)}
+                        >
+                            <MenuItem value={""}>No swap</MenuItem>
+                            <MenuItem value={"top"}>Top</MenuItem>
+                            <MenuItem value={"jungle"}>Jungle</MenuItem>
+                            <MenuItem value={"middle"}>Middle</MenuItem>
+                            <MenuItem value={"bottom"}>Bottom</MenuItem>
+                            <MenuItem value={"support"}>Support</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth>
+                        <InputLabel>Suggestion type</InputLabel>
+                        <Select
+                            value={predictionEndpoint}
+                            label="Suggestion type"
+                            onChange={(event: any) => setPredictionEndpoint(event.target.value as string)}
+                        >
+                            <MenuItem value={"default"}>Default</MenuItem>
+                            <MenuItem value={"strong"}>Prioritize winrate</MenuItem>
+                            <MenuItem value={"fit"}>Prioritize matchups</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                </Stack>
+
+                <Typography>Suggested champions in order</Typography>
+
+                <Grid container columns={10} spacing={1}>
                     {
                         predictions.length > 0 ? renderedPredictions : predictionsPlaceholder
                     }
@@ -688,7 +769,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
                 <Typography>Bans</Typography>
 
-                <Grid container spacing={1}>
+                <Grid container columns={10} spacing={1}>
                     {
                         currentBans.length > 0 ? renderedBans : bansPlaceholder
                     }
@@ -734,4 +815,12 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             </Stack>
         </Container>
     );
+}
+
+// https://stackoverflow.com/questions/7128675/from-green-to-red-color-depend-on-percentage/7128796
+function getColor(value: number) {
+    //value from 0 to 1
+    const hue = ((1.0 - value) * 120).toString(10);
+    const color = `hsl(${hue}, 100%, 50%)`;
+    return color;
 }
