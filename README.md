@@ -12,12 +12,38 @@ Assistance for your League of Legends games.
 - automatically adds new chamions on new League patch
 - option to launch on system startup
 - works in system tray
+- auto update form GitHub Releases (thanks to `update-electron-app`)
 
 ## Looks
 ### Settings of League Client
 ![Settings of League Client](/docs/ta_league_client.png)
 ### Smart Accept
 ![Smart Accept](/docs/ta_smart_accept.png)
+
+## Installing
+You can download installer for current release from GitHub:<br/>
+[https://github.com/theYiome/team-advisor/releases](https://github.com/theYiome/team-advisor/releases)
+
+File name of an installer looks something like this: `team-advisor-0.6.3.Setup.exe`
+
+## Running
+Requires `npm` to run
+```bash
+git clone https://github.com/theYiome/team-advisor.git
+cd team-advisor
+npm i
+npm start
+```
+
+## Builiding
+Requires `npm` to build
+```bash
+git clone https://github.com/theYiome/team-advisor.git
+cd team-advisor
+npm i
+npm run make
+```
+Binaries will be in `out/make`.
 
 ## Resources
 ### Data dragon

@@ -132,6 +132,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const getPredictions = async () => {
 
+        setPredictions([]);
+
         // do role swap if selected by the user
         if (roleSwappedWith !== "") {
             const allPlayers = leftTeam.concat(rightTeam);
@@ -316,7 +318,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             const allPlayers = state.leftTeam.concat(state.rightTeam);
             const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
             const roleFromChampionSelect = user ? user.assignedPosition : "";
-            
+
             const role = roleSwappedWith !== "" ? roleSwappedWith : roleFromChampionSelect;
             
 
@@ -400,6 +402,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         middleChampionList,
         bottomChampionList,
         supportChampionList,
+        roleSwappedWith,
         updateInterval]);
 
     // clearing state when turned off

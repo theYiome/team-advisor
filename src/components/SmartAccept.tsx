@@ -48,7 +48,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
     const [queuePhase, setQueuePhase] = useState(initialQueueState);
     const [queueTimer, setQueueTimer] = useState(initialQueueTimer);
 
-    const [secondsToAccept, setSecondsToAccept] = useState(2);
+    const [secondsToAccept, setSecondsToAccept] = useState(0);
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
 
     // load setting from file
