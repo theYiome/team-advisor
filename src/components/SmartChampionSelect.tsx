@@ -23,7 +23,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { avatarURI } from '../componentLibs/leagueImages';
 import { PickEntry } from './common/PickEntry';
 
-const filePath = "settings/smartchampionselect.settings.json";
+import { configFilePath } from './TeamAdvisor';
+const filePath = configFilePath("smartchampionselect.settings.json");
 
 const compareTeams = (a: any[], b: any[]) => {
     return a.length === b.length && a.every((value, index) => (
@@ -41,12 +42,6 @@ const offlinePhases = [
     ChampionSelectPhase.NoInChampionSelect,
     ChampionSelectPhase.Unknown
 ];
-
-const idlePhases = [
-    ...offlinePhases,
-    ChampionSelectPhase.InChampionSelect
-];
-
 
 const suggestionsEndpoints: any = {
     "default": "http://tomage.eu.pythonanywhere.com/team-advisor/",
@@ -113,6 +108,19 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
 
+    // this should go somewhere else
+    const [currentActionId, setCurrentActionId] = useState(undefined);
+
+    const onAvatarClick = (clickedChampionId: number) => {
+        console.log({ currentActionId, clickedChampionId });
+        if (currentActionId !== undefined) {
+            hoverChampion(lockfileContent, currentActionId, clickedChampionId).then((response: any) => {
+                if (response && response.errorCode)
+                    console.warn({ clickedChampionId, msg: "Hover failed!" });
+            });
+        }
+    };
+
     const clearTeamState = () => {
         if (leftTeam.length > 0)
             setLeftTeam([]);
@@ -139,7 +147,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             const allPlayers = leftTeam.concat(rightTeam);
             const user = allPlayers.find(x => (x.cellId === localPlayerCellId));
             const userRole = user ? user.assignedPosition : "";
-            
+
             if (roleSwappedWith !== userRole)
                 localPlayerTeamId === 0 ? swapRolesInTeam(userRole, roleSwappedWith, leftTeam) : swapRolesInTeam(userRole, roleSwappedWith, rightTeam);
         }
@@ -172,7 +180,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const swapRolesInTeam = (firstRole: string, secondRole: string, team: any[]) => {
         team.forEach(x => {
-            if(x.assignedPosition === firstRole)
+            if (x.assignedPosition === firstRole)
                 x.assignedPosition = secondRole;
             else if (x.assignedPosition === secondRole)
                 x.assignedPosition = firstRole;
@@ -187,7 +195,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 setFailedToHover([]);
 
             if (currentChampionSelectPhase === ChampionSelectPhase.Picking)
-                getPredictions().then(newPredictions => setPredictions(newPredictions)).then(() => setLastChampionId(0));
+                getPredictions().then(newPredictions => setPredictions(newPredictions));
 
             setUpdateInterval(250);
         }
@@ -291,6 +299,10 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             else if (isInPickingPhase && smartPickEnabled && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt))
                 completeAction(lockfileContent, state.actionId);
 
+
+            if (state.actionId !== currentActionId)
+                setCurrentActionId(state.actionId);
+
             // check if worth updating
             if (offlinePhases.includes(phase))
                 return;
@@ -320,7 +332,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             const roleFromChampionSelect = user ? user.assignedPosition : "";
 
             const role = roleSwappedWith !== "" ? roleSwappedWith : roleFromChampionSelect;
-            
+
 
             let preferredChampionList: string[] = roleToChampionList[role];
             if (!preferredChampionList) {
@@ -358,19 +370,18 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
             if (!userTookControl && !controlTakenNow) {
                 // if control not taken app can perform an action
-                if (isInPickingPhase && smartPickEnabled) {
-                    if (predictions.length > 0) {
-                        const championToPick = predictions.find(pick => !unavailableChampions.includes(pick));
-
-                        console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
-
-                        attemptToHover(championToPick);
-                    }
-                }
-                else if (isInBanningPhase && smartBanEnabled) {
+                if (isInBanningPhase && smartBanEnabled) {
                     const idBanList = banList.map(name => parseInt(champions[name]));
                     const championToBan = idBanList.find(ban => !unavailableChampions.includes(ban));
                     attemptToHover(championToBan);
+                }
+            }
+
+            if (isInPickingPhase && smartPickEnabled) {
+                if (predictions.length > 0 && championId === 0) {
+                    const championToPick = predictions.find(pick => !unavailableChampions.includes(pick));
+                    console.log({ allPlayers, user, role, championList: preferredChampionList, unavailableChampions, choosenChampion: championToPick });
+                    attemptToHover(championToPick);
                 }
             }
 
@@ -460,7 +471,11 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const roles = [...defaultRoles, ""];
 
-    const avatarStyle = { boxShadow: 3, width: 42, height: 42 };
+    const avatarStyle = {
+        boxShadow: 1,
+        width: 42,
+        height: 42,
+    };
 
     const predictionsPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(index =>
         <Grid key={index} item xs={1}>
@@ -472,15 +487,20 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         </Grid>
     );
 
-    const renderedPredictions = predictions.map((prediction, index) =>
+    const renderedPredictions = predictions.map((prediction: number, index) =>
         <Grid key={prediction} item xs={1}>
-            <Avatar
-                key={prediction}
-                alt={champions[prediction]}
-                src={avatarURI(patch, champions[prediction])}
-                sx={{ avatarStyle, outlineWidth: 1, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
-                variant='rounded'
-            />
+            <Button
+                onClick={() => onAvatarClick(prediction)}
+                sx={{ '&:hover': { boxShadow: 6 } }}
+            >
+                <Avatar
+                    key={prediction}
+                    alt={champions[prediction]}
+                    src={avatarURI(patch, champions[prediction])}
+                    sx={{ avatarStyle, outlineWidth: 1, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
+                    variant='rounded'
+                />
+            </Button>
         </Grid>
     );
 
@@ -563,10 +583,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                                 It will also <strong>lock in</strong> any champion you hover when timer reaches zero.
 
                                 <ul>
-                                    <li>App will adjust this hover in real time.</li>
+                                    <li>App will adjust this hover if somebody picks your champion</li>
                                     <li>If no champion from your list matches criteria, nothing will be hovered.</li>
                                     <li>Auto lock in does not work in custom games.</li>
-                                    <li>Hovering something by yourself takes control from the app.</li>
                                 </ul>
                             </Typography>
                         </AlertDialog>

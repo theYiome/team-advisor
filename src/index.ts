@@ -8,8 +8,12 @@ require('update-electron-app')({notifyUser: false});
 
 // create required dir structure
 import * as fsPromises from 'node:fs/promises';
-fsPromises.mkdir("settings", { recursive: true });
-fsPromises.mkdir("data", { recursive: true });
+
+try {
+    fsPromises.mkdir(app.getPath("userData"), { recursive: true });
+} catch(error) { 
+    console.warn(error) 
+};
 
 let tray = null;
 

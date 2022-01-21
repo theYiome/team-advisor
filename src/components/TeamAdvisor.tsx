@@ -1,3 +1,13 @@
+import { app, getCurrentWindow } from '@electron/remote';
+import * as path from 'path';
+
+export const userData = app.getPath("userData");
+export const configFilePath = (filename: string) => path.join(userData, filename);
+
+console.log({userData, configFilePath});
+//TODO circular dependency, should be fixed in better way
+
+
 import React, { ReactElement, FC } from 'react';
 
 import { ClientAccess } from './ClientAccess';
@@ -14,7 +24,6 @@ import { SmartChampionSelect } from './SmartChampionSelect';
 
 import { trayIcon228 as icon } from '../imagesBase64';
 
-import { app, getCurrentWindow } from '@electron/remote';
 
 export const TeamAdvisor: FC<any> = (): ReactElement => {
     const [tabId, setTabId] = React.useState(0);

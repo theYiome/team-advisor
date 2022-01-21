@@ -14,7 +14,8 @@ import { noClientMessage, errorStateMessage } from './common/CommonMessages';
     POST /lol-matchmaking/v1/ready-check/decline
 */
 
-const filePath = "settings/smartaccept.settings.json";
+import { configFilePath } from './TeamAdvisor';
+const filePath = configFilePath("smartaccept.settings.json");
 
 enum QueuePhase {
     NoClient,

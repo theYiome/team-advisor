@@ -19,7 +19,8 @@ try {
 }
 
 
-const filePath = "data/champions.json";
+import { configFilePath } from './TeamAdvisor';
+const filePath = configFilePath("champions.json");
 
 export const Settings: FC<any> = (): ReactElement => {
 

@@ -8,7 +8,8 @@ import { LockfileContext } from './LockfileContext';
 import * as files from '../libs/files';
 import { rawClientRequest } from '../componentLibs/clientConnection';
 
-const filePath = "settings/lockfile.settings.json";
+import { configFilePath } from './TeamAdvisor';
+const filePath =  configFilePath("lockfile.settings.json");
 
 const compareLockfiles = (a: any, b: any) => (a.username === b.username && a.password === b.password && a.port === b.port && a.port === b.port && a.protocol === b.protocol);
 
