@@ -463,9 +463,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const patch = champions["patch"];
 
     const championsWithEmpty = champions;
-    championsWithEmpty[0] = "null";
+    championsWithEmpty[0] = "";
 
-    const championNamesWithEmpty = [...championNames, "null"];
+    const championNamesWithEmpty = [...championNames, ""];
 
     const controlMessage = userTookControl ? userInControl(appRegainControl) : appInControl;
 
@@ -789,7 +789,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     }
                 </Grid>
 
-                <Typography>Bans</Typography>
+                <Typography>Bans and picks</Typography>
 
                 <Grid container columns={10} spacing={1}>
                     {
@@ -797,8 +797,6 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     }
                 </Grid>
 
-
-                <Typography>Picks</Typography>
                 <Stack direction="row" spacing={3}>
                     <Stack spacing={2} sx={{ width: 1 }}>
                         {

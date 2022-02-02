@@ -19,6 +19,10 @@ Assistance for your League of Legends games.
 ![Settings of League Client](/docs/ta_league_client.png)
 ### Smart Accept
 ![Smart Accept](/docs/ta_smart_accept.png)
+### Smart Champion Select
+![Ban list](/docs/ta_championselect_chamionlist.png)
+### Pick Suggestions
+![Pick Suggestions](/docs/ta_picksuggestions.png)
 
 ## Installing
 You can download installer for current release from GitHub:<br/>

@@ -3,12 +3,16 @@ import { trayIcon228 as trayIcon } from './imagesBase64';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
+if(require('electron-squirrel-startup')) {
+    app.exit(0);
+    process.exit(0);
+}
+
 // attempts to update the app
 require('update-electron-app')({notifyUser: false});
 
 // create required dir structure
 import * as fsPromises from 'node:fs/promises';
-
 try {
     fsPromises.mkdir(app.getPath("userData"), { recursive: true });
 } catch(error) { 
@@ -21,11 +25,6 @@ let tray = null;
 // plugin that tells the Electron app where to look for the Webpack-bundled app code (depending on
 // whether you're running in development or production).
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
-
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
-    app.quit();
-}
 
 
 const createWindow = (): void => {

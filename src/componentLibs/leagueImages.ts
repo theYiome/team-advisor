@@ -16,7 +16,7 @@ const roleImages: any = {
 }
 
 function avatarURI(patch: string, championName: string) {
-    if (championName !== "" && championName !== "null")
+    if (patch && championName && championName !== "" && championName !== "null")
         return `http://ddragon.leagueoflegends.com/cdn/${patch}/img/champion/${championName}.png`;
     else
         return `https://icon-library.com/images/missing-image-icon/missing-image-icon-19.jpg`;
