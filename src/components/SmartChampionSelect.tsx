@@ -497,7 +497,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     key={prediction}
                     alt={champions[prediction]}
                     src={avatarURI(patch, champions[prediction])}
-                    sx={{ avatarStyle, outlineWidth: 1, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
+                    sx={{ avatarStyle, outlineWidth: 3, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
                     variant='rounded'
                 />
             </Button>
