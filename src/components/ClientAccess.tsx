@@ -6,7 +6,7 @@ import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, 
 import { LockfileContext } from './LockfileContext';
 
 import * as files from '../libs/files';
-import { rawClientRequest } from '../componentLibs/clientConnection';
+import { rawLcuRequest } from '../libs/lcuRequest';
 
 import { configFilePath } from './TeamAdvisor';
 const filePath =  configFilePath("lockfile.settings.json");
@@ -189,5 +189,5 @@ function parseLockfile(fileString: any) {
 
 function restartClientUX(lockfileContent: any): void {
     const endpointName = "riotclient/kill-and-restart-ux";
-    rawClientRequest(lockfileContent, endpointName, { method: 'POST' }).catch(error => console.warn(error));
+    rawLcuRequest(lockfileContent, endpointName, { method: 'POST' }).catch(error => console.warn(error));
 }

@@ -1,4 +1,4 @@
-import { rawClientRequest, jsonClientRequest } from './clientConnection';
+import { rawLcuRequest, jsonLcuRequest } from '../../libs/lcuRequest';
 
 enum ChampionSelectPhase {
     NoClient,
@@ -33,7 +33,7 @@ async function getChampionSelectState(lockfileContent: any) {
     const endpointName = "lol-champ-select/v1/session";
     let session = null;
     try {
-        session = await jsonClientRequest(lockfileContent, endpointName);
+        session = await jsonLcuRequest(lockfileContent, endpointName);
     } catch (error) {
         console.warn(error);
         lobbyState.phase = ChampionSelectPhase.NoClient;
@@ -117,11 +117,11 @@ async function hoverChampion(lockfileContent: any, actionId: number, championId:
         body: { championId },
         json: true
     }
-    return rawClientRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}`, options);
+    return rawLcuRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}`, options);
 }
 
 async function completeAction(lockfileContent: any, actionId: number) {
-    return rawClientRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}/complete`, { method: "POST" });
+    return rawLcuRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}/complete`, { method: "POST" });
 }
 
 function instantCompleteAction(lockfileContent: any, actionId: number, championId: number) {

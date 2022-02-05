@@ -1,4 +1,4 @@
-import * as files from '../libs/files';
+import * as files from './files';
 
 export async function loadSetting(path="data/app-settings.json") {
     try {
@@ -13,6 +13,8 @@ export async function loadSetting(path="data/app-settings.json") {
     }
 }
 
-export async function saveSettings(settingsObject, path="data/app-settings.json") {
+export async function saveSettings(settingsObject: any, path="data/app-settings.json") {
     files.saveJSON(settingsObject, path, 4);
 }
+
+

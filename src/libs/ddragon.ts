@@ -1,4 +1,4 @@
-import * as connections from '../libs/connections';
+import * as connections from './connections';
 
 
 export async function ddragonVersions() {
@@ -6,20 +6,20 @@ export async function ddragonVersions() {
     return connections.fetchJSON(ddragonVersionsURL);
 }
 
-export async function ddragonChampions(patch) {
+export async function ddragonChampions(patch: string) {
     const ddragonChampionURL = `http://ddragon.leagueoflegends.com/cdn/${patch}/data/en_US/champion.json`;
 
     try {
 
         const ddragonData = await connections.fetchJSON(ddragonChampionURL);
         
-        const output = {
+        const output: any = {
             patch: ddragonData.version
         }
     
         // creates object {"103": "Ahri", "1": "Annie", ...}
         for (const [key, value] of Object.entries(ddragonData.data)) {
-            const id = value.key;
+            const id = (value as any).key;
             output[id] = key;
         }
         console.log(output);

@@ -1,6 +1,6 @@
-import * as connections from '../libs/connections'
+import * as connections from './connections';
 
-async function rawClientRequest(lockfileContent: any, endpointName: string, options: any = { method: 'GET' }) {
+async function rawLcuRequest(lockfileContent: any, endpointName: string, options: any = { method: 'GET' }) {
     const {protocol, port, username, password} = lockfileContent;
     const urlWithAuth = connections.clientURL(port, password, username, protocol);
     const url = urlWithAuth + endpointName;
@@ -8,7 +8,7 @@ async function rawClientRequest(lockfileContent: any, endpointName: string, opti
     return connections.fetchRaw(url, options)
 }
 
-async function jsonClientRequest(lockfileContent: any, endpointName: string, options: any = { method: 'GET' }) {
+async function jsonLcuRequest(lockfileContent: any, endpointName: string, options: any = { method: 'GET' }) {
     const {protocol, port, username, password} = lockfileContent;
     const urlWithAuth = connections.clientURL(port, password, username, protocol);
     const url = urlWithAuth + endpointName;
@@ -16,4 +16,4 @@ async function jsonClientRequest(lockfileContent: any, endpointName: string, opt
     return connections.fetchJSON(url, options)
 }
 
-export { rawClientRequest, jsonClientRequest };
+export { rawLcuRequest, jsonLcuRequest };

@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useEffect, useContext } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Button, FormControlLabel, Paper, Stack, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import * as ddragon from '../jsutils/ddragon.js';
+import * as ddragon from '../libs/ddragon';
 import * as files from "../libs/files";
 
 import { ChampionsContext } from './ChampionsContext';

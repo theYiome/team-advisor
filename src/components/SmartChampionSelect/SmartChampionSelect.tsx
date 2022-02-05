@@ -5,25 +5,25 @@ import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion,
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
-import { AlertDialog } from './common/AlertDialog';
+import { AlertDialog } from '../common/AlertDialog';
 
-import * as files from '../libs/files';
-import * as connections from '../libs/connections'
-import { defaultRoles, defaultChampionsForRole } from '../componentLibs/championSelectConstants';
+import * as files from '../../libs/files';
+import * as connections from '../../libs/connections'
+import { defaultRoles, defaultChampionsForRole } from './SmartChampionSelectConstants';
 
-import { LockfileContext } from './LockfileContext';
-import { ChampionsContext } from './ChampionsContext';
+import { LockfileContext } from '../LockfileContext';
+import { ChampionsContext } from '../ChampionsContext';
 
-import { noClientMessage, errorStateMessage } from './common/CommonMessages';
-import { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAction } from '../componentLibs/championSelect';
-import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from './common/ChampionSelectMessages';
+import { noClientMessage, errorStateMessage } from '../common/CommonMessages';
+import { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAction } from './SmartChampionSelectLogic';
+import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from '../common/ChampionSelectMessages';
 
-import { MultipleChampionPicker } from './common/ChampionRolePicker';
+import { MultipleChampionPicker } from '../common/ChampionRolePicker';
 import { ErrorBoundary } from 'react-error-boundary';
-import { avatarURI } from '../componentLibs/leagueImages';
-import { PickEntry } from './common/PickEntry';
+import { avatarURI } from '../../componentLibs/leagueImages';
+import { PickEntry } from '../common/PickEntry';
 
-import { configFilePath } from './TeamAdvisor';
+import { configFilePath } from '../TeamAdvisor';
 const filePath = configFilePath("smartchampionselect.settings.json");
 
 const compareTeams = (a: any[], b: any[]) => {

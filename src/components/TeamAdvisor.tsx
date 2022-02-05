@@ -11,7 +11,7 @@ console.log({userData, configFilePath});
 import React, { ReactElement, FC } from 'react';
 
 import { ClientAccess } from './ClientAccess';
-import { SmartAccept } from './SmartAccept';
+import { SmartAccept } from './SmartAccept/SmartAccept';
 import { Settings } from './Settings';
 
 import { LockfileProvider } from './LockfileContext';
@@ -20,7 +20,7 @@ import { ChampionsProvider } from './ChampionsContext';
 import { Avatar, Box, Button, Container, Stack, Tab, Tabs, Typography } from '@mui/material';
 
 import '@fontsource/roboto/400.css';
-import { SmartChampionSelect } from './SmartChampionSelect';
+import { SmartChampionSelect } from './SmartChampionSelect/SmartChampionSelect';
 
 import { trayIcon228 as icon } from '../imagesBase64';
 
