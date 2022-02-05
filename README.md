@@ -28,7 +28,7 @@ Assistance for your League of Legends games.
 You can download installer for current release from GitHub:<br/>
 [https://github.com/theYiome/team-advisor/releases](https://github.com/theYiome/team-advisor/releases)
 
-File name of an installer looks something like this: `team-advisor-0.6.3.Setup.exe`
+File name of an installer looks like this: `team-advisor-<version>.Setup.exe`
 
 ## Running
 Requires `npm` to run
