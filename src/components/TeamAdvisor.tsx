@@ -4,7 +4,7 @@ import * as path from 'path';
 export const userData = app.getPath("userData");
 export const configFilePath = (filename: string) => path.join(userData, filename);
 
-console.log({userData, configFilePath});
+console.log({ userData, configFilePath });
 //TODO circular dependency, should be fixed in better way
 
 
@@ -17,25 +17,23 @@ import { Settings } from './Settings';
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
 
-import { Avatar, Box, Button, Container, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Avatar, Box, Button, Container, Stack, Tab, Tabs, Typography, Paper } from '@mui/material';
 
 import '@fontsource/roboto/400.css';
 import { SmartChampionSelect } from './SmartChampionSelect/SmartChampionSelect';
 
 import { trayIcon228 as icon } from '../imagesBase64';
 
-
 export const TeamAdvisor: FC<any> = (): ReactElement => {
     const [tabId, setTabId] = React.useState(0);
-    
+
     const quitRequest = () => {
         getCurrentWindow().destroy();
         app.quit();
     };
 
     return (
-
-        <Container sx={{ boxShadow: 8, pl: 8, pr: 8, pt: 4, pb: 4 }}>
+        <Container component={Paper} sx={{ boxShadow: 8, pl: 8, pr: 8, pt: 4, pb: 4 }}>
             <Stack
                 direction="row"
                 spacing={2}
@@ -43,14 +41,14 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                 justifyContent="center"
                 alignItems="center">
                 <Avatar src={icon} sx={{ boxShadow: 1, width: "32px", height: "32px" }} />
-                <Typography variant="h5" color="#252523" marginBottom={2}>
+                <Typography variant="h5" marginBottom={2}>
                     Team Advisor
                 </Typography>
-                <Button size='small' color="error" onClick={quitRequest}>QUIT</Button>
+                <Button size='medium' color="error" variant='outlined' onClick={quitRequest}>QUIT</Button>
             </Stack>
 
             <Box sx={{ width: '100%' }}>
-                
+
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs
                         value={tabId}

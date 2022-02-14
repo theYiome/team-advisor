@@ -56,7 +56,7 @@ export const Settings: FC<any> = (): ReactElement => {
         <TableContainer component={Paper}>
             <Table sx={{ width: 1, fontSize: 1 }} size="small" aria-label="a dense table">
                 <TableHead>
-                    <TableRow sx={{ backgroundColor: "#EEE" }}>
+                    <TableRow>
                         <TableCell>key</TableCell>
                         <TableCell>value</TableCell>
                     </TableRow>
