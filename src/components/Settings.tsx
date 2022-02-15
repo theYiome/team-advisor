@@ -102,10 +102,10 @@ export const Settings: FC<any> = (): ReactElement => {
                     disabled={autoLauncher ? false : true}
                 />
                 <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>
+                <Paper elevation={4} sx={{p: 2}}>
                 {
                     champions ? (
-                        <Paper elevation={3}>
-                            <Accordion>
+                            <Accordion color='warning'>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                     <Typography>
                                         Champion data for patch <strong>{champions["patch"]}</strong>
@@ -115,12 +115,12 @@ export const Settings: FC<any> = (): ReactElement => {
                                     {data_table}
                                 </AccordionDetails>
                             </Accordion>
-                        </Paper>
                     )
-                        : (
-                            "Nothing to display"
+                    : (
+                        "Nothing to display"
                         )
                 }
+                </Paper>
             </Stack>
         </Container>
     );

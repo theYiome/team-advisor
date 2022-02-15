@@ -15,25 +15,17 @@ import { Settings } from './Settings';
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
 
-import { Avatar, Box, Button, Container, Stack, Tab, Tabs, Typography, Paper, AppBar } from '@mui/material';
+import { Box, Container, Tab, Tabs, Paper } from '@mui/material';
 
 import '@fontsource/roboto/400.css';
 import { SmartChampionSelect } from './SmartChampionSelect/SmartChampionSelect';
 
-import { trayIcon228 as icon } from '../imagesBase64';
-
 export const TeamAdvisor: FC<any> = (): ReactElement => {
     const [tabId, setTabId] = React.useState(0);
 
-    const quitRequest = () => {
-        getCurrentWindow().destroy();
-        app.quit();
-    };
-
     return (
-        <Container component={Paper} sx={{ boxShadow: 8, pl: 8, pr: 8, pt: 4, pb: 4 }}>
-            <Box sx={{ width: 1, pt: 1 }}>
-
+        <Paper sx={{ pl: 4, pr: 4, pt: 4, pb: 4 }} className="draggable" elevation={0}>
+            <Paper sx={{ width: 1, pt: 1, pb: 4 }} elevation={1}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs
                         value={tabId}
@@ -65,10 +57,8 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
 
                     </ChampionsProvider>
                 </LockfileProvider>
-
-            </Box>
-
-        </Container>
+            </Paper>
+        </Paper>
     );
 }
 

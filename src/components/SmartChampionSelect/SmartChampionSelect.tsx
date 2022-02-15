@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select, LinearProgress, CircularProgress } from '@mui/material';
+import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select, LinearProgress, CircularProgress, Paper } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
@@ -104,7 +104,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [preferredChampionList, setPreferredChampionList] = useState([]);
 
     const [predictions, setPredictions] = useState([]);
-    const [loadingPredictions, setLoadingPredictions] = useState(true);
+    const [loadingPredictions, setLoadingPredictions] = useState(false);
     const [predictionEndpoint, setPredictionEndpoint] = useState("default");
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
@@ -601,146 +601,147 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 <Stack>
                     {currentMessage}
                 </Stack>
+                <Paper elevation={4} sx={{p: 2}}>
+                    <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography>
+                                Settings
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <ErrorBoundary
+                                FallbackComponent={(error, resetErrorBoundary) => <Typography>Failed to load. Please restart the app: {error.error.message}</Typography>}
+                                onError={() => {
+                                    setSmartBanEnabled(false);
+                                    setSmartBanEnabled(false);
+                                    setBanList([]);
+                                    setTopChampionList([]);
+                                    setBottomChampionList([]);
+                                    setMiddleChampionList([]);
+                                    setJungleChampionList([]);
+                                    setSupportChampionList([]);
+                                    setLockinAt(defaultLockinAt);
+                                }}
+                            >
 
-                <Accordion>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography>
-                            Settings
-                        </Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        <ErrorBoundary
-                            FallbackComponent={(error, resetErrorBoundary) => <Typography>Failed to load. Please restart the app: {error.error.message}</Typography>}
-                            onError={() => {
-                                setSmartBanEnabled(false);
-                                setSmartBanEnabled(false);
-                                setBanList([]);
-                                setTopChampionList([]);
-                                setBottomChampionList([]);
-                                setMiddleChampionList([]);
-                                setJungleChampionList([]);
-                                setSupportChampionList([]);
-                                setLockinAt(defaultLockinAt);
-                            }}
-                        >
-
-                            <Stack spacing={2}>
-                                <Typography>
-                                    Ban list
-                                </Typography>
-                                <MultipleChampionPicker
-                                    championNames={championNames}
-                                    currentList={banList}
-                                    patch={patch}
-                                    onChange={(newBanList) => setBanList(newBanList)}
-                                    label="Ban list"
-                                    variant="outlined"
-                                />
-                                <Typography>
-                                    Champion lists
-                                </Typography>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset top to defaults"
-                                        onClick={() => setTopChampionList(defaultChampionsForRole.top)}
-                                    >
-                                        <RestartAltIcon />
-                                    </IconButton>
-
+                                <Stack spacing={2}>
+                                    <Typography>
+                                        Ban list
+                                    </Typography>
                                     <MultipleChampionPicker
                                         championNames={championNames}
-                                        currentList={topChampionList}
+                                        currentList={banList}
                                         patch={patch}
-                                        onChange={(newList) => setTopChampionList(newList)}
-                                        label="Top"
+                                        onChange={(newBanList) => setBanList(newBanList)}
+                                        label="Ban list"
+                                        variant="outlined"
                                     />
+                                    <Typography>
+                                        Champion lists
+                                    </Typography>
+
+                                    <Stack direction="row">
+                                        <IconButton
+                                            aria-label="Reset top to defaults"
+                                            onClick={() => setTopChampionList(defaultChampionsForRole.top)}
+                                        >
+                                            <RestartAltIcon />
+                                        </IconButton>
+
+                                        <MultipleChampionPicker
+                                            championNames={championNames}
+                                            currentList={topChampionList}
+                                            patch={patch}
+                                            onChange={(newList) => setTopChampionList(newList)}
+                                            label="Top"
+                                        />
+                                    </Stack>
+
+                                    <Stack direction="row">
+                                        <IconButton
+                                            aria-label="Reset jungle to defaults"
+                                            onClick={() => setJungleChampionList(defaultChampionsForRole.jungle)}
+                                        >
+                                            <RestartAltIcon />
+                                        </IconButton>
+
+                                        <MultipleChampionPicker
+                                            championNames={championNames}
+                                            currentList={jungleChampionList}
+                                            patch={patch}
+                                            onChange={(newList) => setJungleChampionList(newList)}
+                                            label="Jungle"
+                                        />
+                                    </Stack>
+
+                                    <Stack direction="row">
+                                        <IconButton
+                                            aria-label="Reset middle to defaults"
+                                            onClick={() => setMiddleChampionList(defaultChampionsForRole.middle)}
+                                        >
+                                            <RestartAltIcon />
+                                        </IconButton>
+
+                                        <MultipleChampionPicker
+                                            championNames={championNames}
+                                            currentList={middleChampionList}
+                                            patch={patch}
+                                            onChange={(newList) => setMiddleChampionList(newList)}
+                                            label="Middle"
+                                        />
+                                    </Stack>
+
+
+                                    <Stack direction="row">
+                                        <IconButton
+                                            aria-label="Reset bottom to defaults"
+                                            onClick={() => setBottomChampionList(defaultChampionsForRole.bottom)}>
+                                            <RestartAltIcon />
+                                        </IconButton>
+
+                                        <MultipleChampionPicker
+                                            championNames={championNames}
+                                            currentList={bottomChampionList}
+                                            patch={patch}
+                                            onChange={(newList) => setBottomChampionList(newList)}
+                                            label="Bottom"
+                                        />
+                                    </Stack>
+
+                                    <Stack direction="row">
+                                        <IconButton
+                                            aria-label="Reset support to defaults"
+                                            onClick={() => setSupportChampionList(defaultChampionsForRole.support)}>
+                                            <RestartAltIcon />
+                                        </IconButton>
+
+                                        <MultipleChampionPicker
+                                            championNames={championNames}
+                                            currentList={supportChampionList}
+                                            patch={patch}
+                                            onChange={(newList) => setSupportChampionList(newList)}
+                                            label="Support"
+                                        />
+                                    </Stack>
+
+                                    <Container sx={{ p: 2 }}>
+                                        <Typography>Auto lockin timer adjustment (better leave as is, {defaultLockinAt.toFixed(1)} is recommended)</Typography>
+                                        <Slider
+                                            sx={{ width: "90%", ml: "5%" }}
+                                            value={lockinAt}
+                                            onChange={onLockinAtChange}
+                                            marks={[{ value: 0, label: "Instant lockin" }, { value: 32, label: "To late" }]}
+                                            min={0}
+                                            max={40}
+                                            step={0.5}
+                                            valueLabelDisplay="auto"
+                                        />
+                                    </Container>
                                 </Stack>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset jungle to defaults"
-                                        onClick={() => setJungleChampionList(defaultChampionsForRole.jungle)}
-                                    >
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={jungleChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setJungleChampionList(newList)}
-                                        label="Jungle"
-                                    />
-                                </Stack>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset middle to defaults"
-                                        onClick={() => setMiddleChampionList(defaultChampionsForRole.middle)}
-                                    >
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={middleChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setMiddleChampionList(newList)}
-                                        label="Middle"
-                                    />
-                                </Stack>
-
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset bottom to defaults"
-                                        onClick={() => setBottomChampionList(defaultChampionsForRole.bottom)}>
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={bottomChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setBottomChampionList(newList)}
-                                        label="Bottom"
-                                    />
-                                </Stack>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset support to defaults"
-                                        onClick={() => setSupportChampionList(defaultChampionsForRole.support)}>
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={supportChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setSupportChampionList(newList)}
-                                        label="Support"
-                                    />
-                                </Stack>
-
-                                <Container sx={{ p: 2 }}>
-                                    <Typography>Auto lockin timer adjustment (better leave as is, {defaultLockinAt.toFixed(1)} is recommended)</Typography>
-                                    <Slider
-                                        sx={{ width: "90%", ml: "5%" }}
-                                        value={lockinAt}
-                                        onChange={onLockinAtChange}
-                                        marks={[{ value: 0, label: "Instant lockin" }, { value: 32, label: "To late" }]}
-                                        min={0}
-                                        max={40}
-                                        step={0.5}
-                                        valueLabelDisplay="auto"
-                                    />
-                                </Container>
-                            </Stack>
-                        </ErrorBoundary>
-                    </AccordionDetails>
-                </Accordion>
+                            </ErrorBoundary>
+                        </AccordionDetails>
+                    </Accordion>
+                </Paper>
 
                 <Typography variant="h6">Pick suggestions</Typography>
 

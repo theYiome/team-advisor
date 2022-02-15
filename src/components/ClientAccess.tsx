@@ -98,7 +98,7 @@ export const ClientAccess: FC<any> = (): ReactElement => {
     );
 
     const data_table = (
-        <Paper elevation={3}>
+        <Paper elevation={3} sx={{p: 1}}>
             <TableContainer>
                 <Table sx={{ width: 1 }} size="small" aria-label="a dense table">
                     <TableHead>
@@ -150,7 +150,7 @@ export const ClientAccess: FC<any> = (): ReactElement => {
 
                 <Button sx={{ width: 1}} color="success" variant='outlined' onClick={resetToDefault}>RESET TO DEFAULT</Button>
 
-                <Paper elevation={3} sx={{p: 2}}>
+                <Paper elevation={3} sx={{p: 1, pb: 2}}>
                     <Container>
                         <Typography variant='h6'>
                             Utilities

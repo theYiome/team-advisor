@@ -24,7 +24,7 @@ export const darkTheme = createTheme({
         },
         text: {
             primary: '#F5F5F5',
-            secondary: '#EEE'
+            secondary: '#DDD'
         },
     },
     shape: {

@@ -27,16 +27,8 @@ body {
     background-image: url('./icons/close.png');
 }
 
-#max-button-inner {
-    background-image: url('./icons/max.png');
-}
-
 #min-button-inner {
     background-image: url('./icons/min.png');
-}
-
-#restore-button-inner {
-    background-image: url('./icons/restore.png');
 }
 
 #quit-button-inner {
@@ -66,7 +58,7 @@ body {
     background: rgba(0,0,0,0);
 }
 .scroll_enabled::-webkit-scrollbar-thumb {
-    background-image: linear-gradient(#195ad2, #083c9e, #a7caed);
+    background-image: linear-gradient(#083c9e, #195ad2);
     border-radius: 12px;
     border: 5px solid rgba(0,0,0,0);
     background-clip: content-box;
@@ -136,7 +128,6 @@ p {
 
 /* Styling of window frame and titlebar */
 body {
-    border: 1px solid #48545c;
     overflow-y: hidden;
 }
 
@@ -168,6 +159,17 @@ body {
     width: 100%;
     height: 100%;
     -webkit-app-region: drag;
+    cursor: grab;
+}
+
+.draggable {
+    /* -webkit-app-region: drag; */
+    /* cursor: grab; */
+}
+
+.draggable > * {
+    /* -webkit-app-region: no-drag; */
+    /* cursor: default; */
 }
 
 #titlebar {
@@ -202,7 +204,7 @@ body {
 
 #window-controls {
     display: grid;
-    grid-template-columns: repeat(6, 46px);
+    grid-template-columns: repeat(5, 46px);
     position: absolute;
     top: 0;
     right: 0;
@@ -274,13 +276,8 @@ body {
     grid-column: 4;
 }
 
-#max-button,
-#restore-button {
-    grid-column: 5;
-}
-
 #close-button {
-    grid-column: 6;
+    grid-column: 5;
 }
 
 #restore-button {
