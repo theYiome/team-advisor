@@ -98,34 +98,36 @@ export const ClientAccess: FC<any> = (): ReactElement => {
     );
 
     const data_table = (
-        <TableContainer component={Paper}>
-            <Table sx={{ width: 1 }} size="small" aria-label="a dense table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>names</TableCell>
-                        <TableCell>values</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    <TableRow key={1} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell component="th" scope="row">protocol</TableCell>
-                        <TableCell component="th" scope="row">{protocol}</TableCell>
-                    </TableRow>
-                    <TableRow key={2} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell component="th" scope="row">port</TableCell>
-                        <TableCell component="th" scope="row">{port}</TableCell>
-                    </TableRow>
-                    <TableRow key={3} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell component="th" scope="row">username</TableCell>
-                        <TableCell component="th" scope="row">{username}</TableCell>
-                    </TableRow>
-                    <TableRow key={4} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell component="th" scope="row">password</TableCell>
-                        <TableCell component="th" scope="row">{password}</TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <Paper elevation={3}>
+            <TableContainer>
+                <Table sx={{ width: 1 }} size="small" aria-label="a dense table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>names</TableCell>
+                            <TableCell>values</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        <TableRow key={1} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            <TableCell component="th" scope="row">protocol</TableCell>
+                            <TableCell component="th" scope="row">{protocol}</TableCell>
+                        </TableRow>
+                        <TableRow key={2} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            <TableCell component="th" scope="row">port</TableCell>
+                            <TableCell component="th" scope="row">{port}</TableCell>
+                        </TableRow>
+                        <TableRow key={3} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            <TableCell component="th" scope="row">username</TableCell>
+                            <TableCell component="th" scope="row">{username}</TableCell>
+                        </TableRow>
+                        <TableRow key={4} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            <TableCell component="th" scope="row">password</TableCell>
+                            <TableCell component="th" scope="row">{password}</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Paper>
     );
 
     return (
@@ -146,22 +148,21 @@ export const ClientAccess: FC<any> = (): ReactElement => {
                     sx={{ width: 1, mb: 2 }}
                 />
 
-                <ButtonGroup sx={{ width: 1 }} variant="contained" aria-label="outlined primary button group">
-                    <Button sx={{ width: 1}} color="error" onClick={getLockfileData}>FORCE LOAD DATA FROM LOCKFILE</Button>
-                    <Button sx={{ width: 1}} color="success" onClick={resetToDefault}>RESET TO DEFAULT</Button>
-                </ButtonGroup>
+                <Button sx={{ width: 1}} color="success" variant='outlined' onClick={resetToDefault}>RESET TO DEFAULT</Button>
 
-                <Container>
-                    <Typography variant='h6'>
-                        Utilities
-                    </Typography>
-                    <Typography>
-                        Sometimes client may bug while using this app (annoying sounds or visual glitches).
-                        If that happens you can <strong>restart client UX</strong>, that is a visual part of the client.
-                        It will take around 10 seconds and <strong>it will not kick you out</strong> of lobby, game search or champion select. 
-                        Features like <strong>Smart Accept</strong> or <strong>Smart Ban</strong> will still work when client UX is offline.
-                    </Typography>
-                </Container>
+                <Paper elevation={3} sx={{p: 2}}>
+                    <Container>
+                        <Typography variant='h6'>
+                            Utilities
+                        </Typography>
+                        <Typography>
+                            Sometimes client may bug while using this app (annoying sounds or visual glitches).
+                            If that happens you can <strong>restart client UX</strong>, that is a visual part of the client.
+                            It will take around 10 seconds and <strong>it will not kick you out</strong> of lobby, game search or champion select. 
+                            Features like <strong>Smart Accept</strong> or <strong>Smart Ban</strong> will still work when client UX is offline.
+                        </Typography>
+                    </Container>
+                </Paper>
                 <ButtonGroup sx={{ width: 1 }} variant="contained" aria-label="outlined primary button group">
                     <Button sx={{ width: 1}} color="error" onClick={() => restartClientUX(lockfileContent)}>RESTART CLIENT UX</Button>
                 </ButtonGroup>

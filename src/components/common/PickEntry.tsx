@@ -1,4 +1,4 @@
-import { Avatar, Divider, Stack, Typography, Autocomplete, Box, TextField } from '@mui/material';
+import { Avatar, Divider, Stack, Typography, Autocomplete, Box, TextField, Paper } from '@mui/material';
 import React, { FC, ReactElement } from 'react';
 
 import { avatarURI, roleImages } from '../../componentLibs/leagueImages';
@@ -30,17 +30,16 @@ const PickEntry: FC<PickEntryProp> = ({
     reverse = false
 }: PickEntryProp): ReactElement => {
 
-    const gradientDirection = reverse ? "to right top" : "to left top";
-    const gradientColor = isPlayer ? "#fff4e5" : "#e6f0ff";
-    const style = { boxShadow: 1, p: 2, backgroundImage: `linear-gradient(${gradientDirection}, #FFF, #FFF, ${gradientColor})` };
+    const boxShadow = isPlayer ? "0 6px 12px rgba(255, 215, 0, 0.25), 0 6px 12px rgba(255, 215, 0, 0.30)" : "0 10px 20px rgba(8, 60, 158, 0.25), 0 8px 12px rgba(8, 60, 158, 0.30)";
+    const style = { p: 2, boxShadow };
 
     const avatarSize = 39;
-    const avatarStyle = { width: avatarSize, height: avatarSize, boxShadow: 5, backgroundColor: "white" };
+    const avatarStyle = { width: avatarSize, height: avatarSize, boxShadow: 5 };
 
     const championRoleAvatars = (
         <Stack spacing={2}>
-            <Avatar alt={championName} src={championName ? avatarURI(patch, championName) : ""} sx={avatarStyle} variant='rounded'/>
-            <Avatar alt={roleName} src={roleImages[roleName]} sx={avatarStyle} variant="rounded" />
+            <Avatar alt={championName} src={championName ? avatarURI(patch, championName) : ""} sx={avatarStyle} variant='square'/>
+            <Avatar alt={roleName} src={roleImages[roleName]} sx={avatarStyle} variant="square" />
         </Stack>
     );
 
@@ -66,13 +65,6 @@ const PickEntry: FC<PickEntryProp> = ({
                     special={roleName ? true : false}
                 />
             </Stack>
-
-
-            {/* <Stack spacing={1}>
-                <Typography>Suggestions from your champions</Typography>
-                <Divider orientation="horizontal" flexItem />
-                <Typography>Suggestions from all champions</Typography>
-            </Stack> */}
         </Stack>
     );
 
@@ -80,10 +72,12 @@ const PickEntry: FC<PickEntryProp> = ({
     const secondElement = reverse ? championRoleAvatars : inputOutput;
 
     return (
-        <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={2} sx={style}>
-            {firstElement}
-            {secondElement}
-        </Stack>
+        <Paper elevation={4}>
+            <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={2} sx={style}>
+                {firstElement}
+                {secondElement}
+            </Stack>
+        </Paper>
     );
 }
 

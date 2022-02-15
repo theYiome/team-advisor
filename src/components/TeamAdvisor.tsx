@@ -5,8 +5,6 @@ export const userData = app.getPath("userData");
 export const configFilePath = (filename: string) => path.join(userData, filename);
 
 console.log({ userData, configFilePath });
-//TODO circular dependency, should be fixed in better way
-
 
 import React, { ReactElement, FC } from 'react';
 
@@ -17,7 +15,7 @@ import { Settings } from './Settings';
 import { LockfileProvider } from './LockfileContext';
 import { ChampionsProvider } from './ChampionsContext';
 
-import { Avatar, Box, Button, Container, Stack, Tab, Tabs, Typography, Paper } from '@mui/material';
+import { Avatar, Box, Button, Container, Stack, Tab, Tabs, Typography, Paper, AppBar } from '@mui/material';
 
 import '@fontsource/roboto/400.css';
 import { SmartChampionSelect } from './SmartChampionSelect/SmartChampionSelect';
@@ -34,20 +32,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
 
     return (
         <Container component={Paper} sx={{ boxShadow: 8, pl: 8, pr: 8, pt: 4, pb: 4 }}>
-            <Stack
-                direction="row"
-                spacing={2}
-                sx={{ mb: 2 }}
-                justifyContent="center"
-                alignItems="center">
-                <Avatar src={icon} sx={{ boxShadow: 1, width: "32px", height: "32px" }} />
-                <Typography variant="h5" marginBottom={2}>
-                    Team Advisor
-                </Typography>
-                <Button size='medium' color="error" variant='outlined' onClick={quitRequest}>QUIT</Button>
-            </Stack>
-
-            <Box sx={{ width: '100%' }}>
+            <Box sx={{ width: 1, pt: 1 }}>
 
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs

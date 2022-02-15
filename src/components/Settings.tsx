@@ -53,7 +53,7 @@ export const Settings: FC<any> = (): ReactElement => {
     }
 
     const data_table = (
-        <TableContainer component={Paper}>
+        <TableContainer>
             <Table sx={{ width: 1, fontSize: 1 }} size="small" aria-label="a dense table">
                 <TableHead>
                     <TableRow>
@@ -104,16 +104,18 @@ export const Settings: FC<any> = (): ReactElement => {
                 <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>
                 {
                     champions ? (
-                        <Accordion>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                <Typography>
-                                    Champion data for patch <strong>{champions["patch"]}</strong>
-                                </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                {data_table}
-                            </AccordionDetails>
-                        </Accordion>
+                        <Paper elevation={3}>
+                            <Accordion>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Typography>
+                                        Champion data for patch <strong>{champions["patch"]}</strong>
+                                    </Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    {data_table}
+                                </AccordionDetails>
+                            </Accordion>
+                        </Paper>
                     )
                         : (
                             "Nothing to display"

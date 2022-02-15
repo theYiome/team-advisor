@@ -19,14 +19,26 @@ export const darkTheme = createTheme({
             main: '#000',
         },
         background: {
-            default: '#000000',
+            default: '#010101',
             paper: '#020202',
         },
         text: {
-            primary: '#F3F3F3',
+            primary: '#F5F5F5',
+            secondary: '#EEE'
         },
     },
     shape: {
-        borderRadius: 14,
+        borderRadius: 10,
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                contained: {
+                    background: 'linear-gradient(45deg, #195ad2 30%, #083c9e 90%)',
+                    // boxShadow: '0 1px 2px 2px #083c9e',
+                    color: 'white'
+                },
+            },
+        }
     }
 });

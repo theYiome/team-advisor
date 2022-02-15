@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, nativeImage, Tray } from 'electron';
 import { trayIcon228 as trayIcon } from './imagesBase64';
+// import someicon from './icons/close-k-10.png';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -26,16 +27,18 @@ let tray = null;
 // whether you're running in development or production).
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
-
 const createWindow = (): void => {
     console.log(process.argv);
     const startHidden = process.argv.includes("--hidden");
 
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        height: 700,
-        width: 800,
+        height: 720,
+        width: 750,
+        minWidth: 600,
+        minHeight: 200,
         show: !startHidden,
+        frame: false,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,

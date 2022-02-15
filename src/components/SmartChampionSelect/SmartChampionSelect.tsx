@@ -1,7 +1,7 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select, LinearProgress, CircularProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
@@ -104,6 +104,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [preferredChampionList, setPreferredChampionList] = useState([]);
 
     const [predictions, setPredictions] = useState([]);
+    const [loadingPredictions, setLoadingPredictions] = useState(true);
     const [predictionEndpoint, setPredictionEndpoint] = useState("default");
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
@@ -140,7 +141,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const getPredictions = async () => {
 
-        setPredictions([]);
+        setLoadingPredictions(true);
 
         // do role swap if selected by the user
         if (roleSwappedWith !== "") {
@@ -167,12 +168,14 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             const response = await connections.fetchJSON(suggestionsEndpoints[predictionEndpoint], options);
             console.log({ response, options, type: typeof (response) });
             const content = response["sorted_champion_ids"];
+            setLoadingPredictions(false);
             if (content)
                 return content;
             else
                 return [];
         }
         catch (error) {
+            setLoadingPredictions(false);
             console.warn(error);
             return [];
         }
@@ -497,8 +500,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     key={prediction}
                     alt={champions[prediction]}
                     src={avatarURI(patch, champions[prediction])}
-                    sx={{ avatarStyle, outlineWidth: 3, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
-                    variant='rounded'
+                    sx={{ avatarStyle, outlineWidth: 1, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
+                    variant='square'
                 />
             </Button>
         </Grid>
@@ -781,8 +784,10 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
                 </Stack>
 
-                <Typography>Suggested champions in order</Typography>
-
+                <Typography>
+                    Suggested champions 
+                    {loadingPredictions && <CircularProgress size={21} sx={{mb: -0.5, ml: 1.2}} disableShrink></CircularProgress>}
+                </Typography>
                 <Grid container columns={10} spacing={1}>
                     {
                         predictions.length > 0 ? renderedPredictions : predictionsPlaceholder

@@ -1,16 +1,116 @@
 <!DOCTYPE html>
 <html>
 
-    <head>
-        <meta charset="UTF-8">
-        <!-- <meta http-equiv="Content-Security-Policy" content="img-src http://ddragon.leagueoflegends.com 'self'"> -->
-        <title>Team Advisor v0.7.1</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <title>Team Advisor</title>
+    <style>
+        .lds-ring {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
 
-    <body class="scroll_enabled">
-        <div id="app">
-            <p>⌛ Loading Team Advisor... ⌛</p>
+        .lds-ring div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border: 8px solid #195ad2;
+            border-radius: 50%;
+            animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: #195ad2 transparent transparent transparent;
+        }
+
+        .lds-ring div:nth-child(1) {
+            animation-delay: -0.45s;
+        }
+
+        .lds-ring div:nth-child(2) {
+            animation-delay: -0.3s;
+        }
+
+        .lds-ring div:nth-child(3) {
+            animation-delay: -0.15s;
+        }
+
+        @keyframes lds-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <meta http-equiv="Content-Security-Policy" content="img-src * data: blob: 'unsafe-inline';">
+</head>
+
+<body class="scroll_enabled" style="background-color: #020202; color: #195ad2;">
+    <header id="titlebar">
+        <div id="drag-region">
+
+            <div id="window-title">
+                <span>Team Advisor v0.8.0</span>
+            </div>
+
+            <div id="window-controls">
+                <div class="button" id="quit-button">
+                    <div id="quit-button-inner" class="material-style-button">
+                    </div>
+                </div>
+                <div class="button" id="zoom-in-button">
+                    <div id="zoom-in-button-inner" class="material-style-button">
+                    </div>
+                </div>
+                <div class="button" id="zoom-out-button">
+                    <div id="zoom-out-button-inner" class="material-style-button">
+                    </div>
+                </div>
+                <div class="button" id="min-button">
+                    <div id="min-button-inner" class="windows-style-button">
+                    </div>
+                </div>
+                <div class="button" id="max-button">
+                    <div id="max-button-inner" class="windows-style-button">
+                    </div>
+                </div>
+                <div class="button" id="restore-button">
+                    <div id="restore-button-inner" class="windows-style-button">
+                    </div>
+                </div>
+                <div class="button" id="close-button">
+                    <div id="close-button-inner" class="windows-style-button">
+                    </div>
+                </div>
+            </div>
         </div>
-    </body>
+    </header>
+    <div id="app">
+        <div class="center" style='font-family: "Lucida Console", "Courier New", monospace; margin-top: 64px;'>
+            <div>
+                <h1>Loading <b>Team Advisor</b></h1>
+                <div class="center" style="width: 100%;">
+                    <div class="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 
 </html>
