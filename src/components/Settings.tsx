@@ -124,38 +124,36 @@ export const Settings: FC<any> = (): ReactElement => {
                 <Typography variant='h6'>General settings</Typography>
 
                 <FormControlLabel
-                    control={<Switch checked={lightThemeEnabled} onChange={onLightThemeChange} />}
-                    label={<Typography><strong>Light theme</strong></Typography>}
+                    control={<Switch checked={autoLauncherEnabled} onChange={onAutoLauncherChange} />}
+                    label={<Typography>Launch on system startup</Typography>}
+                    disabled={autoLauncher ? false : true}
                 />
 
                 <FormControlLabel
-                    control={<Switch checked={autoLauncherEnabled} onChange={onAutoLauncherChange} />}
-                    label={<Typography><strong>Launch on system startup</strong></Typography>}
-                    disabled={autoLauncher ? false : true}
+                    control={<Switch checked={lightThemeEnabled} onChange={onLightThemeChange} />}
+                    label={<Typography>Light theme</Typography>}
                 />
 
                 <Typography variant='h6'>Current patch data</Typography>
 
-                <Button onClick={updateStaticChampionData} variant="outlined">Update static champion data</Button>
-                <Paper elevation={4} sx={{ p: 2 }}>
-                    {
-                        champions ? (
-                            <Accordion color='warning'>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography>
-                                        Champion data for patch <strong>{champions["patch"]}</strong>
-                                    </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    {data_table}
-                                </AccordionDetails>
-                            </Accordion>
+                <Button onClick={updateStaticChampionData} variant="outlined" color='success'>Update static champion data</Button>
+                {
+                    champions ? (
+                        <Accordion color='warning'>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography>
+                                    Champion data for patch <strong>{champions["patch"]}</strong>
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                {data_table}
+                            </AccordionDetails>
+                        </Accordion>
+                    )
+                        : (
+                            "Nothing to display"
                         )
-                            : (
-                                "Nothing to display"
-                            )
-                    }
-                </Paper>
+                }
             </Stack>
         </Container>
     );

@@ -67,7 +67,7 @@ function handleWindowControls() {
 
     document.getElementById('zoom-in-button').addEventListener("click", event => {
         const currentLevel = webFrame.getZoomLevel();
-        if (currentLevel < 1) {
+        if (currentLevel < 2) {
             webFrame.setZoomLevel(currentLevel + 1);
         }
     });

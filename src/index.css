@@ -107,6 +107,11 @@ body {
     overflow-y: hidden;
 }
 
+/* .main-bg {
+    background-image: url('./images/lolclashbg.jpg') cover;
+    background-color: #E81123;
+} */
+
 #titlebar {
     display: block;
     position: fixed;

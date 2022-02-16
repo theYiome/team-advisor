@@ -22,7 +22,7 @@ const MainApp = () => {
         } else {
             setCurrentTheme(darkTheme);
             document.getElementById("titlebar").style.backgroundColor = "transparent";
-            document.getElementsByTagName("body")[0].style.backgroundColor = "#020202";
+            document.getElementsByTagName("body")[0].style.backgroundColor = "#141414";
         }
     }, [lightThemeEnabled]);
 

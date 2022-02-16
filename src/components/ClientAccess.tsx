@@ -98,7 +98,7 @@ export const ClientAccess: FC<any> = (): ReactElement => {
     );
 
     const data_table = (
-        <Paper elevation={3} sx={{p: 1}}>
+        <Paper sx={{p: 1}}>
             <TableContainer>
                 <Table sx={{ width: 1 }} size="small" aria-label="a dense table">
                     <TableHead>

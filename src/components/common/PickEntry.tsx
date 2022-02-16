@@ -72,7 +72,7 @@ const PickEntry: FC<PickEntryProp> = ({
     const secondElement = reverse ? championRoleAvatars : inputOutput;
 
     return (
-        <Paper elevation={4}>
+        <Paper elevation={6}>
             <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={2} sx={style}>
                 {firstElement}
                 {secondElement}

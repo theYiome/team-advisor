@@ -505,7 +505,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     key={prediction}
                     alt={champions[prediction]}
                     src={avatarURI(patch, champions[prediction])}
-                    sx={{ avatarStyle, outlineWidth: 1, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
+                    sx={{ avatarStyle, outlineWidth: 2, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
                     variant='square'
                 />
             </Button>
@@ -541,13 +541,14 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     return (
         <Container>
             <Stack spacing={3}>
-                <Button variant="outlined" onClick={() => setDrawerOpen(true)}>
+                <Button variant="outlined" color='success' onClick={() => setDrawerOpen(true)}>
                     <SettingsIcon fontSize='small' sx={{ mr: 0.5 }}></SettingsIcon> SETTINGS
                 </Button>
 
                 <Drawer
                     open={drawerOpen}
                     onClose={() => setDrawerOpen(false)}
+                    elevation={6}
                 >
                     <Stack sx={{ mt: 4, p: 2 }} spacing={2} className={"scroll_enabled"}>
                         {currentMessage}
