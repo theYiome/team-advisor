@@ -24,7 +24,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
     const [tabId, setTabId] = React.useState(0);
 
     return (
-        <Paper sx={{ pl: 4, pr: 4, pt: 4, pb: 4 }} className="draggable" elevation={0}>
+        <Paper sx={{ pl: 4, pr: 4, pt: 4, pb: 4 }} elevation={0}>
             <Paper sx={{ width: 1, pt: 1, pb: 4 }} elevation={1}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs

@@ -5,6 +5,22 @@
     <meta charset="UTF-8">
     <title>Team Advisor</title>
     <style>
+        .windows-style-button {
+            width: 32px;
+            height: 32px;
+            background-position: center;
+            background-size: 35%;
+            background-repeat: no-repeat;
+        }
+
+        .material-style-button {
+            width: 32px;
+            height: 32px;
+            background-position: center;
+            background-size: 55%;
+            background-repeat: no-repeat;
+        }
+
         .lds-ring {
             display: inline-block;
             position: relative;
@@ -56,9 +72,9 @@
     <meta http-equiv="Content-Security-Policy" content="img-src * data: blob: 'unsafe-inline';">
 </head>
 
-<body class="scroll_enabled" style="background-color: #020202; color: #195ad2;">
+<body class="scroll_enabled" style="background-color: #020202;">
     <header id="titlebar">
-        <div id="drag-region">
+        <div id="drag-region" style="color: white;">
 
             <div id="window-title">
                 <span>Team Advisor v0.8.0</span>
@@ -89,7 +105,7 @@
         </div>
     </header>
     <div id="app">
-        <div style="-webkit-app-region: drag; cursor: grab; width: 100%; height: 100%;">
+        <div style="-webkit-app-region: drag; cursor: grab; width: 100%; height: 100%; color: #195ad2;">
             <div class="center" style='font-family: "Lucida Console", "Courier New", monospace; margin-top: 64px;'>
                 <div>
                     <h1>Loading <b>Team Advisor</b></h1>
