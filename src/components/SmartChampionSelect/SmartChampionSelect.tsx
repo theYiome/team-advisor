@@ -505,7 +505,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     key={prediction}
                     alt={champions[prediction]}
                     src={avatarURI(patch, champions[prediction])}
-                    sx={{ avatarStyle, outlineWidth: 2, outlineStyle: "solid", outlineColor: getColor(index / predictions.length) }}
+                    sx={{ avatarStyle, borderWidth: 2, borderStyle: "solid", borderColor: getColor(index / predictions.length), outlineWidth: 1, outlineStyle: "solid", outlineColor: "black" }}
                     variant='square'
                 />
             </Button>
@@ -832,6 +832,6 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 function getColor(value: number) {
     //value from 0 to 1
     const hue = ((1.0 - value) * 120).toString(10);
-    const color = `hsl(${hue}, 100%, 50%)`;
+    const color = `hsl(${hue}, 100%, 60%)`;
     return color;
 }

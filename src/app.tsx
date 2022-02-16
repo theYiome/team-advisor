@@ -17,7 +17,9 @@ const MainApp = () => {
     useEffect(() => {
         if (lightThemeEnabled) {
             setCurrentTheme(lightTheme);
-            document.getElementById("titlebar").style.backgroundColor = "#444";
+            // document.getElementById("titlebar").style.backgroundColor = "#333";
+            document.getElementById("titlebar").style.backgroundColor = "transparent";
+            // document.getElementById("titlebar").style.backgroundColor = "rgba(20, 20, 20, 100)";
             document.getElementsByTagName("body")[0].style.backgroundColor = "white";
         } else {
             setCurrentTheme(darkTheme);

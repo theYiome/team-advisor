@@ -129,6 +129,10 @@ body {
 
 #titlebar {
     padding: 4px;
+    border-radius: 0 0 16px 0;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    /* backdrop-filter: blur(3px); */
+    backdrop-filter: brightness(70%) blur(2px);
 }
 
 #titlebar #drag-region {
