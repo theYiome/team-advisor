@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, nativeImage, Tray } from 'electron';
-import { trayIcon228 as trayIcon } from './imagesBase64';
+import { trayImageBluer as trayIcon } from './imagesBase64';
+import someImg from "./images/icon.png";
 // import someicon from './icons/close-k-10.png';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -72,6 +73,8 @@ const createWindow = (): void => {
         return false;
     });
 
+    const x = nativeImage.createFromPath(someImg);
+    // console.log({someImg, trayIcon, size: x.getSize()});
     const icon = nativeImage.createFromDataURL(trayIcon);
     tray = new Tray(icon)
 

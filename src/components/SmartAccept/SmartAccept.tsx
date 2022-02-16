@@ -17,7 +17,7 @@ const filePath = configFilePath("smartaccept.settings.json");
 export const SmartAccept: FC<any> = (): ReactElement => {
 
     const [settingsLoaded, setSettingsLoaded] = useState(false);
-    const [enabled, setEnabled] = useState(false);
+    const [enabled, setEnabled] = useState(true);
 
     const slowUpdateInterval = 2000;
     const fastUpdateInterval = 300;

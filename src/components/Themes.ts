@@ -5,7 +5,7 @@ export const lightTheme = createTheme({
         mode: 'light',
     },
     shape: {
-        borderRadius: 14,
+        borderRadius: 10,
     }
 });
 
@@ -23,8 +23,8 @@ export const darkTheme = createTheme({
             paper: '#020202',
         },
         text: {
-            primary: '#F5F5F5',
-            secondary: '#DDD'
+            primary: '#FFF',
+            secondary: '#FFF'
         },
     },
     shape: {
@@ -39,6 +39,11 @@ export const darkTheme = createTheme({
                     color: 'white'
                 },
             },
+        }
+    },
+    typography: {
+        allVariants: {
+            color: "#EEE"
         }
     }
 });
