@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { TeamAdvisor } from './components/TeamAdvisor';
 import { darkTheme, lightTheme } from './components/Themes'
 import { ThemeProvider } from '@mui/material/styles';
+import { SnackbarProvider } from 'notistack';
 import { Paper } from '@mui/material';
 
 export const ThemeContext = createContext({
@@ -17,9 +18,7 @@ const MainApp = () => {
     useEffect(() => {
         if (lightThemeEnabled) {
             setCurrentTheme(lightTheme);
-            // document.getElementById("titlebar").style.backgroundColor = "#333";
             document.getElementById("titlebar").style.backgroundColor = "transparent";
-            // document.getElementById("titlebar").style.backgroundColor = "rgba(20, 20, 20, 100)";
             document.getElementsByTagName("body")[0].style.backgroundColor = "white";
         } else {
             setCurrentTheme(darkTheme);
@@ -31,9 +30,11 @@ const MainApp = () => {
     return (
         <ThemeContext.Provider value={{lightThemeEnabled, setLightThemeEnabled}}>
             <ThemeProvider theme={currentTheme}>
-                <Paper elevation={0}>
-                    <TeamAdvisor />
-                </Paper>
+                <SnackbarProvider maxSnack={4}>
+                    <Paper elevation={0}>
+                        <TeamAdvisor />
+                    </Paper>
+                </SnackbarProvider>
             </ThemeProvider>
         </ThemeContext.Provider>
     );

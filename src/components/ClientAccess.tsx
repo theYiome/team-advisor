@@ -150,7 +150,7 @@ export const ClientAccess: FC<any> = (): ReactElement => {
 
                 <Button sx={{ width: 1}} color="success" variant='outlined' onClick={resetToDefault}>RESET TO DEFAULT</Button>
 
-                <Paper elevation={3} sx={{p: 1, pb: 2}}>
+                <Paper elevation={1} sx={{p: 1, pb: 2}}>
                     <Container>
                         <Typography variant='h6'>
                             Utilities

@@ -208,10 +208,12 @@ body {
 
 #close-button:hover {
     background: #083c9e !important;
+    border-radius: 0 0 16px 0;
 }
 
 #close-button:active {
     background: #195ad2 !important;
+    border-radius: 0 0 16px 0;
 }
 
 #close-button:active .icon {

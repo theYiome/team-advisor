@@ -46,6 +46,7 @@ async function getChampionSelectState(lockfileContent: any) {
     }
 
     // parse non crutial state
+    // console.log(session);
     try {
         const playerTeamId = session.myTeam[0].team;
         const leftTeam = playerTeamId === 1 ? session.myTeam : session.theirTeam;
@@ -65,7 +66,7 @@ async function getChampionSelectState(lockfileContent: any) {
         lobbyState.localPlayerCellId = session.localPlayerCellId;
         lobbyState.localPlayerTeamId = session.localPlayerCellId >= 5 ? 1 : 0;
         lobbyState.gameId = session.gameId,
-            lobbyState.counter = session.counter;
+        lobbyState.counter = session.counter;
         lobbyState.isDraft = !session.isCustomGame && session.hasSimultaneousBans && !session.hasSimultaneousPicks;
 
         lobbyState.bans = getBans(session);

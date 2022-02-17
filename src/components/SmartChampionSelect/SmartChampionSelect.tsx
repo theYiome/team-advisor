@@ -1,12 +1,9 @@
 import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Slider, Switch, FormControlLabel, Accordion, AccordionDetails, AccordionSummary, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select, LinearProgress, CircularProgress, Paper, Drawer, Alert, AlertTitle } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Button, Typography, Stack, Slider, Switch, FormControlLabel, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select, CircularProgress, Paper, Drawer, Alert, AlertTitle } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
-
-import { AlertDialog } from '../common/AlertDialog';
 
 import * as files from '../../libs/files';
 import * as connections from '../../libs/connections'
@@ -24,7 +21,10 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { avatarURI } from '../../componentLibs/leagueImages';
 import { PickEntry } from '../common/PickEntry';
 
+import { useSnackbar } from 'notistack';
+
 import { configFilePath } from '../TeamAdvisor';
+import { session } from 'electron';
 const filePath = configFilePath("smartchampionselect.settings.json");
 
 const compareTeams = (a: any[], b: any[]) => {
@@ -110,6 +110,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     // this should go somewhere else
     const [currentActionId, setCurrentActionId] = useState(undefined);
@@ -118,8 +119,10 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         console.log({ currentActionId, clickedChampionId });
         if (currentActionId !== undefined) {
             hoverChampion(lockfileContent, currentActionId, clickedChampionId).then((response: any) => {
-                if (response && response.errorCode)
+                if (response && response.errorCode) {
                     console.warn({ clickedChampionId, msg: "Hover failed!" });
+                    enqueueSnackbar(`Failed to hover ${champions[clickedChampionId]}! Maybe unowned?`, {variant: "error"});
+                }
             });
         }
     };
@@ -142,7 +145,6 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     }
 
     const getPredictions = async () => {
-
         setLoadingPredictions(true);
 
         // do role swap if selected by the user
@@ -332,6 +334,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             if (!compareTeams(state.rightTeam, rightTeam))
                 setRightTeam(state.rightTeam);
 
+            console.log(state);
+
             const allPlayers = state.leftTeam.concat(state.rightTeam);
             const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
             const roleFromChampionSelect = user ? user.assignedPosition : "";
@@ -359,8 +363,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                         setLastChampionId(championIdToHover);
 
                     hoverChampion(lockfileContent, state.actionId, championIdToHover).then((response: any) => {
-                        if (response && response.errorCode)
+                        if (response && response.errorCode) {
                             setFailedToHover([...failedToHover, championIdToHover]);
+                        }
                     });
                 }
             }
@@ -464,6 +469,12 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         }
     }
 
+    useEffect(() => {
+        if (![ChampionSelectPhase.NoClient, ChampionSelectPhase.Unknown].includes(currentChampionSelectPhase))
+            enqueueSnackbar("currentChampionSelectPhase", {autoHideDuration: 12000, content: currentMessage});
+    }, [currentChampionSelectPhase]);
+
+
     const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).filter(key => key !== "0").map((goodKey: string) => champions[goodKey]).sort();
     const patch = champions["patch"];
 
@@ -478,8 +489,8 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const avatarStyle = {
         boxShadow: 1,
-        width: 42,
-        height: 42,
+        width: 48,
+        height: 48,
     };
 
     const predictionsPlaceholder = [
@@ -499,13 +510,13 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         <Grid key={prediction} item xs={"auto"}>
             <Button
                 onClick={() => onAvatarClick(prediction)}
-                sx={{ '&:hover': { boxShadow: 6 } }}
+                sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.618)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
             >
                 <Avatar
                     key={prediction}
                     alt={champions[prediction]}
                     src={avatarURI(patch, champions[prediction])}
-                    sx={{ avatarStyle, borderWidth: 2, borderStyle: "solid", borderColor: getColor(index / predictions.length), outlineWidth: 1, outlineStyle: "solid", outlineColor: "black" }}
+                    sx={{ ...avatarStyle, borderWidth: 2, borderStyle: "solid", borderColor: getColor(index / predictions.length), outlineWidth: 1, outlineStyle: "solid", outlineColor: "black" }}
                     variant='square'
                 />
             </Button>
@@ -538,208 +549,214 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     const onLockinAtChange = (event: Event, newValue: number) => setLockinAt(newValue);
 
+    const settingsDrawer = (
+        <Drawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            elevation={6}
+        >
+            <Stack sx={{ mt: 4, p: 2 }} spacing={2} className={"scroll_enabled"}>
+                {currentMessage}
+                {smartBanEnabled || smartPickEnabled ? (<Stack>{controlMessage}</Stack>) : ""}
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={smartBanEnabled}
+                            onChange={(event) => setSmartBanEnabled(event.target.checked)}
+                        />
+                    }
+                    label={<Typography>Smart Ban</Typography>}
+                />
+                <Alert severity="info">
+                    When banning phase starts,
+                    app will hover first champion from your list that is not <strong>already banned</strong> and
+                    is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally.
+
+                    <ul>
+                        <li>App will adjust this hover in real time.</li>
+                        <li>If no champion from your ban list matches criteria, nothing will be hovered.</li>
+                        <li>Hovering something by yourself takes control from the app.</li>
+                    </ul>
+                </Alert>
+
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={smartPickEnabled}
+                            onChange={(event) => setSmartPickEnabled(event.target.checked)}
+                        />
+                    }
+                    label={<Typography>Smart Pick</Typography>}
+                />
+
+                <Alert severity="info">
+                    When your picking phase starts,
+                    app will hover first champion that <strong>you own</strong> from list for your <strong>current role</strong> that is not <strong>already banned</strong> and
+                    is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally and <strong>you own</strong>.
+                    It will also <strong>lock in</strong> any champion you hover when timer reaches zero.
+
+                    <ul>
+                        <li>App will adjust this hover if somebody picks your champion</li>
+                        <li>If no champion from your list matches criteria, nothing will be hovered.</li>
+                        <li>Auto lock in does not work in custom games.</li>
+                    </ul>
+                </Alert>
+
+                <Box sx={{ p: 2 }}>
+                    <Typography>Auto lockin timer adjustment (better leave as is, {defaultLockinAt.toFixed(1)} is recommended)</Typography>
+                    <Slider
+                        sx={{ width: "90%", ml: "5%" }}
+                        value={lockinAt}
+                        onChange={onLockinAtChange}
+                        marks={[{ value: 0, label: "Instant lockin" }, { value: 32, label: "To late" }]}
+                        min={0}
+                        max={40}
+                        step={0.5}
+                        valueLabelDisplay="auto"
+                    />
+                </Box>
+
+                <ErrorBoundary
+                    FallbackComponent={(error, resetErrorBoundary) => <Typography>Failed to load. Please restart the app: {error.error.message}</Typography>}
+                    onError={() => {
+                        setSmartBanEnabled(false);
+                        setSmartBanEnabled(false);
+                        setBanList([]);
+                        setTopChampionList([]);
+                        setBottomChampionList([]);
+                        setMiddleChampionList([]);
+                        setJungleChampionList([]);
+                        setSupportChampionList([]);
+                        setLockinAt(defaultLockinAt);
+                    }}
+                >
+
+                    <Stack spacing={2}>
+                        <Typography>
+                            Ban list
+                        </Typography>
+                        <MultipleChampionPicker
+                            championNames={championNames}
+                            currentList={banList}
+                            patch={patch}
+                            onChange={(newBanList) => setBanList(newBanList)}
+                            label="Ban list"
+                            variant="outlined"
+                        />
+                        <Typography>
+                            Champion lists
+                        </Typography>
+
+                        <Stack direction="row">
+                            <IconButton
+                                aria-label="Reset top to defaults"
+                                onClick={() => setTopChampionList(defaultChampionsForRole.top)}
+                            >
+                                <RestartAltIcon />
+                            </IconButton>
+
+                            <MultipleChampionPicker
+                                championNames={championNames}
+                                currentList={topChampionList}
+                                patch={patch}
+                                onChange={(newList) => setTopChampionList(newList)}
+                                label="Top"
+                            />
+                        </Stack>
+
+                        <Stack direction="row">
+                            <IconButton
+                                aria-label="Reset jungle to defaults"
+                                onClick={() => setJungleChampionList(defaultChampionsForRole.jungle)}
+                            >
+                                <RestartAltIcon />
+                            </IconButton>
+
+                            <MultipleChampionPicker
+                                championNames={championNames}
+                                currentList={jungleChampionList}
+                                patch={patch}
+                                onChange={(newList) => setJungleChampionList(newList)}
+                                label="Jungle"
+                            />
+                        </Stack>
+
+                        <Stack direction="row">
+                            <IconButton
+                                aria-label="Reset middle to defaults"
+                                onClick={() => setMiddleChampionList(defaultChampionsForRole.middle)}
+                            >
+                                <RestartAltIcon />
+                            </IconButton>
+
+                            <MultipleChampionPicker
+                                championNames={championNames}
+                                currentList={middleChampionList}
+                                patch={patch}
+                                onChange={(newList) => setMiddleChampionList(newList)}
+                                label="Middle"
+                            />
+                        </Stack>
+
+
+                        <Stack direction="row">
+                            <IconButton
+                                aria-label="Reset bottom to defaults"
+                                onClick={() => setBottomChampionList(defaultChampionsForRole.bottom)}>
+                                <RestartAltIcon />
+                            </IconButton>
+
+                            <MultipleChampionPicker
+                                championNames={championNames}
+                                currentList={bottomChampionList}
+                                patch={patch}
+                                onChange={(newList) => setBottomChampionList(newList)}
+                                label="Bottom"
+                            />
+                        </Stack>
+
+                        <Stack direction="row">
+                            <IconButton
+                                aria-label="Reset support to defaults"
+                                onClick={() => setSupportChampionList(defaultChampionsForRole.support)}>
+                                <RestartAltIcon />
+                            </IconButton>
+
+                            <MultipleChampionPicker
+                                championNames={championNames}
+                                currentList={supportChampionList}
+                                patch={patch}
+                                onChange={(newList) => setSupportChampionList(newList)}
+                                label="Support"
+                            />
+                        </Stack>
+                    </Stack>
+                </ErrorBoundary>
+            </Stack>
+        </Drawer>
+    );
+
     return (
         <Container>
             <Stack spacing={3}>
-                <Button variant="outlined" color='success' onClick={() => setDrawerOpen(true)}>
+                <Button variant="outlined" color='success' size="small" onClick={() => setDrawerOpen(true)}>
                     <SettingsIcon fontSize='small' sx={{ mr: 0.5 }}></SettingsIcon> SETTINGS
                 </Button>
 
-                <Drawer
-                    open={drawerOpen}
-                    onClose={() => setDrawerOpen(false)}
-                    elevation={6}
-                >
-                    <Stack sx={{ mt: 4, p: 2 }} spacing={2} className={"scroll_enabled"}>
-                        {currentMessage}
-                        {smartBanEnabled || smartPickEnabled ? (<Stack>{controlMessage}</Stack>) : ""}
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={smartBanEnabled}
-                                    onChange={(event) => setSmartBanEnabled(event.target.checked)}
-                                />
-                            }
-                            label={<Typography>Smart Ban</Typography>}
-                        />
-                        <Alert severity="info">
-                            When banning phase starts,
-                            app will hover first champion from your list that is not <strong>already banned</strong> and
-                            is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally.
-
-                            <ul>
-                                <li>App will adjust this hover in real time.</li>
-                                <li>If no champion from your ban list matches criteria, nothing will be hovered.</li>
-                                <li>Hovering something by yourself takes control from the app.</li>
-                            </ul>
-                        </Alert>
-
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={smartPickEnabled}
-                                    onChange={(event) => setSmartPickEnabled(event.target.checked)}
-                                />
-                            }
-                            label={<Typography>Smart Pick</Typography>}
-                        />
-
-                        <Alert severity="info">
-                            When your picking phase starts,
-                            app will hover first champion that <strong>you own</strong> from list for your <strong>current role</strong> that is not <strong>already banned</strong> and
-                            is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally and <strong>you own</strong>.
-                            It will also <strong>lock in</strong> any champion you hover when timer reaches zero.
-
-                            <ul>
-                                <li>App will adjust this hover if somebody picks your champion</li>
-                                <li>If no champion from your list matches criteria, nothing will be hovered.</li>
-                                <li>Auto lock in does not work in custom games.</li>
-                            </ul>
-                        </Alert>
-
-                        <Box sx={{ p: 2 }}>
-                            <Typography>Auto lockin timer adjustment (better leave as is, {defaultLockinAt.toFixed(1)} is recommended)</Typography>
-                            <Slider
-                                sx={{ width: "90%", ml: "5%" }}
-                                value={lockinAt}
-                                onChange={onLockinAtChange}
-                                marks={[{ value: 0, label: "Instant lockin" }, { value: 32, label: "To late" }]}
-                                min={0}
-                                max={40}
-                                step={0.5}
-                                valueLabelDisplay="auto"
-                            />
-                        </Box>
-
-                        <ErrorBoundary
-                            FallbackComponent={(error, resetErrorBoundary) => <Typography>Failed to load. Please restart the app: {error.error.message}</Typography>}
-                            onError={() => {
-                                setSmartBanEnabled(false);
-                                setSmartBanEnabled(false);
-                                setBanList([]);
-                                setTopChampionList([]);
-                                setBottomChampionList([]);
-                                setMiddleChampionList([]);
-                                setJungleChampionList([]);
-                                setSupportChampionList([]);
-                                setLockinAt(defaultLockinAt);
-                            }}
-                        >
-
-                            <Stack spacing={2}>
-                                <Typography>
-                                    Ban list
-                                </Typography>
-                                <MultipleChampionPicker
-                                    championNames={championNames}
-                                    currentList={banList}
-                                    patch={patch}
-                                    onChange={(newBanList) => setBanList(newBanList)}
-                                    label="Ban list"
-                                    variant="outlined"
-                                />
-                                <Typography>
-                                    Champion lists
-                                </Typography>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset top to defaults"
-                                        onClick={() => setTopChampionList(defaultChampionsForRole.top)}
-                                    >
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={topChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setTopChampionList(newList)}
-                                        label="Top"
-                                    />
-                                </Stack>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset jungle to defaults"
-                                        onClick={() => setJungleChampionList(defaultChampionsForRole.jungle)}
-                                    >
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={jungleChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setJungleChampionList(newList)}
-                                        label="Jungle"
-                                    />
-                                </Stack>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset middle to defaults"
-                                        onClick={() => setMiddleChampionList(defaultChampionsForRole.middle)}
-                                    >
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={middleChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setMiddleChampionList(newList)}
-                                        label="Middle"
-                                    />
-                                </Stack>
-
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset bottom to defaults"
-                                        onClick={() => setBottomChampionList(defaultChampionsForRole.bottom)}>
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={bottomChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setBottomChampionList(newList)}
-                                        label="Bottom"
-                                    />
-                                </Stack>
-
-                                <Stack direction="row">
-                                    <IconButton
-                                        aria-label="Reset support to defaults"
-                                        onClick={() => setSupportChampionList(defaultChampionsForRole.support)}>
-                                        <RestartAltIcon />
-                                    </IconButton>
-
-                                    <MultipleChampionPicker
-                                        championNames={championNames}
-                                        currentList={supportChampionList}
-                                        patch={patch}
-                                        onChange={(newList) => setSupportChampionList(newList)}
-                                        label="Support"
-                                    />
-                                </Stack>
-                            </Stack>
-                        </ErrorBoundary>
-                    </Stack>
-                </Drawer>
+                {settingsDrawer}
 
                 <Stack direction="row" spacing={2}>
                     <Button
                         variant="contained"
                         sx={{ width: "100%" }}
                         onClick={() => getPredictions().then(newPredictions => setPredictions(newPredictions))}
+                        size="small"
+                        disabled={[ChampionSelectPhase.NoClient, ChampionSelectPhase.NoInChampionSelect, ChampionSelectPhase.Unknown].includes(currentChampionSelectPhase)}
                     >
                         MAKE PREDICTION
                     </Button>
 
-                    <FormControl fullWidth>
+                    <FormControl fullWidth size="small">
                         <InputLabel>Role swap</InputLabel>
                         <Select
                             value={roleSwappedWith}
@@ -755,7 +772,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                         </Select>
                     </FormControl>
 
-                    <FormControl fullWidth>
+                    <FormControl fullWidth size="small">
                         <InputLabel>Suggestion type</InputLabel>
                         <Select
                             value={predictionEndpoint}
@@ -770,57 +787,55 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
                 </Stack>
 
-                <Typography>
-                    Suggested champions
-                    {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
-                </Typography>
-                <Grid container columns={12} spacing={1}>
-                    {
-                        predictions.length > 0 ? renderedPredictions : predictionsPlaceholder
-                    }
-                </Grid>
+                <Stack spacing={1}>
+                    <Typography>
+                        Suggested champions - click to hover
+                        {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
+                    </Typography>
+                    <Grid container columns={12} spacing={1}>
+                        {predictions.length > 0 ? renderedPredictions : predictionsPlaceholder}
+                    </Grid>
 
-                <Typography>Bans and picks</Typography>
+                    <Typography>Bans</Typography>
 
-                <Grid container columns={10} spacing={1}>
-                    {
-                        currentBans.length > 0 ? renderedBans : bansPlaceholder
-                    }
-                </Grid>
-
-                <Stack direction="row" spacing={3}>
-                    <Stack spacing={2} sx={{ width: 1 }}>
-                        {
-                            leftTeam.length > 0 ?
-                                leftTeam.map(pick => <PickEntry
-                                    key={pick.cellId}
-                                    champions={championNamesWithEmpty}
-                                    championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
-                                    roleName={pick.assignedPosition}
-                                    roles={roles}
-                                    patch={patch}
-                                    isPlayer={pick.cellId === localPlayerCellId}
-                                    disabled
-                                    reverse
-                                />) :
-                                picksPlaceholder
-                        }
-                    </Stack>
-                    <Stack spacing={2} sx={{ width: 1 }}>
-                        {
-                            rightTeam.length > 0 ?
-                                rightTeam.map(pick => <PickEntry
-                                    key={pick.cellId}
-                                    champions={championNamesWithEmpty}
-                                    championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
-                                    roleName={pick.assignedPosition}
-                                    roles={roles}
-                                    patch={patch}
-                                    isPlayer={pick.cellId === localPlayerCellId}
-                                    disabled
-                                />) :
-                                picksPlaceholder
-                        }
+                    <Grid container columns={10} spacing={1}>
+                        {currentBans.length > 0 ? renderedBans : bansPlaceholder}
+                    </Grid>
+                    <Typography>Picks</Typography>
+                    <Stack direction="row" spacing={3}>
+                        <Stack spacing={2} sx={{ width: 1 }}>
+                            {
+                                leftTeam.length > 0 ?
+                                    leftTeam.map(pick => <PickEntry
+                                        key={pick.cellId}
+                                        champions={championNamesWithEmpty}
+                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                                        roleName={pick.assignedPosition}
+                                        roles={roles}
+                                        patch={patch}
+                                        isPlayer={pick.cellId === localPlayerCellId}
+                                        disabled
+                                        reverse
+                                    />) :
+                                    picksPlaceholder
+                            }
+                        </Stack>
+                        <Stack spacing={2} sx={{ width: 1 }}>
+                            {
+                                rightTeam.length > 0 ?
+                                    rightTeam.map(pick => <PickEntry
+                                        key={pick.cellId}
+                                        champions={championNamesWithEmpty}
+                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                                        roleName={pick.assignedPosition}
+                                        roles={roles}
+                                        patch={patch}
+                                        isPlayer={pick.cellId === localPlayerCellId}
+                                        disabled
+                                    />) :
+                                    picksPlaceholder
+                            }
+                        </Stack>
                     </Stack>
                 </Stack>
             </Stack>
@@ -832,6 +847,6 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 function getColor(value: number) {
     //value from 0 to 1
     const hue = ((1.0 - value) * 120).toString(10);
-    const color = `hsl(${hue}, 100%, 60%)`;
+    const color = `hsl(${hue}, 100%, 45%)`;
     return color;
 }

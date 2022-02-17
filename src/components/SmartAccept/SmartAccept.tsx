@@ -152,7 +152,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
 
     return (
         <Container>
-            <Stack spacing={3}>
+            <Stack spacing={2}>
                 <Stack>
                     <FormControlLabel
                         control={<Switch checked={enabled} onChange={handleSwitchChange} />}

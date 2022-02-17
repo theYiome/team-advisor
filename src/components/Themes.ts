@@ -6,6 +6,17 @@ export const lightTheme = createTheme({
     },
     shape: {
         borderRadius: 10,
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                containedPrimary: {
+                    background: 'linear-gradient(45deg, #195ad2 30%, #083c9e 90%)',
+                    // boxShadow: '0 1px 2px 2px #083c9e',
+                    color: 'white'
+                },
+            },
+        }
     }
 });
 
@@ -33,7 +44,7 @@ export const darkTheme = createTheme({
     components: {
         MuiButton: {
             styleOverrides: {
-                contained: {
+                containedPrimary: {
                     background: 'linear-gradient(45deg, #195ad2 30%, #083c9e 90%)',
                     // boxShadow: '0 1px 2px 2px #083c9e',
                     color: 'white'
