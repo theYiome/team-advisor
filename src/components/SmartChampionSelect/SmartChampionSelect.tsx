@@ -486,7 +486,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
         10, 11, 12, 13, 14, 15, 16, 17, 18, 19
     ].map(index =>
-        <Grid key={index} item xs={1}>
+        <Grid key={index} item xs={"auto"}>
             <Skeleton
                 key={index}
                 variant="rectangular"
@@ -496,7 +496,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     );
 
     const renderedPredictions = predictions.map((prediction: number, index) =>
-        <Grid key={prediction} item xs={1}>
+        <Grid key={prediction} item xs={"auto"}>
             <Button
                 onClick={() => onAvatarClick(prediction)}
                 sx={{ '&:hover': { boxShadow: 6 } }}
@@ -513,7 +513,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     );
 
     const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index =>
-        <Grid key={index} item xs={1}>
+        <Grid key={index} item xs={2} sm={1}>
             <Skeleton
                 key={index}
                 variant="rectangular"
@@ -523,7 +523,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     );
 
     const renderedBans = currentBans.map((ban, index) =>
-        <Grid key={index} item xs={1}>
+        <Grid key={index} item xs={2} sm={1}>
             <Avatar
                 key={index}
                 alt={champions[ban]}
@@ -774,7 +774,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     Suggested champions
                     {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
                 </Typography>
-                <Grid container columns={10} spacing={1}>
+                <Grid container columns={12} spacing={1}>
                     {
                         predictions.length > 0 ? renderedPredictions : predictionsPlaceholder
                     }
