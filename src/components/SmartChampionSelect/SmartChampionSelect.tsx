@@ -1,4 +1,4 @@
-import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
+import React, { ReactElement, FC, useState, useContext, useEffect, useMemo } from 'react';
 
 import Container from '@mui/material/Container'
 import { Button, Typography, Stack, Slider, Switch, FormControlLabel, IconButton, Avatar, Skeleton, Grid, Box, FormControl, InputLabel, MenuItem, Select, CircularProgress, Paper, Drawer, Alert, AlertTitle } from '@mui/material';
@@ -121,7 +121,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
             hoverChampion(lockfileContent, currentActionId, clickedChampionId).then((response: any) => {
                 if (response && response.errorCode) {
                     console.warn({ clickedChampionId, msg: "Hover failed!" });
-                    enqueueSnackbar(`Failed to hover ${champions[clickedChampionId]}! Maybe unowned?`, {variant: "error"});
+                    enqueueSnackbar(`Failed to hover ${champions[clickedChampionId]}! Maybe unowned?`, { variant: "error" });
                 }
             });
         }
@@ -471,11 +471,14 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
 
     useEffect(() => {
         if (![ChampionSelectPhase.NoClient, ChampionSelectPhase.Unknown].includes(currentChampionSelectPhase))
-            enqueueSnackbar("currentChampionSelectPhase", {autoHideDuration: 12000, content: currentMessage});
+            enqueueSnackbar("currentChampionSelectPhase", { autoHideDuration: 12000, content: currentMessage });
     }, [currentChampionSelectPhase]);
 
 
-    const championNames = Object.keys(champions).filter((key: string) => !isNaN(key as any)).filter(key => key !== "0").map((goodKey: string) => champions[goodKey]).sort();
+    const championNames = useMemo(() =>
+        Object.keys(champions).filter((key: string) => !isNaN(key as any)).filter(key => key !== "0").map((goodKey: string) => champions[goodKey]).sort(),
+        [champions]
+    );
     const patch = champions["patch"];
 
     const championsWithEmpty = champions;
@@ -493,10 +496,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         height: 48,
     };
 
-    const predictionsPlaceholder = [
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-        10, 11, 12, 13, 14, 15, 16, 17, 18, 19
-    ].map(index =>
+    const predictionsPlaceholder = useMemo(() => Array.from(Array(20).keys()).map(index =>
         <Grid key={index} item xs={"auto"}>
             <Skeleton
                 key={index}
@@ -504,9 +504,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 sx={avatarStyle}
             />
         </Grid>
-    );
+    ), []);
 
-    const renderedPredictions = predictions.map((prediction: number, index) =>
+    const renderedPredictions = useMemo(() => predictions.map((prediction: number, index) =>
         <Grid key={prediction} item xs={"auto"}>
             <Button
                 onClick={() => onAvatarClick(prediction)}
@@ -521,9 +521,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 />
             </Button>
         </Grid>
-    );
+    ), [predictions]);
 
-    const bansPlaceholder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(index =>
+    const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item xs={2} sm={1}>
             <Skeleton
                 key={index}
@@ -531,9 +531,9 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 sx={avatarStyle}
             />
         </Grid>
-    );
+    ), []);
 
-    const renderedBans = currentBans.map((ban, index) =>
+    const renderedBans = useMemo(() => currentBans.map((ban, index) =>
         <Grid key={index} item xs={2} sm={1}>
             <Avatar
                 key={index}
@@ -543,12 +543,45 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 variant='rounded'
             />
         </Grid>
+    ), []);
+
+    const picksPlaceholder = useMemo(() =>
+        Array.from(Array(5).keys()).map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} sx={{ boxShadow: 5 }} />),
+        []
     );
 
-    const picksPlaceholder = [0, 1, 2, 3, 4].map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} sx={{ boxShadow: 5 }} />);
+    const renderLeftTeam = useMemo(() => (
+        leftTeam.length > 0 ?
+            leftTeam.map(pick => <PickEntry
+                key={pick.cellId}
+                champions={championNamesWithEmpty}
+                championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                roleName={pick.assignedPosition}
+                roles={roles}
+                patch={patch}
+                isPlayer={pick.cellId === localPlayerCellId}
+                disabled
+                reverse
+            />) :
+            picksPlaceholder
+    ), [leftTeam]);
+
+    const renderRightTeam = useMemo(() => (
+        rightTeam.length > 0 ?
+            rightTeam.map(pick => <PickEntry
+                key={pick.cellId}
+                champions={championNamesWithEmpty}
+                championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                roleName={pick.assignedPosition}
+                roles={roles}
+                patch={patch}
+                isPlayer={pick.cellId === localPlayerCellId}
+                disabled
+            />) :
+            picksPlaceholder
+    ), [rightTeam]);
 
     const onLockinAtChange = (event: Event, newValue: number) => setLockinAt(newValue);
-
     const settingsDrawer = (
         <Drawer
             open={drawerOpen}
@@ -804,37 +837,10 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     <Typography>Picks</Typography>
                     <Stack direction="row" spacing={3}>
                         <Stack spacing={2} sx={{ width: 1 }}>
-                            {
-                                leftTeam.length > 0 ?
-                                    leftTeam.map(pick => <PickEntry
-                                        key={pick.cellId}
-                                        champions={championNamesWithEmpty}
-                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
-                                        roleName={pick.assignedPosition}
-                                        roles={roles}
-                                        patch={patch}
-                                        isPlayer={pick.cellId === localPlayerCellId}
-                                        disabled
-                                        reverse
-                                    />) :
-                                    picksPlaceholder
-                            }
+                            {renderLeftTeam}
                         </Stack>
                         <Stack spacing={2} sx={{ width: 1 }}>
-                            {
-                                rightTeam.length > 0 ?
-                                    rightTeam.map(pick => <PickEntry
-                                        key={pick.cellId}
-                                        champions={championNamesWithEmpty}
-                                        championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
-                                        roleName={pick.assignedPosition}
-                                        roles={roles}
-                                        patch={patch}
-                                        isPlayer={pick.cellId === localPlayerCellId}
-                                        disabled
-                                    />) :
-                                    picksPlaceholder
-                            }
+                            {renderRightTeam}
                         </Stack>
                     </Stack>
                 </Stack>
