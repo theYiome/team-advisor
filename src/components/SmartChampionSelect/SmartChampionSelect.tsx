@@ -13,7 +13,6 @@ import { LockfileContext } from '../LockfileContext';
 import { ChampionsContext } from '../ChampionsContext';
 
 import { noClientMessage, errorStateMessage } from '../common/CommonMessages';
-import { ChampionSelectPhase, getChampionSelectState, hoverChampion, completeAction } from './SmartChampionSelectLogic';
 import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from '../common/ChampionSelectMessages';
 
 import { MultipleChampionPicker } from '../common/ChampionRolePicker';
@@ -24,7 +23,6 @@ import { PickEntry } from '../common/PickEntry';
 import { useSnackbar } from 'notistack';
 
 import { configFilePath } from '../TeamAdvisor';
-import { session } from 'electron';
 const filePath = configFilePath("smartchampionselect.settings.json");
 
 const compareTeams = (a: any[], b: any[]) => {
@@ -304,11 +302,11 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                 setCurrentChampionSelectPhase(phase);
             }
             else if (isInPickingPhase && smartPickEnabled && state.isDraft && (elapsedTimeSinceLastAction() >= lockinAt))
-                completeAction(lockfileContent, state.actionId);
+                completeAction(lockfileContent, state.currentActionId);
 
 
-            if (state.actionId !== currentActionId)
-                setCurrentActionId(state.actionId);
+            if (state.currentActionId !== currentActionId)
+                setCurrentActionId(state.currentActionId);
 
             // check if worth updating
             if (offlinePhases.includes(phase))
@@ -362,7 +360,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
                     if (lastChampionId !== championId)
                         setLastChampionId(championIdToHover);
 
-                    hoverChampion(lockfileContent, state.actionId, championIdToHover).then((response: any) => {
+                    hoverChampion(lockfileContent, state.currentActionId, championIdToHover).then((response: any) => {
                         if (response && response.errorCode) {
                             setFailedToHover([...failedToHover, championIdToHover]);
                         }
@@ -510,7 +508,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
         <Grid key={prediction} item xs={"auto"}>
             <Button
                 onClick={() => onAvatarClick(prediction)}
-                sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.618)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
+                sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.4)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
             >
                 <Avatar
                     key={prediction}
