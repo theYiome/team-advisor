@@ -1,5 +1,6 @@
 import * as connections from '../../libs/connections'
 import { rawLcuRequest, jsonLcuRequest } from '../../libs/lcuRequest';
+import { LcuErrorMessage, LolChampionSelectV1, LolMatchmakingV1ReadyCheck } from './LcuStateTypes';
 
 const compareTeams = (a: any[], b: any[]) => {
     return a.length === b.length && a.every((value, index) => (
@@ -47,40 +48,33 @@ const getQueueState = async (lockfileContent: any): Promise<QueueState> => {
         const urlWithAuth = connections.clientURL(port, password, username, protocol);
         const url = urlWithAuth + endpointName;
 
-        const clientResponse: any = await connections.fetchJSON(url);
-        console.log(clientResponse);
+        const response: LcuErrorMessage & LolMatchmakingV1ReadyCheck.Session = await connections.fetchJSON(url);
+        console.log(response);
 
-        if (clientResponse.message === "Not attached to a matchmaking queue.") {
-
-            const endpointName = "/lol-champ-select/v1/session";
-            const urlWithAuth = connections.clientURL(port, password, username, protocol);
-            const url = urlWithAuth + endpointName;
-
-            const clientResponse: any = await connections.fetchJSON(url);
-            console.log(clientResponse);
-
-            return {
-                phase: LcuPhase.ClientOpen,
-                queueTimer: 0
-            }
+        if (response.message === "Not attached to a matchmaking queue.") return {
+            phase: LcuPhase.ClientOpen,
+            queueTimer: 0
         }
-        else if (clientResponse.state === "Invalid") return {
+
+        const validResponse: LolMatchmakingV1ReadyCheck.Session = response;
+
+        if (validResponse.state === "Invalid") return {
             phase: LcuPhase.InQueue,
             queueTimer: 0
         }
-        else if (clientResponse.state === "InProgress") {
+        else if (validResponse.state === "InProgress") {
             // Game has been found, check whats user response
-            if (clientResponse.playerResponse === "Declined") return {
+            if (validResponse.playerResponse === "Declined") return {
                 phase: LcuPhase.GameDeclined,
-                queueTimer: clientResponse.timer
+                queueTimer: validResponse.timer
             }
-            else if (clientResponse.playerResponse === "Accepted") return {
+            else if (validResponse.playerResponse === "Accepted") return {
                 phase: LcuPhase.GameAccepted,
-                queueTimer: clientResponse.timer
+                queueTimer: validResponse.timer
             }
             else return {
                 phase: LcuPhase.GameFound,
-                queueTimer: clientResponse.timer
+                queueTimer: validResponse.timer
             }
         }
         else return {
@@ -117,19 +111,21 @@ const getChampionSelectState = async (lockfileContent: any) => {
     };
 
     const endpointName = "lol-champ-select/v1/session";
-    let session = null;
+    let response: LolChampionSelectV1.Session & LcuErrorMessage = null;
     try {
-        session = await jsonLcuRequest(lockfileContent, endpointName);
+        response = await jsonLcuRequest(lockfileContent, endpointName);
     } catch (error) {
         console.warn(error);
         lobbyState.phase = LcuPhase.ClientClosed;
         return lobbyState;
     }
 
-    if (session.message === "No active delegate") {
+    if (response.message === "No active delegate") {
         lobbyState.phase = LcuPhase.ClientOpen;
         return lobbyState;
     }
+
+    const session: LolChampionSelectV1.Session = response;
 
     try {
         const playerTeamId = session.myTeam[0].team;
@@ -153,8 +149,8 @@ const getChampionSelectState = async (lockfileContent: any) => {
             lobbyState.counter = session.counter;
         lobbyState.isDraft = !session.isCustomGame && session.hasSimultaneousBans && !session.hasSimultaneousPicks;
 
-        lobbyState.bans = getBans(session);
-        lobbyState.picks = getPicks(session);
+        lobbyState.bans = getBans(session.actions);
+        lobbyState.picks = getPicks(session.actions);
     }
     catch (error) { console.warn(error) }
 
@@ -252,13 +248,12 @@ const getUserActions = (session: any) => {
             actionsFlat.push(action);
         }
     }
-
     return actionsFlat.filter(action => session.localPlayerCellId === action.actorCellId).sort((a, b) => a.id - b.id);
 }
 
-const getBans = (session: any) => {
+const getBans = (actions: Array<LolChampionSelectV1.Action[]>) => {
     const bans: number[] = [];
-    for (const phase of session.actions) {
+    for (const phase of actions) {
         for (const action of phase) {
             if (action.type === "ban" && action.championId > 0)
                 bans.push(action.championId as number);
@@ -267,9 +262,9 @@ const getBans = (session: any) => {
     return bans;
 }
 
-const getPicks = (session: any) => {
+const getPicks = (actions: Array<LolChampionSelectV1.Action[]>) => {
     const picks: number[] = [];
-    for (const phase of session.actions) {
+    for (const phase of actions) {
         for (const action of phase) {
             if (action.type === "pick" && action.championId > 0)
                 picks.push(action.championId as number);
