@@ -9,7 +9,7 @@ import * as files from '../../libs/files';
 import * as connections from '../../libs/connections'
 import { defaultRoles, defaultChampionsForRole } from '../Settings/SettingsConstants';
 
-import { LockfileContext } from '../LockfileContext';
+import { LcuContext } from '../LcuProvider';
 import { ChampionsContext } from '../ChampionProvider';
 
 import { noClientMessage, errorStateMessage } from '../common/CommonMessages';
@@ -91,7 +91,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [lastChampionId, setLastChampionId] = useState(0);
     const [userTookControl, setUserTookControl] = useState(false);
 
-    const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
+    const [lockfileContent, setLockfileContent] = useContext(LcuContext);
     const champions = useContext(ChampionsContext);
 
     const [leftTeam, setLeftTeam] = useState([]);

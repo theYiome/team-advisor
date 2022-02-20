@@ -1,13 +1,15 @@
 import React, { useState, useContext, useEffect, createContext, useRef } from 'react';
 
 import { useSnackbar } from 'notistack';
-import { LockfileContext } from '../LockfileContext';
+import { LcuContext } from '../LcuProvider';
+
 import { ChampionsContext } from '../ChampionProvider';
-import { completeAction, getLcuState, hoverChampion, LcuPhase } from './LcuStateProviderLogic';
+import { completeAction, getLcuState, hoverChampion, LcuPhase } from './ClientStateProviderLogic';
+import { LolChampionSelectV1 } from './ClientStateTypes';
 
-export const LcuContext = createContext(null);
+export const ClientStateContext = createContext(null);
 
-export const LcuStateProvider = ({children: ReactElement}) => {
+export const ClientStateProvider: React.FC = ({ children }) => {
 
     const verySlowUpdateInterval = 4000;
     const slowUpdateInterval = 2000;
@@ -15,6 +17,7 @@ export const LcuStateProvider = ({children: ReactElement}) => {
 
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
     const [updateInterval, setUpdateInterval] = useState(verySlowUpdateInterval);
+    const lcuState = useContext(LcuContext);
 
     const currentState = useRef({
         phase: undefined as LcuPhase,
@@ -35,8 +38,8 @@ export const LcuStateProvider = ({children: ReactElement}) => {
         gameId: undefined as number,
         localPlayerCellId: undefined as number,
         localPlayerTeamId: undefined as number,
-        leftTeam: [] as any[],
-        rightTeam: [] as any[]
+        leftTeam: [] as LolChampionSelectV1.Team[],
+        rightTeam: [] as LolChampionSelectV1.Team[]
     });
 
     const predictions = [1, 3, 4];
@@ -45,8 +48,7 @@ export const LcuStateProvider = ({children: ReactElement}) => {
     // https://stackoverflow.com/questions/41632942/how-to-measure-time-elapsed-on-javascript
     const elapsedTimeSinceLastAction = () => ((new Date() as any) - (currentState.current.actionTimer as any)) / 1000;
 
-    const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
-    const [champions, setChampions] = useContext(ChampionsContext);
+    const champions = useContext(ChampionsContext);
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
@@ -63,11 +65,11 @@ export const LcuStateProvider = ({children: ReactElement}) => {
 
         console.log({ elapsed: elapsedTimeSinceLastAction() });
 
-        if (lockfileContent.port === "")
+        if (!lcuState.valid)
             currentState.current.phase = LcuPhase.ClientClosed;
 
 
-        getLcuState(lockfileContent).then((state) => {
+        getLcuState(lcuState.credentials).then((state) => {
             console.log({ state });
 
             const isInPickingPhase = state.phase === LcuPhase.Picking;
@@ -79,7 +81,7 @@ export const LcuStateProvider = ({children: ReactElement}) => {
             }
 
             else if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= 31.0))
-                completeAction(lockfileContent, state.currentActionId);
+                completeAction(lcuState.credentials, state.currentActionId);
 
             // check if worth updating
             if ([LcuPhase.Planning, LcuPhase.Banning, LcuPhase.Picking, LcuPhase.InChampionSelect].includes(state.phase)) {
@@ -109,7 +111,7 @@ export const LcuStateProvider = ({children: ReactElement}) => {
                         if (currentState.current.championId !== state.championId)
                             currentState.current.championId = championIdToHover;
 
-                        hoverChampion(lockfileContent, state.currentActionId, championIdToHover).then((response: any) => {
+                        hoverChampion(lcuState.credentials, state.currentActionId, championIdToHover).then((response: any) => {
                             if (response && response.errorCode) {
                                 currentState.current.failedToHover = [...currentState.current.failedToHover, championIdToHover];
                             }

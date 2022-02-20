@@ -3,15 +3,13 @@ import * as pathModule from 'path';
 
 import Container from '@mui/material/Container'
 import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup } from '@mui/material';
-import { LockfileContext } from './LockfileContext';
+import { LcuContext } from './LcuProvider';
 
 import * as files from '../libs/files';
 import { rawLcuRequest } from '../libs/lcuRequest';
 
 import { configFilePath } from './TeamAdvisor';
 const filePath =  configFilePath("lockfile.settings.json");
-
-const compareLockfiles = (a: any, b: any) => (a.username === b.username && a.password === b.password && a.port === b.port && a.port === b.port && a.protocol === b.protocol);
 
 export const ClientAccess: FC<any> = (): ReactElement => {
 
@@ -22,7 +20,7 @@ export const ClientAccess: FC<any> = (): ReactElement => {
     const [dirPath, setDirPath] = useState(defaultDirPath);
     const [filename, setFilename] = useState(defaultFilename);
 
-    const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
+    const [lockfileContent, setLockfileContent] = useContext(LcuContext);
     const { protocol, port, username, password } = lockfileContent;
     const emtpyLockfile = {
         protocol: "",
@@ -169,23 +167,6 @@ export const ClientAccess: FC<any> = (): ReactElement => {
             </Stack>
         </Container>
     );
-}
-
-function parseLockfile(fileString: any) {
-    const fileArray = fileString.split(":");
-
-    console.log(fileArray);
-    if (fileArray.length < 5) {
-        throw `At least 5 strings required, ${fileArray.length} found.
-        String is "${fileString}"`;
-    }
-
-    return {
-        protocol: fileArray[4],
-        port: fileArray[2],
-        username: "riot",
-        password: fileArray[3],
-    }
 }
 
 function restartClientUX(lockfileContent: any): void {

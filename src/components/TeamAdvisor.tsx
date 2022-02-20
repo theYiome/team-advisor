@@ -1,8 +1,17 @@
 import { app, getCurrentWindow } from '@electron/remote';
-import * as path from 'path';
+
+const buildPath = (...args: string[]) => {
+    return args.map((part, i) => {
+        if (i === 0) {
+            return part.trim().replace(/[\/]*$/g, '')
+        } else {
+            return part.trim().replace(/(^[\/]*|[\/]*$)/g, '')
+        }
+    }).filter(x => x.length).join('/')
+}
 
 export const userData = app.getPath("userData");
-export const configFilePath = (filename: string) => path.join(userData, filename);
+export const configFilePath = (filename: string) => buildPath(userData, filename);
 
 console.log({ userData, configFilePath });
 
@@ -12,19 +21,19 @@ import { ClientAccess } from './ClientAccess';
 import { SmartAccept } from './SmartAccept/SmartAccept';
 import { Settings } from './Settings/Settings';
 
-import { LockfileProvider } from './LockfileContext';
+import { LcuProvider } from './LcuProvider';
 import { ChampionsProvider } from './ChampionProvider';
 
-import { Box, Container, Tab, Tabs, Paper } from '@mui/material';
+import { Box, Tab, Tabs, Paper } from '@mui/material';
 
 import '@fontsource/roboto/400.css';
 import { SmartChampionSelect } from './SmartChampionSelect/SmartChampionSelect';
 
-export const TeamAdvisor: FC<any> = (): ReactElement => {
+export const TeamAdvisor: React.FC = () => {
     const [tabId, setTabId] = React.useState(0);
 
     return (
-        <Paper elevation={1} sx={{ pl: 2, pr: 1, pt: 5, pb: 4, boxShadow: "none"}}>
+        <Paper elevation={1} sx={{ pl: 2, pr: 1, pt: 5, pb: 4, boxShadow: "none" }}>
             <Paper sx={{ width: 1, pt: 1, pb: 4 }} elevation={4}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs
@@ -39,7 +48,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                     </Tabs>
                 </Box>
 
-                <LockfileProvider>
+                <LcuProvider>
                     <ChampionsProvider>
 
                         <TabPanel value={tabId} index={0}>
@@ -56,7 +65,7 @@ export const TeamAdvisor: FC<any> = (): ReactElement => {
                         </TabPanel>
 
                     </ChampionsProvider>
-                </LockfileProvider>
+                </LcuProvider>
             </Paper>
         </Paper>
     );

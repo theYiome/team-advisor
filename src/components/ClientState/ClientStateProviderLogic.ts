@@ -1,6 +1,7 @@
 import * as connections from '../../libs/connections'
 import { rawLcuRequest, jsonLcuRequest } from '../../libs/lcuRequest';
-import { Lcu, LolChampionSelectV1, LolMatchmakingV1ReadyCheck } from './LcuStateTypes';
+import { Lcu, LolChampionSelectV1, LolMatchmakingV1ReadyCheck } from './ClientStateTypes';
+import { LcuCredentials } from '../LcuProvider';
 
 const compareTeams = (a: any[], b: any[]) => {
     return a.length === b.length && a.every((value, index) => (
@@ -34,7 +35,7 @@ type QueueState = {
     queueTimer: number
 }
 
-const getQueueState = async (lockfileContent: any): Promise<QueueState> => {
+const getQueueState = async (lockfileContent: LcuCredentials): Promise<QueueState> => {
 
     const { protocol, port, username, password } = lockfileContent;
 
@@ -91,7 +92,7 @@ const getQueueState = async (lockfileContent: any): Promise<QueueState> => {
     }
 }
 
-const getChampionSelectState = async (lockfileContent: any) => {
+const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
 
     const lobbyState = {
         phase: undefined as LcuPhase,
@@ -106,8 +107,8 @@ const getChampionSelectState = async (lockfileContent: any) => {
         gameId: undefined as number,
         localPlayerCellId: undefined as number,
         localPlayerTeamId: undefined as number,
-        leftTeam: [] as any[],
-        rightTeam: [] as any[]
+        leftTeam: [] as LolChampionSelectV1.Team[],
+        rightTeam: [] as LolChampionSelectV1.Team[]
     };
 
     const endpointName = "lol-champ-select/v1/session";
@@ -191,7 +192,7 @@ const getChampionSelectState = async (lockfileContent: any) => {
     return lobbyState;
 }
 
-const getLcuState = async (lockfileContent: any) => {
+const getLcuState = async (lockfileContent: LcuCredentials) => {
     const lcuState = {
         phase: undefined as LcuPhase,
         queueTimer: undefined as number,
@@ -206,8 +207,8 @@ const getLcuState = async (lockfileContent: any) => {
         gameId: undefined as number,
         localPlayerCellId: undefined as number,
         localPlayerTeamId: undefined as number,
-        leftTeam: [] as any[],
-        rightTeam: [] as any[]
+        leftTeam: [] as LolChampionSelectV1.Team[],
+        rightTeam: [] as LolChampionSelectV1.Team[]
     };
 
     let { phase, queueTimer } = await getQueueState(lockfileContent);
@@ -223,7 +224,7 @@ const getLcuState = async (lockfileContent: any) => {
     return lcuState;
 }
 
-async function hoverChampion(lockfileContent: any, actionId: number, championId: number) {
+async function hoverChampion(lockfileContent: LcuCredentials, actionId: number, championId: number) {
     const options = {
         method: "PATCH",
         headers: { "content-type": "application/json" },
@@ -233,11 +234,11 @@ async function hoverChampion(lockfileContent: any, actionId: number, championId:
     return rawLcuRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}`, options);
 }
 
-const completeAction = async (lockfileContent: any, actionId: number) => {
+const completeAction = async (lockfileContent: LcuCredentials, actionId: number) => {
     return rawLcuRequest(lockfileContent, `lol-champ-select/v1/session/actions/${actionId}/complete`, { method: "POST" });
 }
 
-const instantCompleteAction = async (lockfileContent: any, actionId: number, championId: number) => {
+const instantCompleteAction = async (lockfileContent: LcuCredentials, actionId: number, championId: number) => {
     hoverChampion(lockfileContent, actionId, championId).then((result) => completeAction(lockfileContent, actionId));
 }
 
@@ -272,13 +273,5 @@ const getPicks = (actions: Array<LolChampionSelectV1.Action[]>) => {
     }
     return picks;
 }
-
-const roleToChampionList: any = {
-    "top": [],
-    "jungle": [],
-    "middle": [],
-    "bottom": [],
-    "support": []
-};
 
 export { LcuPhase, getLcuState, completeAction, hoverChampion };

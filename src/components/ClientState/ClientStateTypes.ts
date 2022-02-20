@@ -62,7 +62,7 @@ export namespace LolChampionSelectV1 {
         unlockedSkinIds:   number[];
     }
     
-    interface Team {
+    export interface Team {
         assignedPosition:    string;
         cellId:              number;
         championId:          number;

@@ -2,7 +2,7 @@ import React, { ReactElement, FC, useState, useContext, useEffect } from 'react'
 
 import Container from '@mui/material/Container'
 import { Button, Typography, Stack, Slider, Alert, AlertTitle, Switch, FormControlLabel } from '@mui/material';
-import { LockfileContext } from '../LockfileContext';
+import { LcuContext } from '../LcuProvider';
 import * as files from '../../libs/files';
 
 import { noClientMessage, errorStateMessage } from '../common/CommonMessages';
@@ -31,7 +31,7 @@ export const SmartAccept: FC<any> = (): ReactElement => {
     const [queueTimer, setQueueTimer] = useState(initialQueueTimer);
 
     const [secondsToAccept, setSecondsToAccept] = useState(0);
-    const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
+    const [lockfileContent, setLockfileContent] = useContext(LcuContext);
 
     // load setting from file
     useEffect(() => {
