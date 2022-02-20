@@ -1,11 +1,10 @@
 import React, { ReactElement, FC, useState, useEffect, useContext } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Button, FormControlLabel, Paper, Stack, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import * as ddragon from '../libs/ddragon';
-import * as files from "../libs/files";
+import * as files from "../../libs/files";
 
-import { ChampionsContext } from './ChampionsContext';
-import { ThemeContext } from '../app';
+import { ChampionsContext } from '../ChampionProvider';
+import { ThemeContext } from '../../app';
 
 let autoLauncher: any = null;
 
@@ -20,25 +19,18 @@ try {
 }
 
 
-import { configFilePath } from './TeamAdvisor';
-const filePath = configFilePath("champions.json");
+import { configFilePath } from '../TeamAdvisor';
 const settingsPath = configFilePath("settings.settings.json");
 
-export const Settings: FC<any> = (): ReactElement => {
+export const Settings = () => {
 
     const [settingsLoaded, setSettingsLoaded] = useState(false);
-    const [champions, setChampions] = useContext(ChampionsContext);
+    const champions = useContext(ChampionsContext);
     const { lightThemeEnabled, setLightThemeEnabled } = useContext(ThemeContext);
 
     const [autoLauncherEnabled, setAutoLauncherEnabled] = useState(false);
 
     useEffect(() => {
-
-        const loadChampionDataFromFile = () => files.loadJSON(filePath)
-            .then((localChampionData) => setChampions(localChampionData));
-
-        updateStaticChampionData().catch(loadChampionDataFromFile);
-
         if (autoLauncher)
             autoLauncher.isEnabled().then((isEnabled: boolean) => setAutoLauncherEnabled(isEnabled));
 
@@ -57,21 +49,6 @@ export const Settings: FC<any> = (): ReactElement => {
             files.saveJSON({ lightThemeEnabled }, settingsPath, 4);
     }, [lightThemeEnabled]);
 
-    const updateStaticChampionData = async () => {
-        const versionsArray: any = await ddragon.ddragonVersions();
-        const parsed_champions: any = await ddragon.ddragonChampions(versionsArray[0]);
-
-        // two way dict
-        // key -> val
-        // val -> key
-        for (const [key, value] of Object.entries(parsed_champions)) {
-            if (!isNaN(key as any))
-                parsed_champions[value as any] = key;
-        }
-        setChampions(parsed_champions);
-        files.saveJSON(parsed_champions, filePath, 4);
-    }
-
     const data_table = (
         <TableContainer>
             <Table sx={{ width: 1, fontSize: 1 }} size="small" aria-label="a dense table">
@@ -83,8 +60,7 @@ export const Settings: FC<any> = (): ReactElement => {
                 </TableHead>
                 <TableBody>
                     {
-                        Object.keys(champions).map((key: string) =>
-                        (
+                        Object.keys(champions).map((key: string) => (
                             <TableRow key={key} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                 <TableCell component="th" scope="row">{key}</TableCell>
                                 <TableCell component="th" scope="row">{champions[key]}</TableCell>
@@ -136,7 +112,6 @@ export const Settings: FC<any> = (): ReactElement => {
 
                 <Typography variant='h6'>Current patch data</Typography>
 
-                <Button onClick={updateStaticChampionData} variant="outlined" color='success'>Update static champion data</Button>
                 {
                     champions ? (
                         <Accordion color='warning'>

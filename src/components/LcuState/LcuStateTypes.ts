@@ -40,7 +40,7 @@ export namespace LolChampionSelectV1 {
         type:         ActionType;
     }
     
-    enum ActionType {
+    export enum ActionType {
         Ban = "ban",
         Pick = "pick",
         TenBansReveal = "ten_bans_reveal",
@@ -85,8 +85,14 @@ export namespace LolChampionSelectV1 {
         adjustedTimeLeftInPhase: number;
         internalNowInEpochMs:    number;
         isInfinite:              boolean;
-        phase:                   "PLANNING" | "BAN_PICK" | "FINALIZATION";
+        phase:                   Phase;
         totalTimeInPhase:        number;
+    }
+
+    export enum Phase {
+        Planning = "PLANNING",
+        BanPick = "BAN_PICK",
+        Finalization = "FINALIZATION"
     }
     
     interface Trade {
@@ -100,15 +106,39 @@ export namespace LolMatchmakingV1ReadyCheck {
     export interface Session {
         declinerIds:    number[];
         dodgeWarning:   string;
-        playerResponse: string;
-        state:          string;
+        playerResponse: PlayerResponse;
+        state:          State;
         suppressUx:     boolean;
         timer:          number;
-    }    
+    }
+
+    export enum PlayerResponse {
+        Accepted = "Accepted",
+        Declined = "Declined"
+    }
+
+    export enum State {
+        Invalid = "Invalid",
+        InProgress = "InProgress"
+    }
 }
 
-export interface LcuErrorMessage {
-    errorCode:  string | "RPC_ERROR" | "RESOURCE_NOT_FOUND";
-    httpStatus: number;
-    message:    string | "Not attached to a matchmaking queue." | "Invalid URI format";
+export namespace Lcu {
+
+    export interface Error {
+        errorCode:  ErrorCode;
+        httpStatus: number;
+        message:    Message;
+    }
+    
+    export enum ErrorCode {
+        RpcError = "RPC_ERROR",
+        ResourceNotFound = "RESOURCE_NOT_FOUND"
+    }
+    
+    export enum Message {
+        NotAttachedToMatchmakingQueue = "Not attached to a matchmaking queue.",
+        InvalidUriFormat = "Invalid URI format",
+        NoActiveDelegate = "No active delegate"
+    }
 }

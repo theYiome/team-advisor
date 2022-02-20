@@ -1,15 +1,13 @@
 import React, { useState, useContext, useEffect, createContext, useRef } from 'react';
 
-import Container from '@mui/material/Container'
-
 import { useSnackbar } from 'notistack';
 import { LockfileContext } from '../LockfileContext';
-import { completeAction, hoverChampion } from '../SmartChampionSelect/SmartChampionSelectLogic';
-import { ChampionsContext } from '../ChampionsContext';
+import { ChampionsContext } from '../ChampionProvider';
+import { completeAction, getLcuState, hoverChampion, LcuPhase } from './LcuStateProviderLogic';
 
 export const LcuContext = createContext(null);
 
-export const LcuStateProvider = () => {
+export const LcuStateProvider = ({children: ReactElement}) => {
 
     const verySlowUpdateInterval = 4000;
     const slowUpdateInterval = 2000;
@@ -172,7 +170,7 @@ export const LcuStateProvider = () => {
 
 
     return (
-        <Container>
-        </Container>
+        <LcuContext.Provider value={{"lcu": "not implemented"}}>
+        </LcuContext.Provider>
     );
 }

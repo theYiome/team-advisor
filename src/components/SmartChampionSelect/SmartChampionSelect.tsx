@@ -7,10 +7,10 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 import * as files from '../../libs/files';
 import * as connections from '../../libs/connections'
-import { defaultRoles, defaultChampionsForRole } from './SmartChampionSelectConstants';
+import { defaultRoles, defaultChampionsForRole } from '../Settings/SettingsConstants';
 
 import { LockfileContext } from '../LockfileContext';
-import { ChampionsContext } from '../ChampionsContext';
+import { ChampionsContext } from '../ChampionProvider';
 
 import { noClientMessage, errorStateMessage } from '../common/CommonMessages';
 import { appInControl, banningMessage, inChampionSelectMessage, noInChampionSelectMessage, pickedMessage, pickingMessage, planningMessage, unknownMessage, userInControl } from '../common/ChampionSelectMessages';
@@ -92,7 +92,7 @@ export const SmartChampionSelect: FC<any> = (): ReactElement => {
     const [userTookControl, setUserTookControl] = useState(false);
 
     const [lockfileContent, setLockfileContent] = useContext(LockfileContext);
-    const [champions, setChampions] = useContext(ChampionsContext);
+    const champions = useContext(ChampionsContext);
 
     const [leftTeam, setLeftTeam] = useState([]);
     const [rightTeam, setRightTeam] = useState([]);

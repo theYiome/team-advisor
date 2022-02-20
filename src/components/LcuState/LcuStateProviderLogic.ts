@@ -1,6 +1,6 @@
 import * as connections from '../../libs/connections'
 import { rawLcuRequest, jsonLcuRequest } from '../../libs/lcuRequest';
-import { LcuErrorMessage, LolChampionSelectV1, LolMatchmakingV1ReadyCheck } from './LcuStateTypes';
+import { Lcu, LolChampionSelectV1, LolMatchmakingV1ReadyCheck } from './LcuStateTypes';
 
 const compareTeams = (a: any[], b: any[]) => {
     return a.length === b.length && a.every((value, index) => (
@@ -48,27 +48,27 @@ const getQueueState = async (lockfileContent: any): Promise<QueueState> => {
         const urlWithAuth = connections.clientURL(port, password, username, protocol);
         const url = urlWithAuth + endpointName;
 
-        const response: LcuErrorMessage & LolMatchmakingV1ReadyCheck.Session = await connections.fetchJSON(url);
+        const response: Lcu.Error & LolMatchmakingV1ReadyCheck.Session = await connections.fetchJSON(url);
         console.log(response);
-
-        if (response.message === "Not attached to a matchmaking queue.") return {
+        
+        if (response.message === Lcu.Message.NotAttachedToMatchmakingQueue) return {
             phase: LcuPhase.ClientOpen,
             queueTimer: 0
         }
 
         const validResponse: LolMatchmakingV1ReadyCheck.Session = response;
 
-        if (validResponse.state === "Invalid") return {
+        if (validResponse.state === LolMatchmakingV1ReadyCheck.State.Invalid) return {
             phase: LcuPhase.InQueue,
             queueTimer: 0
         }
-        else if (validResponse.state === "InProgress") {
+        else if (validResponse.state === LolMatchmakingV1ReadyCheck.State.InProgress) {
             // Game has been found, check whats user response
-            if (validResponse.playerResponse === "Declined") return {
+            if (validResponse.playerResponse === LolMatchmakingV1ReadyCheck.PlayerResponse.Declined) return {
                 phase: LcuPhase.GameDeclined,
                 queueTimer: validResponse.timer
             }
-            else if (validResponse.playerResponse === "Accepted") return {
+            else if (validResponse.playerResponse === LolMatchmakingV1ReadyCheck.PlayerResponse.Accepted) return {
                 phase: LcuPhase.GameAccepted,
                 queueTimer: validResponse.timer
             }
@@ -111,7 +111,7 @@ const getChampionSelectState = async (lockfileContent: any) => {
     };
 
     const endpointName = "lol-champ-select/v1/session";
-    let response: LolChampionSelectV1.Session & LcuErrorMessage = null;
+    let response: LolChampionSelectV1.Session & Lcu.Error = null;
     try {
         response = await jsonLcuRequest(lockfileContent, endpointName);
     } catch (error) {
@@ -120,7 +120,7 @@ const getChampionSelectState = async (lockfileContent: any) => {
         return lobbyState;
     }
 
-    if (response.message === "No active delegate") {
+    if (response.message === Lcu.Message.NoActiveDelegate) {
         lobbyState.phase = LcuPhase.ClientOpen;
         return lobbyState;
     }
@@ -155,13 +155,13 @@ const getChampionSelectState = async (lockfileContent: any) => {
     catch (error) { console.warn(error) }
 
 
-    if (session.timer.phase === "PLANNING") {
+    if (session.timer.phase === LolChampionSelectV1.Phase.Planning) {
         lobbyState.phase = LcuPhase.Planning;
         return lobbyState;
     }
 
     const userActions = getUserActions(session);
-    lobbyState.pickActionId = userActions.find(action => action.type === "pick");
+    lobbyState.pickActionId = userActions.find(action => action.type === LolChampionSelectV1.ActionType.Pick).id;
 
     const uncompletedActions = userActions.filter(action => !action.completed);
     if (uncompletedActions.length < 1) {
@@ -180,9 +180,9 @@ const getChampionSelectState = async (lockfileContent: any) => {
         if (activeAction.championId > 0)
             lobbyState.isHovering = true;
 
-        if (activeAction.type === "ban")
+        if (activeAction.type === LolChampionSelectV1.ActionType.Ban)
             lobbyState.phase = LcuPhase.Banning;
-        else if (activeAction.type === "pick")
+        else if (activeAction.type === LolChampionSelectV1.ActionType.Pick)
             lobbyState.phase = LcuPhase.Picking;
         else
             lobbyState.phase = LcuPhase.Unknown;
@@ -241,8 +241,8 @@ const instantCompleteAction = async (lockfileContent: any, actionId: number, cha
     hoverChampion(lockfileContent, actionId, championId).then((result) => completeAction(lockfileContent, actionId));
 }
 
-const getUserActions = (session: any) => {
-    const actionsFlat = [];
+const getUserActions = (session: LolChampionSelectV1.Session) => {
+    const actionsFlat: LolChampionSelectV1.Action[] = [];
     for (const actionSection of session.actions) {
         for (const action of actionSection) {
             actionsFlat.push(action);
@@ -255,7 +255,7 @@ const getBans = (actions: Array<LolChampionSelectV1.Action[]>) => {
     const bans: number[] = [];
     for (const phase of actions) {
         for (const action of phase) {
-            if (action.type === "ban" && action.championId > 0)
+            if (action.type === LolChampionSelectV1.ActionType.Ban && action.championId > 0)
                 bans.push(action.championId as number);
         }
     }
@@ -266,7 +266,7 @@ const getPicks = (actions: Array<LolChampionSelectV1.Action[]>) => {
     const picks: number[] = [];
     for (const phase of actions) {
         for (const action of phase) {
-            if (action.type === "pick" && action.championId > 0)
+            if (action.type === LolChampionSelectV1.ActionType.Pick && action.championId > 0)
                 picks.push(action.championId as number);
         }
     }
@@ -280,3 +280,5 @@ const roleToChampionList: any = {
     "bottom": [],
     "support": []
 };
+
+export { LcuPhase, getLcuState, completeAction, hoverChampion };

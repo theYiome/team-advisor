@@ -10,10 +10,10 @@ import React, { ReactElement, FC } from 'react';
 
 import { ClientAccess } from './ClientAccess';
 import { SmartAccept } from './SmartAccept/SmartAccept';
-import { Settings } from './Settings';
+import { Settings } from './Settings/Settings';
 
 import { LockfileProvider } from './LockfileContext';
-import { ChampionsProvider } from './ChampionsContext';
+import { ChampionsProvider } from './ChampionProvider';
 
 import { Box, Container, Tab, Tabs, Paper } from '@mui/material';
 
