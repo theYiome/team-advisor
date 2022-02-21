@@ -1,10 +1,8 @@
 import React, { ReactElement, FC, useState, useEffect, useContext } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Button, FormControlLabel, Paper, Stack, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import * as files from "../../libs/files";
 
 import { ChampionsContext } from '../ChampionProvider';
-import { ThemeContext } from '../../app';
 
 let autoLauncher: any = null;
 
@@ -22,32 +20,17 @@ try {
 import { configFilePath } from '../TeamAdvisor';
 const settingsPath = configFilePath("settings.settings.json");
 
-export const Settings = () => {
+export const Settings: React.FC = () => {
 
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const champions = useContext(ChampionsContext);
-    const { lightThemeEnabled, setLightThemeEnabled } = useContext(ThemeContext);
 
     const [autoLauncherEnabled, setAutoLauncherEnabled] = useState(false);
 
     useEffect(() => {
         if (autoLauncher)
             autoLauncher.isEnabled().then((isEnabled: boolean) => setAutoLauncherEnabled(isEnabled));
-
-        files.loadJSON(settingsPath).then((settings) => {
-            setLightThemeEnabled(settings.lightThemeEnabled);
-            setSettingsLoaded(true);
-        }).catch(error => {
-            console.warn(error);
-            setSettingsLoaded(true);
-        });
     }, []);
-
-    // save settings to file when settings are updated
-    useEffect(() => {
-        if (settingsLoaded)
-            files.saveJSON({ lightThemeEnabled }, settingsPath, 4);
-    }, [lightThemeEnabled]);
 
     const data_table = (
         <TableContainer>
@@ -89,11 +72,6 @@ export const Settings = () => {
         }
     };
 
-    const onLightThemeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const isChecked = event.target.checked;
-        setLightThemeEnabled(isChecked);
-    };
-
     return (
         <Container>
             <Stack spacing={3}>
@@ -103,11 +81,6 @@ export const Settings = () => {
                     control={<Switch checked={autoLauncherEnabled} onChange={onAutoLauncherChange} />}
                     label={<Typography>Launch on system startup</Typography>}
                     disabled={autoLauncher ? false : true}
-                />
-
-                <FormControlLabel
-                    control={<Switch checked={lightThemeEnabled} onChange={onLightThemeChange} />}
-                    label={<Typography>Light theme</Typography>}
                 />
 
                 <Typography variant='h6'>Current patch data</Typography>

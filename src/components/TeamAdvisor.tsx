@@ -21,13 +21,10 @@ import { ClientAccess } from './ClientAccess';
 import { SmartAccept } from './SmartAccept/SmartAccept';
 import { Settings } from './Settings/Settings';
 
-import { LcuProvider } from './LcuProvider';
-import { ChampionsProvider } from './ChampionProvider';
-
 import { Box, Tab, Tabs, Paper } from '@mui/material';
 
 import '@fontsource/roboto/400.css';
-import { SmartChampionSelect } from './SmartChampionSelect/SmartChampionSelect';
+import { SmartChampionSelect } from './SmartChampionSelect';
 
 export const TeamAdvisor: React.FC = () => {
     const [tabId, setTabId] = React.useState(0);
@@ -47,25 +44,18 @@ export const TeamAdvisor: React.FC = () => {
                         <Tab label="Settings" {...a11yProps(3)} />
                     </Tabs>
                 </Box>
-
-                <LcuProvider>
-                    <ChampionsProvider>
-
-                        <TabPanel value={tabId} index={0}>
-                            <SmartChampionSelect></SmartChampionSelect>
-                        </TabPanel>
-                        <TabPanel value={tabId} index={1}>
-                            <SmartAccept></SmartAccept>
-                        </TabPanel>
-                        <TabPanel value={tabId} index={2}>
-                            <ClientAccess></ClientAccess>
-                        </TabPanel>
-                        <TabPanel value={tabId} index={3}>
-                            <Settings></Settings>
-                        </TabPanel>
-
-                    </ChampionsProvider>
-                </LcuProvider>
+                <TabPanel value={tabId} index={0}>
+                    <SmartChampionSelect></SmartChampionSelect>
+                </TabPanel>
+                <TabPanel value={tabId} index={1}>
+                    <SmartAccept></SmartAccept>
+                </TabPanel>
+                <TabPanel value={tabId} index={2}>
+                    <ClientAccess></ClientAccess>
+                </TabPanel>
+                <TabPanel value={tabId} index={3}>
+                    <Settings></Settings>
+                </TabPanel>
             </Paper>
         </Paper>
     );

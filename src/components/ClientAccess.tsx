@@ -1,84 +1,14 @@
-import React, { ReactElement, FC, useState, useContext, useEffect } from 'react';
-import * as pathModule from 'path';
+import React, { ReactElement, useContext } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, TextField, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup } from '@mui/material';
-import { LcuContext } from './LcuProvider';
-
-import * as files from '../libs/files';
+import { Button, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup } from '@mui/material';
+import { LcuContext, LcuCredentials } from './LcuProvider';
 import { rawLcuRequest } from '../libs/lcuRequest';
 
-import { configFilePath } from './TeamAdvisor';
-const filePath =  configFilePath("lockfile.settings.json");
+export const ClientAccess: React.FC = (): ReactElement => {
 
-export const ClientAccess: FC<any> = (): ReactElement => {
-
-    const defaultDirPath = "C:\\Riot Games\\League of Legends\\";
-    const defaultFilename = "lockfile";
-
-    const [settingsLoaded, setSettingsLoaded] = useState(false);
-    const [dirPath, setDirPath] = useState(defaultDirPath);
-    const [filename, setFilename] = useState(defaultFilename);
-
-    const [lockfileContent, setLockfileContent] = useContext(LcuContext);
-    const { protocol, port, username, password } = lockfileContent;
-    const emtpyLockfile = {
-        protocol: "",
-        port: "",
-        username: "",
-        password: "",
-    };
-    
-    const getLockfileData = async () => {
-        const lockfilePath = pathModule.join(dirPath, filename);
-        try {
-            const fileData = await files.loadString(lockfilePath);
-            const parsedData = parseLockfile(fileData);
-            if(!compareLockfiles(parsedData, lockfileContent))
-                setLockfileContent(parsedData);
-        } catch (err) {
-            console.info(err);
-            if(!compareLockfiles(emtpyLockfile, lockfileContent))
-                setLockfileContent(emtpyLockfile);
-        }
-    }
-
-    const resetToDefault = () => {
-        setDirPath(defaultDirPath);
-        setFilename(defaultFilename);
-    };
-
-    // load setting from file
-    useEffect(() => {
-        files.loadJSON(filePath).then((settings) => {
-            setDirPath(settings.dirPath);
-            setFilename(settings.filename);
-            setSettingsLoaded(true);
-        }).catch(error => {
-            console.warn(error);
-            setSettingsLoaded(true);
-        });
-    }, []);
-
-    // save settings to file when settings are updated
-    useEffect(() => {
-        const dataToSave = {
-            dirPath: dirPath,
-            filename: filename
-        }
-
-        if(settingsLoaded)
-            files.saveJSON(dataToSave, filePath, 4);
-    }, [dirPath, filename]);
-
-    // periodicly check lockfile
-    useEffect(() => {
-        getLockfileData();
-        const periodicUpdate = setInterval(getLockfileData, 5000);
-        return () => clearInterval(periodicUpdate);
-
-    }, [dirPath, filename, settingsLoaded]);
-
+    const lcuState = useContext(LcuContext);
+    const {protocol, port, username, password} = lcuState.credentials;
 
     const warning_msg = (
         <Alert severity="warning">
@@ -133,20 +63,6 @@ export const ClientAccess: FC<any> = (): ReactElement => {
             <Stack spacing={3}>
                 {port === "" ? warning_msg : ok_message}
                 {data_table}
-                <TextField
-                    label="League installation path"
-                    value={dirPath}
-                    onChange={(e) => setDirPath(e.target.value)}
-                    sx={{ width: 1, mb: 2 }}
-                />
-                <TextField
-                    label="Lockfile filename"
-                    value={filename}
-                    onChange={(e) => setFilename(e.target.value)}
-                    sx={{ width: 1, mb: 2 }}
-                />
-
-                <Button sx={{ width: 1}} color="success" variant='outlined' onClick={resetToDefault}>RESET TO DEFAULT</Button>
 
                 <Paper elevation={1} sx={{p: 1, pb: 2}}>
                     <Container>
@@ -162,14 +78,14 @@ export const ClientAccess: FC<any> = (): ReactElement => {
                     </Container>
                 </Paper>
                 <ButtonGroup sx={{ width: 1 }} variant="contained" aria-label="outlined primary button group">
-                    <Button sx={{ width: 1}} color="error" onClick={() => restartClientUX(lockfileContent)}>RESTART CLIENT UX</Button>
+                    <Button sx={{ width: 1}} color="error" onClick={() => restartClientUX(lcuState.credentials)}>RESTART CLIENT UX</Button>
                 </ButtonGroup>
             </Stack>
         </Container>
     );
 }
 
-function restartClientUX(lockfileContent: any): void {
+function restartClientUX(lockfileContent: LcuCredentials): void {
     const endpointName = "riotclient/kill-and-restart-ux";
     rawLcuRequest(lockfileContent, endpointName, { method: 'POST' }).catch(error => console.warn(error));
 }

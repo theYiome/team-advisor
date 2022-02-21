@@ -12,7 +12,6 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 containedPrimary: {
                     background: 'linear-gradient(45deg, #195ad2 30%, #083c9e 90%)',
-                    // boxShadow: '0 1px 2px 2px #083c9e',
                     color: 'white'
                 },
             },
@@ -46,7 +45,6 @@ export const darkTheme = createTheme({
             styleOverrides: {
                 containedPrimary: {
                     background: 'linear-gradient(45deg, #195ad2 30%, #083c9e 90%)',
-                    // boxShadow: '0 1px 2px 2px #083c9e',
                     color: 'white'
                 },
             },
@@ -58,3 +56,8 @@ export const darkTheme = createTheme({
         }
     }
 });
+
+export const themesMap = {
+    "dark": darkTheme,
+    "light": lightTheme
+};

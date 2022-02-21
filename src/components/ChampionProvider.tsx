@@ -1,15 +1,15 @@
 import { useSnackbar } from 'notistack';
-import React, { ReactElement, FC, useState, createContext, useEffect, useContext } from 'react';
+import React, { useState, createContext, useEffect, useContext } from 'react';
 
 import { ChampionData, ddragonChampions, ddragonVersions } from '../libs/ddragon';
 import * as files from "../libs/files";
 
-export const ChampionsContext = createContext({} as ChampionData);
+const ChampionsContext = createContext({} as ChampionData);
 
 import { configFilePath } from './TeamAdvisor';
 const filePath = configFilePath("champions.cache.json");
 
-export const ChampionsProvider: React.FC = ({children}) => {
+const ChampionsProvider: React.FC = ({children}) => {
 
     const [champions, setChampions] = useState(useContext(ChampionsContext));
     const { enqueueSnackbar } = useSnackbar();
@@ -28,7 +28,6 @@ export const ChampionsProvider: React.FC = ({children}) => {
 
         // if getting champion data from ddragon fails, load cache
         updateStaticChampionData().catch(handleFailedLoad);
-
     }, []);
 
     const updateStaticChampionData = async () => {
@@ -53,4 +52,4 @@ export const ChampionsProvider: React.FC = ({children}) => {
     );
 }
 
-export { ChampionData };
+export { ChampionData, ChampionsContext, ChampionsProvider };

@@ -14,7 +14,7 @@ const compareTeams = (a: any[], b: any[]) => {
 
 const compareArrays = (a: any[], b: any[]) => a.length === b.length && a.every((value, index) => value === b[index]);
 
-enum LcuPhase {
+enum ClientPhase {
     ClientClosed,
     ClientOpen,
     InQueue,
@@ -31,7 +31,7 @@ enum LcuPhase {
 }
 
 type QueueState = {
-    phase: LcuPhase,
+    phase: ClientPhase,
     queueTimer: number
 }
 
@@ -40,7 +40,7 @@ const getQueueState = async (lockfileContent: LcuCredentials): Promise<QueueStat
     const { protocol, port, username, password } = lockfileContent;
 
     if (username === "") return {
-        phase: LcuPhase.ClientClosed,
+        phase: ClientPhase.ClientClosed,
         queueTimer: 0
     }
 
@@ -53,40 +53,40 @@ const getQueueState = async (lockfileContent: LcuCredentials): Promise<QueueStat
         console.log(response);
         
         if (response.message === Lcu.Message.NotAttachedToMatchmakingQueue) return {
-            phase: LcuPhase.ClientOpen,
+            phase: ClientPhase.ClientOpen,
             queueTimer: 0
         }
 
         const validResponse: LolMatchmakingV1ReadyCheck.Session = response;
 
         if (validResponse.state === LolMatchmakingV1ReadyCheck.State.Invalid) return {
-            phase: LcuPhase.InQueue,
+            phase: ClientPhase.InQueue,
             queueTimer: 0
         }
         else if (validResponse.state === LolMatchmakingV1ReadyCheck.State.InProgress) {
             // Game has been found, check whats user response
             if (validResponse.playerResponse === LolMatchmakingV1ReadyCheck.PlayerResponse.Declined) return {
-                phase: LcuPhase.GameDeclined,
+                phase: ClientPhase.GameDeclined,
                 queueTimer: validResponse.timer
             }
             else if (validResponse.playerResponse === LolMatchmakingV1ReadyCheck.PlayerResponse.Accepted) return {
-                phase: LcuPhase.GameAccepted,
+                phase: ClientPhase.GameAccepted,
                 queueTimer: validResponse.timer
             }
             else return {
-                phase: LcuPhase.GameFound,
+                phase: ClientPhase.GameFound,
                 queueTimer: validResponse.timer
             }
         }
         else return {
-            phase: LcuPhase.Unknown,
+            phase: ClientPhase.Unknown,
             queueTimer: 0
         }
     }
     catch (err) {
         console.warn(err);
         return {
-            phase: LcuPhase.Error,
+            phase: ClientPhase.Error,
             queueTimer: 0
         }
     }
@@ -95,7 +95,7 @@ const getQueueState = async (lockfileContent: LcuCredentials): Promise<QueueStat
 const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
 
     const lobbyState = {
-        phase: undefined as LcuPhase,
+        phase: undefined as ClientPhase,
         currentActionId: undefined as number,
         pickActionId: undefined as number,
         championId: 0 as number,
@@ -117,12 +117,12 @@ const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
         response = await jsonLcuRequest(lockfileContent, endpointName);
     } catch (error) {
         console.warn(error);
-        lobbyState.phase = LcuPhase.ClientClosed;
+        lobbyState.phase = ClientPhase.ClientClosed;
         return lobbyState;
     }
 
     if (response.message === Lcu.Message.NoActiveDelegate) {
-        lobbyState.phase = LcuPhase.ClientOpen;
+        lobbyState.phase = ClientPhase.ClientOpen;
         return lobbyState;
     }
 
@@ -134,12 +134,12 @@ const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
         const rightTeam = playerTeamId === 2 ? session.myTeam : session.theirTeam;
 
         for (const element of leftTeam)
-            if (element.assignedPosition === "utility")
-                element.assignedPosition = "support";
+            if (element.assignedPosition === LolChampionSelectV1.Position.Utility)
+                element.assignedPosition = LolChampionSelectV1.Position.Support;
 
         for (const element of rightTeam)
-            if (element.assignedPosition === "utility")
-                element.assignedPosition = "support";
+            if (element.assignedPosition === LolChampionSelectV1.Position.Utility)
+                element.assignedPosition = LolChampionSelectV1.Position.Support;
 
         lobbyState.leftTeam = leftTeam;
         lobbyState.rightTeam = rightTeam;
@@ -157,7 +157,7 @@ const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
 
 
     if (session.timer.phase === LolChampionSelectV1.Phase.Planning) {
-        lobbyState.phase = LcuPhase.Planning;
+        lobbyState.phase = ClientPhase.Planning;
         return lobbyState;
     }
 
@@ -166,14 +166,14 @@ const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
 
     const uncompletedActions = userActions.filter(action => !action.completed);
     if (uncompletedActions.length < 1) {
-        lobbyState.phase = LcuPhase.Done;
+        lobbyState.phase = ClientPhase.Done;
         return lobbyState;
     }
 
     let activeAction = uncompletedActions.find(action => action.isInProgress);
 
     if (!activeAction)
-        lobbyState.phase = LcuPhase.InChampionSelect;
+        lobbyState.phase = ClientPhase.InChampionSelect;
     else {
         lobbyState.currentActionId = activeAction.id;
         lobbyState.championId = activeAction.championId;
@@ -182,11 +182,11 @@ const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
             lobbyState.isHovering = true;
 
         if (activeAction.type === LolChampionSelectV1.ActionType.Ban)
-            lobbyState.phase = LcuPhase.Banning;
+            lobbyState.phase = ClientPhase.Banning;
         else if (activeAction.type === LolChampionSelectV1.ActionType.Pick)
-            lobbyState.phase = LcuPhase.Picking;
+            lobbyState.phase = ClientPhase.Picking;
         else
-            lobbyState.phase = LcuPhase.Unknown;
+            lobbyState.phase = ClientPhase.Unknown;
     }
 
     return lobbyState;
@@ -194,7 +194,7 @@ const getChampionSelectState = async (lockfileContent: LcuCredentials) => {
 
 const getLcuState = async (lockfileContent: LcuCredentials) => {
     const lcuState = {
-        phase: undefined as LcuPhase,
+        phase: undefined as ClientPhase,
         queueTimer: undefined as number,
         currentActionId: undefined as number,
         pickActionId: undefined as number,
@@ -216,7 +216,7 @@ const getLcuState = async (lockfileContent: LcuCredentials) => {
     lcuState.phase = phase;
     lcuState.queueTimer = queueTimer;
 
-    if (phase === LcuPhase.ClientOpen) {
+    if (phase === ClientPhase.ClientOpen) {
         const championSelectState = getChampionSelectState(lockfileContent);
         Object.assign(lcuState, championSelectState);
     }
@@ -274,4 +274,4 @@ const getPicks = (actions: Array<LolChampionSelectV1.Action[]>) => {
     return picks;
 }
 
-export { LcuPhase, getLcuState, completeAction, hoverChampion };
+export { ClientPhase, getLcuState, completeAction, hoverChampion };

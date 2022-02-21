@@ -44,6 +44,7 @@ export namespace LolChampionSelectV1 {
         Ban = "ban",
         Pick = "pick",
         TenBansReveal = "ten_bans_reveal",
+        PhaseTransition = "phase_transition"
     }
     
     interface Bans {
@@ -63,7 +64,7 @@ export namespace LolChampionSelectV1 {
     }
     
     export interface Team {
-        assignedPosition:    string;
+        assignedPosition:    Position;
         cellId:              number;
         championId:          number;
         championPickIntent:  number;
@@ -74,6 +75,16 @@ export namespace LolChampionSelectV1 {
         summonerId:          number;
         team:                number;
         wardSkinId:          number;
+    }
+
+    export enum Position {
+        Top = "top",
+        Jungle = "jungle",
+        Middle = "middle",
+        Bottom = "bottom",
+        Support = "support",
+        Utility = "utility",
+        None = ""
     }
     
     enum EntitledFeatureType {

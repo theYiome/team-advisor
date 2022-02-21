@@ -1,47 +1,11 @@
-import React, { ReactElement, FC, useState, useEffect, createContext } from 'react';
+import React from 'react';
 import * as ReactDOM from 'react-dom';
-import { TeamAdvisor } from './components/TeamAdvisor';
-import { darkTheme, lightTheme } from './components/Themes'
-import { ThemeProvider } from '@mui/material/styles';
-import { SnackbarProvider } from 'notistack';
-import { Paper } from '@mui/material';
+import { SettingsProvider } from './components/Settings/SettingsProvider';
+import { Main } from './components/Main';
 
-export const ThemeContext = createContext({
-    lightThemeEnabled: false,
-    setLightThemeEnabled: (newValue: boolean) => {}
-});
-
-const MainApp = () => {
-    const [lightThemeEnabled, setLightThemeEnabled] = useState(false);
-    const [currentTheme, setCurrentTheme] = useState(darkTheme);
-
-    useEffect(() => {
-        if (lightThemeEnabled) {
-            setCurrentTheme(lightTheme);
-            document.getElementById("titlebar").style.backgroundColor = "transparent";
-            document.getElementsByTagName("body")[0].style.backgroundColor = "white";
-        } else {
-            setCurrentTheme(darkTheme);
-            document.getElementById("titlebar").style.backgroundColor = "transparent";
-            document.getElementsByTagName("body")[0].style.backgroundColor = "#141414";
-        }
-    }, [lightThemeEnabled]);
-
-    return (
-        <ThemeContext.Provider value={{lightThemeEnabled, setLightThemeEnabled}}>
-            <ThemeProvider theme={currentTheme}>
-                <SnackbarProvider maxSnack={4}>
-                    <Paper elevation={0}>
-                        <TeamAdvisor />
-                    </Paper>
-                </SnackbarProvider>
-            </ThemeProvider>
-        </ThemeContext.Provider>
-    );
-}
 
 const render = () => {
-    ReactDOM.render(<MainApp/>, document.getElementById("app"));
+    ReactDOM.render(<SettingsProvider><Main/></SettingsProvider>, document.getElementById("app"));
 }
 
 render();

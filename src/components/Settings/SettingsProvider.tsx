@@ -1,7 +1,6 @@
-import { useSnackbar } from 'notistack';
-import React, { useReducer, useState, createContext, useEffect, useContext } from 'react';
+import React, { useReducer, createContext } from 'react';
 
-import { ChampionData, ddragonChampions, ddragonVersions } from '../../libs/ddragon';
+import { ChampionData } from '../../libs/ddragon';
 import * as files from "../../libs/files";
 
 import { configFilePath } from '../TeamAdvisor';
@@ -10,14 +9,21 @@ import { defaultBottom, defaultJungle, defaultMiddle, defaultSupport, defaultTop
 const filePath = configFilePath("settings.settings.json");
 
 const initialSettingsState = {
-    theme: "Dark",
+    theme: "dark" as "dark" | "light",
     favourites: {
         top: defaultTop,
         jungle: defaultJungle,
         middle: defaultMiddle,
         bottom: defaultBottom,
-        support: defaultSupport
+        support: defaultSupport,
+        utility: defaultSupport,
+        "": [...defaultTop, ...defaultJungle, ...defaultMiddle, ...defaultBottom, ...defaultSupport]
     },
+    prefferedBans: ["Jax", "Viktor", "Lulu", "Riven"],
+    autoAccept: true,
+    autoBan: true,
+    autoPick: true,
+    championLockinTimer: 31.0,
     leagueInstallationPath: "C:\\Riot Games\\League of Legends\\",
 };
 
@@ -52,7 +58,6 @@ const reducer = (state: any, action: SettingsAction) => {
 const SettingsProvider: React.FC = ({ children }) => {
 
     const [settingsState, settingsDispatch] = useReducer(reducer, initialSettingsState);
-    const { enqueueSnackbar } = useSnackbar();
 
     return (
         <SettingsContext.Provider value={{ settingsState, settingsDispatch }}>
