@@ -5,7 +5,11 @@ import { Main } from './components/Main';
 
 
 const render = () => {
-    ReactDOM.render(<SettingsProvider><Main/></SettingsProvider>, document.getElementById("app"));
+    ReactDOM.render(
+        <SettingsProvider>
+            <Main />
+        </SettingsProvider>,
+        document.getElementById("app"));
 }
 
 render();

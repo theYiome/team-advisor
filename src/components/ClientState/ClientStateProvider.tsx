@@ -10,11 +10,11 @@ import { SettingsContext } from '../Settings/SettingsProvider';
 import * as connections from '../../libs/connections';
 
 
-export const ClientStateContext = createContext({
+const ClientStateContext = createContext({
     phase: ClientPhase.Unknown,
     leftTeam: [] as LolChampionSelectV1.Team[],
     rightTeam: [] as LolChampionSelectV1.Team[],
-    localPlayerCellId: 0,
+    localPlayerCellId: -1,
     championId: 0,
     bans: [] as number[],
     predictions: [] as number[],
@@ -23,47 +23,48 @@ export const ClientStateContext = createContext({
     hoverChampion: async (championId: number) => true
 });
 
-export const ClientStateProvider: React.FC = ({ children }) => {
+const ClientStateProvider: React.FC = ({ children }) => {
 
     const verySlowUpdateInterval = 4000;
     const slowUpdateInterval = 2000;
+    const mediumUpdateInterval = 1000;
     const fastUpdateInterval = 300;
 
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
     const [updateInterval, setUpdateInterval] = useState(verySlowUpdateInterval);
 
-    
+
     const lcuState = useContext(LcuContext);
     const champions = useContext(ChampionsContext);
     const { settingsState, settingsDispatch } = useContext(SettingsContext);
-    
+
     const currentState = useRef({
-        phase: undefined as ClientPhase,
-        queueTimer: undefined as number,
-        
+        phase: ClientPhase.Unknown as ClientPhase,
+        queueTimer: 0 as number,
+
         actionTimer: new Date() as Date,
         failedToHover: [] as number[],
         predictions: [] as number[],
         userTookControl: false as boolean,
-        
-        currentActionId: undefined as number,
-        pickActionId: undefined as number,
+
+        currentActionId: -1 as number,
+        pickActionId: -1 as number,
         championId: 0 as number,
         isHovering: false as boolean,
         isDraft: true as boolean,
-        counter: undefined as number,
+        counter: 0 as number,
         picks: [] as number[],
         bans: [] as number[],
-        gameId: undefined as number,
-        localPlayerCellId: undefined as number,
-        localPlayerTeamId: undefined as number,
+        gameId: 0 as number,
+        localPlayerCellId: -1 as number,
+        localPlayerTeamId: -1 as number,
         leftTeam: [] as LolChampionSelectV1.Team[],
         rightTeam: [] as LolChampionSelectV1.Team[]
     });
 
     // https://stackoverflow.com/questions/41632942/how-to-measure-time-elapsed-on-javascript
     const elapsedTimeSinceLastAction = () => ((new Date() as any) - (currentState.current.actionTimer as any)) / 1000;
-    
+
 
     const [currentPhase, setCurrentPhase] = useState(ClientPhase.Unknown);
     const [currentLeftTeam, setCurrentLeftTeam] = useState([] as LolChampionSelectV1.Team[]);
@@ -88,19 +89,20 @@ export const ClientStateProvider: React.FC = ({ children }) => {
 
     const updateFunction = () => {
 
-        // console.log({ elapsed: elapsedTimeSinceLastAction() });
+        console.log({ lcuState });
 
-        if (!lcuState.valid)
+        if (!lcuState.valid) {
             currentState.current.phase = ClientPhase.ClientClosed;
+            return;
+        }
 
 
         getLcuState(lcuState.credentials).then((state) => {
+            console.log({ state });
             {
-                if(currentPhase !== state.phase)
+                if (currentPhase !== state.phase)
                     setCurrentPhase(state.phase);
             }
-
-            console.log({ state });
 
             const isInPickingPhase = state.phase === ClientPhase.Picking;
             const isInBanningPhase = state.phase === ClientPhase.Banning;
@@ -110,6 +112,7 @@ export const ClientStateProvider: React.FC = ({ children }) => {
             if (phase !== currentState.current.phase) {
                 currentState.current.actionTimer = new Date();
                 currentState.current.failedToHover = [];
+                currentState.current.phase = phase;
             }
             else if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= settingsState.championLockinTimer))
                 completeAction(lcuState.credentials, state.currentActionId);
@@ -170,6 +173,11 @@ export const ClientStateProvider: React.FC = ({ children }) => {
                     }
                 }
 
+                currentState.current.bans = bans;
+                currentState.current.picks = picks;
+                currentState.current.localPlayerCellId = state.localPlayerCellId;
+                currentState.current.localPlayerTeamId = state.localPlayerTeamId;
+                currentState.current.gameId = state.gameId;
             }
 
         });
@@ -185,7 +193,7 @@ export const ClientStateProvider: React.FC = ({ children }) => {
         setPeriodicUpdate(setInterval(updateFunction, updateInterval));
 
         return () => clearInterval(periodicUpdate);
-    }, [updateInterval]);
+    }, [updateInterval, lcuState.valid]);
 
     // clearing state when turned off
     useEffect(() => {
@@ -193,13 +201,17 @@ export const ClientStateProvider: React.FC = ({ children }) => {
     }, [settingsState.autoAccept, settingsState.autoBan, settingsState.autoPick]);
 
     useEffect(() => {
-        if(currentPhase === ClientPhase.ClientClosed) {
-            if(updateInterval !== verySlowUpdateInterval)
+        if (currentPhase === ClientPhase.ClientClosed) {
+            if (updateInterval !== verySlowUpdateInterval)
                 setUpdateInterval(verySlowUpdateInterval);
         }
-        if([ClientPhase.InQueue, ClientPhase.GameFound, ClientPhase.Picking].includes(currentPhase)) {
-            if(updateInterval !== fastUpdateInterval)
-                setUpdateInterval(fastUpdateInterval);
+        else if ([ClientPhase.GameFound, ClientPhase.Picking].includes(currentPhase)) {
+            if (updateInterval !== fastUpdateInterval)
+            setUpdateInterval(fastUpdateInterval);
+        }
+        else if (currentPhase === ClientPhase.InQueue) {
+            if (updateInterval !== mediumUpdateInterval)
+                setUpdateInterval(mediumUpdateInterval);
         }
         else if (updateInterval !== slowUpdateInterval)
             setUpdateInterval(slowUpdateInterval)
@@ -216,36 +228,39 @@ export const ClientStateProvider: React.FC = ({ children }) => {
             const userRole = user ? user.assignedPosition : "";
 
             if (roleSwappedWith !== userRole)
-                currentState.current.localPlayerTeamId === 0 ? 
-                swapRolesInTeam(userRole, roleSwappedWith, currentState.current.leftTeam) : 
-                swapRolesInTeam(userRole, roleSwappedWith, currentState.current.rightTeam);
+                currentState.current.localPlayerTeamId === 0 ?
+                    swapRolesInTeam(userRole, roleSwappedWith, currentState.current.leftTeam) :
+                    swapRolesInTeam(userRole, roleSwappedWith, currentState.current.rightTeam);
         }
+
+        const preferredChampionList = settingsState.favourites.top.map(name => parseInt(champions[name]));
 
         const options = {
             method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: { 
-                leftTeam: currentState.current.leftTeam, 
+            headers: { "content-type": "application/json" },
+            body: {
+                leftTeam: currentState.current.leftTeam,
                 rightTeam: currentState.current.rightTeam,
-                bans: currentState.current.bans, 
+                bans: currentState.current.bans,
                 localPlayerCellId: currentState.current.localPlayerCellId,
                 localPlayerTeamId: currentState.current.localPlayerTeamId,
-                preferredChampionList: settingsState.favourites.top
+                preferredChampionList: preferredChampionList
             },
             json: true
         }
 
-        console.log(options);
+        console.log({getPredictions: options});
 
         try {
             const response = await connections.fetchJSON(endpoint, options);
             console.log({ response, options, type: typeof (response) });
-            const content = response["sorted_champion_ids"];
+            const content: number[] = response["sorted_champion_ids"];
             setLoadingPredictions(false);
-            if (content)
+            if (content) {
+                currentState.current.predictions = content;
+                setCurrentPredictions(content);
                 return content;
+            }
             else
                 return [];
         }
@@ -256,6 +271,21 @@ export const ClientStateProvider: React.FC = ({ children }) => {
         }
     }
 
+    const userRequestedHoverChampion = async (championIdToHover: number) => {
+
+        const correctActionId = currentState.current.pickActionId >= 0 ? currentState.current.pickActionId : currentState.current.currentActionId;
+        
+        return hoverChampion(lcuState.credentials, correctActionId, championIdToHover).then((response: any) => {
+            if (response && response.errorCode) {
+                enqueueSnackbar(`Failed to hover ${champions[championIdToHover]}! Maybe unowned?`, {variant: "error"});
+                return false;
+            }
+            return true;
+        });
+    };
+    
+
+
 
     return (
         <ClientStateContext.Provider value={{
@@ -265,11 +295,15 @@ export const ClientStateProvider: React.FC = ({ children }) => {
             localPlayerCellId: currentLocalPlayerCellId,
             championId: currentChampionId,
             bans: currentBans,
-            predictions: [] as number[],
-            loadingPredictions: false,
+            predictions: currentPredictions,
+            loadingPredictions: loadingPredictions,
             getPredictions: getPredictions,
-            hoverChampion: async (championId: number) => true
+            hoverChampion: userRequestedHoverChampion
         }}>
+            {children}
         </ClientStateContext.Provider>
     );
 }
+
+
+export { ClientStateContext, ClientStateProvider };

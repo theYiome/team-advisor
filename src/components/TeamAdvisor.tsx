@@ -1,21 +1,21 @@
-import { app, getCurrentWindow } from '@electron/remote';
+import { app } from '@electron/remote';
 
 const buildPath = (...args: string[]) => {
     return args.map((part, i) => {
         if (i === 0) {
-            return part.trim().replace(/[\/]*$/g, '')
+            return part.trim().replace(/[\/]*$/g, '');
         } else {
-            return part.trim().replace(/(^[\/]*|[\/]*$)/g, '')
+            return part.trim().replace(/(^[\/]*|[\/]*$)/g, '');
         }
-    }).filter(x => x.length).join('/')
-}
+    }).filter(x => x.length).join('/');
+};
 
 export const userData = app.getPath("userData");
 export const configFilePath = (filename: string) => buildPath(userData, filename);
 
 console.log({ userData, configFilePath });
 
-import React, { ReactElement, FC } from 'react';
+import React from 'react';
 
 import { ClientAccess } from './ClientAccess';
 import { SmartAccept } from './SmartAccept/SmartAccept';

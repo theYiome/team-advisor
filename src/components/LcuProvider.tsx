@@ -1,4 +1,4 @@
-import React, { ReactElement, FC, useState, createContext, useContext, useEffect } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 import { SettingsContext } from './Settings/SettingsProvider';
 import * as files from '../libs/files';
 import { jsonLcuRequest } from "../libs/lcuRequest";
@@ -69,10 +69,10 @@ const initialState = {
 
 const LcuContext = createContext(initialState);
 
-const LcuProvider: React.FC = ({children}) => {
+const LcuProvider: React.FC = ({ children }) => {
 
     const [lcuState, setLcuState] = useState(initialState);
-    const { settingsState, settingsDispatch } = useContext(SettingsContext)
+    const { settingsState, settingsDispatch } = useContext(SettingsContext);
 
     const getCredentialsFromLockfile = async () => {
         const lockfilePath = buildPath(settingsState.leagueInstallationPath, "lockfile");
@@ -82,19 +82,21 @@ const LcuProvider: React.FC = ({children}) => {
             if (!compareCredentials(credentials, lcuState.credentials)) {
                 const endpointName = "lol-summoner/v1/current-summoner";
                 const summoner: Summoner = await jsonLcuRequest(credentials, endpointName);
-                setLcuState({credentials, valid: true, summoner});
+                // console.log({summoner, a: credentials, b: lcuState.credentials})
+                // console.log({credentials, valid: true, summoner});
+                setLcuState({ credentials, valid: true, summoner });
             }
         } catch (err) {
             console.warn(err);
-            setLcuState({...lcuState, valid: false})
+            setLcuState({ ...lcuState, valid: false });
         }
     }
 
     useEffect(() => {
         getCredentialsFromLockfile();
-        const periodicUpdate = setInterval(getCredentialsFromLockfile, 5000);
+        const periodicUpdate = setInterval(getCredentialsFromLockfile, 10000);
         return () => clearInterval(periodicUpdate);
-    }, [settingsState.leagueInstallationPath]);
+    }, [settingsState.leagueInstallationPath, lcuState]);
 
     return (
         <LcuContext.Provider value={lcuState}>
@@ -108,8 +110,7 @@ const parseLockfile = (fileString: string): LcuCredentials => {
 
     console.log(fileArray);
     if (fileArray.length < 5) {
-        throw `At least 5 strings required, ${fileArray.length} found.
-        String is "${fileString}"`;
+        throw `At least 5 strings required, ${fileArray.length} found. String is "${fileString}"`;
     }
 
     return {
@@ -120,21 +121,21 @@ const parseLockfile = (fileString: string): LcuCredentials => {
     }
 }
 
-const compareCredentials = (a: any, b: any) => (
+const compareCredentials = (a: LcuCredentials, b: LcuCredentials) => (
     a.username === b.username &&
     a.password === b.password &&
-    a.port === b.port && a.port === b.port &&
+    a.port === b.port &&
     a.protocol === b.protocol
 );
 
 const buildPath = (...args: string[]) => {
     return args.map((part, i) => {
         if (i === 0) {
-            return part.trim().replace(/[\/]*$/g, '')
+            return part.trim().replace(/[\/]*$/g, '');
         } else {
-            return part.trim().replace(/(^[\/]*|[\/]*$)/g, '')
+            return part.trim().replace(/(^[\/]*|[\/]*$)/g, '');
         }
-    }).filter(x => x.length).join('/')
-}
+    }).filter(x => x.length).join('/');
+};
 
 export { LcuContext, LcuProvider, LcuCredentials }

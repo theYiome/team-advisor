@@ -17,7 +17,7 @@ const ChampionsProvider: React.FC = ({children}) => {
     useEffect(() => {
 
         const loadCachedChampionData = () => {
-            files.loadJSON(filePath).then((cachedChampionData) => setChampions(cachedChampionData));
+            files.loadJSON(filePath).then(cachedChampionData => setChampions(cachedChampionData));
             setTimeout(() => updateStaticChampionData(), 20000);
         };
 

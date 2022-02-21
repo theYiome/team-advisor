@@ -39,6 +39,8 @@ export const SmartChampionSelect: React.FC = () => {
     const clientState = useContext(ClientStateContext);
     const champions = useContext(ChampionsContext);
 
+    console.log({clientState, champions});
+
     const [predictionEndpoint, setPredictionEndpoint] = useState("default");
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
@@ -235,7 +237,7 @@ export const SmartChampionSelect: React.FC = () => {
 }
 
 // https://stackoverflow.com/questions/7128675/from-green-to-red-color-depend-on-percentage/7128796
-function getColor(value: number) {
+const getColor = (value: number) => {
     //value from 0 to 1
     const hue = ((1.0 - value) * 120).toString(10);
     const color = `hsl(${hue}, 100%, 45%)`;

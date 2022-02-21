@@ -9,6 +9,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { SnackbarProvider } from 'notistack';
 import { Paper } from '@mui/material';
 import { SettingsContext } from "./Settings/SettingsProvider";
+import { ClientStateProvider } from "./ClientState/ClientStateProvider";
 
 
 export const Main: React.FC = () => {
@@ -31,9 +32,11 @@ export const Main: React.FC = () => {
             <SnackbarProvider maxSnack={4}>
                 <LcuProvider>
                     <ChampionsProvider>
-                        <Paper elevation={0}>
-                            <TeamAdvisor />
-                        </Paper>
+                        <ClientStateProvider>
+                            <Paper elevation={0}>
+                                <TeamAdvisor />
+                            </Paper>
+                        </ClientStateProvider>
                     </ChampionsProvider>
                 </LcuProvider>
             </SnackbarProvider>
