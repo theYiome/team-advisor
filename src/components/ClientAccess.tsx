@@ -52,6 +52,10 @@ export const ClientAccess: React.FC = (): ReactElement => {
                             <TableCell component="th" scope="row">password</TableCell>
                             <TableCell component="th" scope="row">{password}</TableCell>
                         </TableRow>
+                        <TableRow key={5} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            <TableCell component="th" scope="row">displayName</TableCell>
+                            <TableCell component="th" scope="row">{lcuState.summoner.displayName}</TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>

@@ -1,6 +1,4 @@
 import React, { useReducer, createContext } from 'react';
-
-import { ChampionData } from '../../libs/ddragon';
 import * as files from "../../libs/files";
 
 import { configFilePath } from '../TeamAdvisor';
@@ -24,6 +22,7 @@ const initialSettingsState = {
     autoBan: true,
     autoPick: true,
     championLockinTimer: 31.0,
+    gameAcceptTimer: 2,
     leagueInstallationPath: "C:\\Riot Games\\League of Legends\\",
 };
 
@@ -66,4 +65,4 @@ const SettingsProvider: React.FC = ({ children }) => {
     );
 }
 
-export { ChampionData, SettingsProvider, SettingsContext };
+export { SettingsProvider, SettingsContext };

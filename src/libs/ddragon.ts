@@ -1,8 +1,12 @@
 import * as connections from './connections';
 
-export interface ChampionData {
-    [key: string]: string | undefined
-}
+export interface ChampionIdToNameData {
+    [key: number]: string | undefined
+};
+
+export interface ChampionNameToIdData {
+    [key: string]: number | undefined
+};
 
 namespace Data {
     export interface DdragonChampionData {
@@ -65,16 +69,14 @@ export async function ddragonChampions(patch: string) {
 
         const ddragonData: Data.DdragonChampionData = await connections.fetchJSON(ddragonChampionURL);
         
-        const output: ChampionData = {
-            patch: ddragonData.version
-        }
+        const output: ChampionIdToNameData = { };
     
-        // creates object {"103": "Ahri", "1": "Annie", ...}
+        // creates object {103: "Ahri", 1: "Annie", ...}
         for (const [key, value] of Object.entries(ddragonData.data)) {
-            const id = value.key;
+            const id: number = parseInt(value.key);
             output[id] = key;
         }
-        console.log(output);
+        // console.log(output);
         return output;
 
     } catch (err) {

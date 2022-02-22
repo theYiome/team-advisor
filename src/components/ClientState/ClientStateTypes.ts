@@ -44,7 +44,8 @@ export namespace LolChampionSelectV1 {
         Ban = "ban",
         Pick = "pick",
         TenBansReveal = "ten_bans_reveal",
-        PhaseTransition = "phase_transition"
+        PhaseTransition = "phase_transition",
+        Unknown = "unknown"
     }
     
     interface Bans {

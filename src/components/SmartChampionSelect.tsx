@@ -15,19 +15,9 @@ import { useSnackbar } from 'notistack';
 
 import { ClientStateContext } from './ClientState/ClientStateProvider';
 import { ClientPhase } from './ClientState/ClientStateProviderLogic';
+import { LolChampionSelectV1 } from './ClientState/ClientStateTypes';
 
-const compareTeams = (a: any[], b: any[]) => {
-    return a.length === b.length && a.every((value, index) => (
-        value.championId === b[index].championId &&
-        value.championPickIntent === b[index].championPickIntent &&
-        value.summonerId === b[index].summonerId &&
-        value.assignedPosition === b[index].assignedPosition
-    ));
-};
-
-const compareArrays = (a: any[], b: any[]) => a.length === b.length && a.every((value, index) => value === b[index]);
-
-const suggestionsEndpoints: any = {
+const suggestionsEndpoints = {
     "default": "http://tomage.eu.pythonanywhere.com/team-advisor/",
     "strong": "http://tomage.eu.pythonanywhere.com/team-advisor/strong",
     "fit": "http://tomage.eu.pythonanywhere.com/team-advisor/fit"
@@ -35,18 +25,17 @@ const suggestionsEndpoints: any = {
 
 
 export const SmartChampionSelect: React.FC = () => {
-    
-    const clientState = useContext(ClientStateContext);
-    const champions = useContext(ChampionsContext);
 
-    console.log({clientState, champions});
+    const clientState = useContext(ClientStateContext);
+    const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
+
 
     const [predictionEndpoint, setPredictionEndpoint] = useState("default");
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const {enqueueSnackbar, closeSnackbar} = useSnackbar();
-    
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
     const predictions = clientState.predictions;
     const currentBans = clientState.bans;
     const leftTeam = clientState.leftTeam;
@@ -54,16 +43,13 @@ export const SmartChampionSelect: React.FC = () => {
     const localPlayerCellId = clientState.localPlayerCellId;
     const loadingPredictions = clientState.loadingPredictions;
 
+    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Banning].includes(clientState.phase);
+    const canBan = [ClientPhase.Banning].includes(clientState.phase);
+
     const championNames = useMemo(() =>
-        Object.keys(champions).filter((key: string) => !isNaN(key as any)).filter(key => key !== "0").map((goodKey: string) => champions[goodKey]).sort(),
-        [champions]
+        Object.keys(championNameToId),
+        [championNameToId]
     );
-    const patch = champions["patch"];
-
-    const championsWithEmpty = champions;
-    championsWithEmpty[0] = "";
-
-    const championNamesWithEmpty = [...championNames, ""];
 
     const roles = [...defaultRoles, ""];
 
@@ -83,22 +69,22 @@ export const SmartChampionSelect: React.FC = () => {
         </Grid>
     ), []);
 
-    const renderedPredictions = useMemo(() => predictions.map((prediction: number, index) =>
+    const renderedPredictions = useMemo(() => predictions.map((prediction: number, index: number) =>
         <Grid key={prediction} item xs={"auto"}>
             <Button
                 onClick={() => clientState.hoverChampion(prediction)}
-                sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.4)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
+                sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.5)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
+                disabled={!canPick}
             >
                 <Avatar
                     key={prediction}
-                    alt={champions[prediction]}
-                    src={avatarURI(patch, champions[prediction])}
+                    src={avatarURI(patch, championIdToName[prediction])}
                     sx={{ ...avatarStyle, borderWidth: 2, borderStyle: "solid", borderColor: getColor(index / predictions.length), outlineWidth: 1, outlineStyle: "solid", outlineColor: "black" }}
                     variant='square'
                 />
             </Button>
         </Grid>
-    ), [predictions]);
+    ), [predictions, canPick]);
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item xs={2} sm={1}>
@@ -110,17 +96,16 @@ export const SmartChampionSelect: React.FC = () => {
         </Grid>
     ), []);
 
-    const renderedBans = useMemo(() => currentBans.map((ban, index) =>
+    const renderedBans = useMemo(() => currentBans.map((ban: number, index: number) =>
         <Grid key={index} item xs={2} sm={1}>
             <Avatar
                 key={index}
-                alt={champions[ban]}
-                src={avatarURI(patch, champions[ban])}
+                src={avatarURI(patch, championIdToName[ban])}
                 sx={avatarStyle}
                 variant='rounded'
             />
         </Grid>
-    ), []);
+    ), [currentBans]);
 
     const picksPlaceholder = useMemo(() =>
         Array.from(Array(5).keys()).map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} sx={{ boxShadow: 5 }} />),
@@ -131,8 +116,8 @@ export const SmartChampionSelect: React.FC = () => {
         leftTeam.length > 0 ?
             leftTeam.map(pick => <PickEntry
                 key={pick.cellId}
-                champions={championNamesWithEmpty}
-                championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                champions={championNames}
+                championName={championIdToName[pick.championId ? pick.championId : pick.championPickIntent]}
                 roleName={pick.assignedPosition}
                 roles={roles}
                 patch={patch}
@@ -147,8 +132,8 @@ export const SmartChampionSelect: React.FC = () => {
         rightTeam.length > 0 ?
             rightTeam.map(pick => <PickEntry
                 key={pick.cellId}
-                champions={championNamesWithEmpty}
-                championName={championsWithEmpty[pick.championId ? pick.championId : pick.championPickIntent]}
+                champions={championNames}
+                championName={championIdToName[pick.championId ? pick.championId : pick.championPickIntent]}
                 roleName={pick.assignedPosition}
                 roles={roles}
                 patch={patch}
@@ -181,7 +166,11 @@ export const SmartChampionSelect: React.FC = () => {
                         <Select
                             value={roleSwappedWith}
                             label="Role swap"
-                            onChange={(event: any) => setRoleSwaptWith(event.target.value as string)}
+                            onChange={(event: any) => {
+                                const role: LolChampionSelectV1.Position = event.target.value;
+                                setRoleSwaptWith(role);
+                                clientState.setRoleSwap(role);
+                            }}
                         >
                             <MenuItem value={""}>No swap</MenuItem>
                             <MenuItem value={"top"}>Top</MenuItem>
@@ -197,7 +186,11 @@ export const SmartChampionSelect: React.FC = () => {
                         <Select
                             value={predictionEndpoint}
                             label="Suggestion type"
-                            onChange={(event: any) => setPredictionEndpoint(event.target.value as string)}
+                            onChange={(event) => {
+                                const endpoint = event.target.value as "default" | "strong" | "fit";
+                                setPredictionEndpoint(endpoint);
+                                // clientState.setPredictionsEndpoint(suggestionsEndpoints[endpoint]);
+                            }}
                         >
                             <MenuItem value={"default"}>Default</MenuItem>
                             <MenuItem value={"strong"}>Prioritize winrate</MenuItem>
@@ -209,7 +202,7 @@ export const SmartChampionSelect: React.FC = () => {
 
                 <Stack spacing={1}>
                     <Typography>
-                        Suggested champions - click to hover
+                        Suggested champions {canPick ? "- click to hover" : ""}
                         {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
                     </Typography>
                     <Grid container columns={12} spacing={1}>

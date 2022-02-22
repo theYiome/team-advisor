@@ -39,11 +39,6 @@ const getQueueState = async (lockfileContent: LcuCredentials): Promise<QueueStat
 
     const { protocol, port, username, password } = lockfileContent;
 
-    if (username === "") return {
-        phase: ClientPhase.ClientClosed,
-        queueTimer: 0
-    }
-
     try {
         const endpointName = "lol-matchmaking/v1/ready-check";
         const urlWithAuth = connections.clientURL(port, password, username, protocol);
@@ -98,6 +93,7 @@ const getLcuState = async (lockfileContent: LcuCredentials) => {
         queueTimer: 0 as number,
         currentActionId: -1 as number,
         pickActionId: -1 as number,
+        banActionId: -1 as number,
         championId: 0 as number,
         isHovering: false as boolean,
         isDraft: true as boolean,
@@ -116,7 +112,7 @@ const getLcuState = async (lockfileContent: LcuCredentials) => {
     lcuState.phase = phase;
     lcuState.queueTimer = queueTimer;
 
-    if (phase === ClientPhase.ClientOpen) {
+    if ([ClientPhase.ClientOpen, ClientPhase.InQueue].includes(phase)) {
         const endpointName = "lol-champ-select/v1/session";
         let response: LolChampionSelectV1.Session & Lcu.Error = null;
         try {
@@ -171,6 +167,9 @@ const getLcuState = async (lockfileContent: LcuCredentials) => {
         console.log({userActions, session})
         const pickAction = userActions.find(action => action.type === LolChampionSelectV1.ActionType.Pick);
         lcuState.pickActionId = pickAction ? pickAction.id : -1;
+
+        const banAction = userActions.find(action => action.type === LolChampionSelectV1.ActionType.Ban);
+        lcuState.banActionId = banAction ? banAction.id : -1;
     
         const uncompletedActions = userActions.filter(action => !action.completed);
         if (uncompletedActions.length < 1) {

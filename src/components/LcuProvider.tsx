@@ -82,13 +82,12 @@ const LcuProvider: React.FC = ({ children }) => {
             if (!compareCredentials(credentials, lcuState.credentials)) {
                 const endpointName = "lol-summoner/v1/current-summoner";
                 const summoner: Summoner = await jsonLcuRequest(credentials, endpointName);
-                // console.log({summoner, a: credentials, b: lcuState.credentials})
-                // console.log({credentials, valid: true, summoner});
                 setLcuState({ credentials, valid: true, summoner });
             }
         } catch (err) {
             console.warn(err);
-            setLcuState({ ...lcuState, valid: false });
+            if (lcuState.valid)
+                setLcuState({ ...lcuState, valid: false });
         }
     }
 
@@ -96,7 +95,7 @@ const LcuProvider: React.FC = ({ children }) => {
         getCredentialsFromLockfile();
         const periodicUpdate = setInterval(getCredentialsFromLockfile, 10000);
         return () => clearInterval(periodicUpdate);
-    }, [settingsState.leagueInstallationPath, lcuState]);
+    }, [settingsState.leagueInstallationPath, lcuState.credentials, lcuState.valid]);
 
     return (
         <LcuContext.Provider value={lcuState}>

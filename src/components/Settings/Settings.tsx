@@ -16,15 +16,8 @@ try {
     console.warn("Initializing AutoLaunch failed!", error);
 }
 
-
-import { configFilePath } from '../TeamAdvisor';
-const settingsPath = configFilePath("settings.settings.json");
-
 export const Settings: React.FC = () => {
-
-    const [settingsLoaded, setSettingsLoaded] = useState(false);
-    const champions = useContext(ChampionsContext);
-
+    const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
     const [autoLauncherEnabled, setAutoLauncherEnabled] = useState(false);
 
     useEffect(() => {
@@ -43,12 +36,11 @@ export const Settings: React.FC = () => {
                 </TableHead>
                 <TableBody>
                     {
-                        Object.keys(champions).map((key: string) => (
+                        Object.keys(championNameToId).map((key: string) => (
                             <TableRow key={key} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                 <TableCell component="th" scope="row">{key}</TableCell>
-                                <TableCell component="th" scope="row">{champions[key]}</TableCell>
-                            </TableRow>
-                        )
+                                <TableCell component="th" scope="row">{championNameToId[key]}</TableCell>
+                            </TableRow>)
                         )
                     }
                 </TableBody>
@@ -86,11 +78,11 @@ export const Settings: React.FC = () => {
                 <Typography variant='h6'>Current patch data</Typography>
 
                 {
-                    champions ? (
+                    patch !== "" ? (
                         <Accordion color='warning'>
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                 <Typography>
-                                    Champion data for patch <strong>{champions["patch"]}</strong>
+                                    Champion data for patch <strong>{patch}</strong>
                                 </Typography>
                             </AccordionSummary>
                             <AccordionDetails>

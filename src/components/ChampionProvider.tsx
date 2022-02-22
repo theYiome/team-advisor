@@ -1,29 +1,29 @@
 import { useSnackbar } from 'notistack';
-import React, { useState, createContext, useEffect, useContext } from 'react';
+import React, { useState, createContext, useEffect } from 'react';
 
-import { ChampionData, ddragonChampions, ddragonVersions } from '../libs/ddragon';
-import * as files from "../libs/files";
+import { ChampionIdToNameData, ChampionNameToIdData, ddragonChampions, ddragonVersions } from '../libs/ddragon';
 
-const ChampionsContext = createContext({} as ChampionData);
+const ChampionsContext = createContext({
+    championIdToName: {} as ChampionIdToNameData,
+    championNameToId: {} as ChampionNameToIdData,
+    patch: ""
+});
 
-import { configFilePath } from './TeamAdvisor';
-const filePath = configFilePath("champions.cache.json");
+const ChampionsProvider: React.FC = ({ children }) => {
 
-const ChampionsProvider: React.FC = ({children}) => {
+    const [championIdToName, setChampionIdToName] = useState({} as ChampionIdToNameData);
+    const [championNameToId, setChampionNameToId] = useState({} as ChampionNameToIdData);
+    const [patch, setPatch] = useState("");
 
-    const [champions, setChampions] = useState(useContext(ChampionsContext));
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
-
-        const loadCachedChampionData = () => {
-            files.loadJSON(filePath).then(cachedChampionData => setChampions(cachedChampionData));
-            setTimeout(() => updateStaticChampionData(), 20000);
-        };
-
         const handleFailedLoad = () => {
-            enqueueSnackbar("Failed to load champion names for current patch! No internet connection?", {variant: "error"});
-            loadCachedChampionData();
+            enqueueSnackbar("Failed to load champion names for current patch! No internet connection?", { variant: "error" });
+            setTimeout(
+                () => updateStaticChampionData(),
+                5000
+            );
         };
 
         // if getting champion data from ddragon fails, load cache
@@ -32,24 +32,31 @@ const ChampionsProvider: React.FC = ({children}) => {
 
     const updateStaticChampionData = async () => {
         const versionsArray: string[] = await ddragonVersions();
-        const twoWayChampionsDict: ChampionData = await ddragonChampions(versionsArray[0]);
+        const newPatch: string = versionsArray[0];
 
-        // two way dict
-        // key -> val
-        // val -> key
-        for (const [key, value] of Object.entries(twoWayChampionsDict)) {
-            if (!isNaN(key as any))
-                twoWayChampionsDict[value] = key;
+        const newChampionIdToName: ChampionIdToNameData = await ddragonChampions(newPatch);
+        newChampionIdToName[0] = "";
+        
+        const newChampionNameToId: ChampionNameToIdData = {};
+
+        for (const strId of Object.keys(newChampionIdToName)) {
+            const id = parseInt(strId);
+            const name = newChampionIdToName[id];
+            newChampionNameToId[name] = id;
         }
-        setChampions(twoWayChampionsDict);
-        files.saveJSON(twoWayChampionsDict, filePath, 4);
+
+        console.log({ newChampionIdToName, newChampionNameToId });
+        
+        setChampionIdToName(newChampionIdToName);
+        setChampionNameToId(newChampionNameToId);
+        setPatch(newPatch);
     }
 
     return (
-        <ChampionsContext.Provider value={champions}>
+        <ChampionsContext.Provider value={{championIdToName, championNameToId, patch}}>
             {children}
         </ChampionsContext.Provider>
     );
 }
 
-export { ChampionData, ChampionsContext, ChampionsProvider };
+export { ChampionsContext, ChampionsProvider };
