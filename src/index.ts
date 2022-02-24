@@ -38,9 +38,8 @@ const createWindow = (): void => {
         width: 770,
         minWidth: 580,
         minHeight: 300,
-        maxWidth: 1200,
         darkTheme: true,
-        maximizable: false,
+        maximizable: true,
         show: !startHidden,
         frame: false,
         webPreferences: {

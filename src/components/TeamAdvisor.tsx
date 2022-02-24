@@ -18,7 +18,6 @@ console.log({ userData, configFilePath });
 import React from 'react';
 
 import { ClientAccess } from './ClientAccess';
-import { SmartAccept } from './SmartAccept/SmartAccept';
 import { Settings } from './Settings/Settings';
 
 import { Box, Tab, Tabs, Paper } from '@mui/material';
@@ -39,21 +38,17 @@ export const TeamAdvisor: React.FC = () => {
                         aria-label="main navigation tabs"
                         variant="fullWidth">
                         <Tab label="Champion Select" {...a11yProps(0)} />
-                        <Tab label="Smart Accept" {...a11yProps(1)} />
-                        <Tab label="League Client" {...a11yProps(2)} />
-                        <Tab label="Settings" {...a11yProps(3)} />
+                        <Tab label="League Client" {...a11yProps(1)} />
+                        <Tab label="Settings" {...a11yProps(2)} />
                     </Tabs>
                 </Box>
                 <TabPanel value={tabId} index={0}>
                     <SmartChampionSelect></SmartChampionSelect>
                 </TabPanel>
                 <TabPanel value={tabId} index={1}>
-                    <SmartAccept></SmartAccept>
-                </TabPanel>
-                <TabPanel value={tabId} index={2}>
                     <ClientAccess></ClientAccess>
                 </TabPanel>
-                <TabPanel value={tabId} index={3}>
+                <TabPanel value={tabId} index={2}>
                     <Settings></Settings>
                 </TabPanel>
             </Paper>

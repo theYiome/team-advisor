@@ -1,15 +1,22 @@
-import React, { useState, useContext, useEffect, createContext, useRef } from 'react';
+import React, { useState, useContext, useEffect, createContext, useRef, useCallback } from 'react';
 
 import { useSnackbar } from 'notistack';
 import { LcuContext } from '../LcuProvider';
 
 import { ChampionsContext } from '../ChampionProvider';
-import { completeAction, getLcuState, hoverChampion, ClientPhase } from './ClientStateProviderLogic';
-import { Lcu, LolChampionSelectV1 } from './ClientStateTypes';
+import { completeAction, getLcuState, hoverChampion, ClientPhase, acceptQueue } from './ClientStateProviderLogic';
+import { LolChampionSelectV1 } from './ClientStateTypes';
 import { SettingsContext } from '../Settings/SettingsProvider';
 import * as connections from '../../libs/connections';
-import { acceptQueue } from '../SmartAccept/SmartAcceptLogic';
 
+const swapRolesInTeam = (firstRole: LolChampionSelectV1.Position, secondRole: LolChampionSelectV1.Position, team: LolChampionSelectV1.Team[]) => {
+    team.forEach(x => {
+        if (x.assignedPosition === firstRole)
+            x.assignedPosition = secondRole;
+        else if (x.assignedPosition === secondRole)
+            x.assignedPosition = firstRole;
+    })
+};
 
 const ClientStateContext = createContext({
     phase: ClientPhase.Unknown,
@@ -27,10 +34,12 @@ const ClientStateContext = createContext({
 
 const ClientStateProvider: React.FC = ({ children }) => {
 
-    const verySlowUpdateInterval = 4000;
-    const slowUpdateInterval = 2000;
-    const mediumUpdateInterval = 1000;
-    const fastUpdateInterval = 300;
+    console.log("ClientStateProvider");
+
+    const verySlowUpdateInterval = 2000;
+    const slowUpdateInterval = 1000;
+    const mediumUpdateInterval = 500;
+    const fastUpdateInterval = 250;
 
     const [periodicUpdate, setPeriodicUpdate] = useState(null);
     const [updateInterval, setUpdateInterval] = useState(verySlowUpdateInterval);
@@ -80,16 +89,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
     const [loadingPredictions, setLoadingPredictions] = useState(false);
     const [roleSwappedWith, setRoleSwappedWith] = useState("" as LolChampionSelectV1.Position);
 
-    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-    const swapRolesInTeam = (firstRole: string, secondRole: string, team: any[]) => {
-        team.forEach(x => {
-            if (x.assignedPosition === firstRole)
-                x.assignedPosition = secondRole;
-            else if (x.assignedPosition === secondRole)
-                x.assignedPosition = firstRole;
-        })
-    };
+    const { enqueueSnackbar } = useSnackbar();
 
     const favouritesForRole = (role: LolChampionSelectV1.Position): number[] => {
         let preferredChampionList: string[] = settingsState.favourites[role];
@@ -232,7 +232,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
     // pooling client status
     useEffect(() => {
-        updateFunction();
+        // updateFunction();
 
         if (periodicUpdate)
             clearInterval(periodicUpdate);
@@ -265,7 +265,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
     }, [currentPhase]);
 
 
-    const getPredictions = async (endpoint: string) => {
+    const getPredictions = useCallback(async (endpoint: string) => {
         setLoadingPredictions(true);
 
         const options = {
@@ -302,9 +302,9 @@ const ClientStateProvider: React.FC = ({ children }) => {
             console.warn(error);
             return [];
         }
-    }
+    }, []);
 
-    const userRequestedHoverChampion = async (championIdToHover: number, actionType = LolChampionSelectV1.ActionType.Pick) => {
+    const userRequestedHoverChampion = useCallback(async (championIdToHover: number, actionType = LolChampionSelectV1.ActionType.Pick) => {
         const getProperActionId = (actionType: LolChampionSelectV1.ActionType) => {
             switch (actionType) {
                 case LolChampionSelectV1.ActionType.Pick: return currentState.current.pickActionId;
@@ -323,8 +323,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
             }
             return true;
         });
-    };
-
+    }, [lcuState.credentials, championIdToName]);
 
     return (
         <ClientStateContext.Provider value={{

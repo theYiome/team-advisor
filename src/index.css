@@ -15,6 +15,10 @@ body {
     background-image: url('./icons/close.png');
 }
 
+#max-button-inner {
+    background-image: url('./icons/max.png');
+}
+
 #min-button-inner {
     background-image: url('./icons/min.png');
 }
@@ -169,7 +173,7 @@ body {
 
 #window-controls {
     display: grid;
-    grid-template-columns: repeat(5, 46px);
+    grid-template-columns: repeat(6, 46px);
     position: absolute;
     top: 0;
     right: 0;
@@ -228,8 +232,12 @@ body {
     grid-column: 4;
 }
 
-#close-button {
+#max-button {
     grid-column: 5;
+}
+
+#close-button {
+    grid-column: 6;
 }
 
 #restore-button {

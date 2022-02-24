@@ -4,7 +4,6 @@ import React, { FC, ReactElement } from 'react';
 import { avatarURI, roleImages } from '../../componentLibs/leagueImages';
 import { SingleChampionPicker, SingleRolePicker } from './ChampionRolePicker';
 
-
 type PickEntryProp = {
     championName: string,
     roleName: string,
@@ -16,7 +15,6 @@ type PickEntryProp = {
     onChange?: any,
     reverse?: boolean
 };
-
 
 const PickEntry: FC<PickEntryProp> = ({
     championName,

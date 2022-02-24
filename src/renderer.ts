@@ -61,6 +61,13 @@ function handleWindowControls() {
         win.minimize();
     });
 
+    document.getElementById('max-button').addEventListener("click", event => {
+        if(win.isMaximized())
+            win.unmaximize();
+        else
+            win.maximize();
+    });
+
     document.getElementById('close-button').addEventListener("click", event => {
         win.close();
     });

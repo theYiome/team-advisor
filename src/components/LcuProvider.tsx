@@ -45,8 +45,8 @@ const initialState = {
     valid: false,
     summoner: {
         accountId: 123456789,
-        displayName: "SummonerName",
-        internalName: "SummonerName",
+        displayName: "",
+        internalName: "",
         nameChangeFlag: false,
         percentCompleteForNextLevel: 50,
         privacy: "PUBLIC",
@@ -71,8 +71,10 @@ const LcuContext = createContext(initialState);
 
 const LcuProvider: React.FC = ({ children }) => {
 
+    console.log("LcuProvider");
+
     const [lcuState, setLcuState] = useState(initialState);
-    const { settingsState, settingsDispatch } = useContext(SettingsContext);
+    const { settingsState } = useContext(SettingsContext);
 
     const getCredentialsFromLockfile = async () => {
         const lockfilePath = buildPath(settingsState.leagueInstallationPath, "lockfile");
