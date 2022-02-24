@@ -14,10 +14,10 @@ import { ClientStateProvider } from "./ClientState/ClientStateProvider";
 
 export const Main: React.FC = () => {
 
-    const { settingsState } = useContext(SettingsContext);
+    const { settings } = useContext(SettingsContext);
 
     useEffect(() => {
-        if (themesMap[settingsState.theme].palette.mode = "dark") {
+        if (themesMap[settings.theme].palette.mode = "dark") {
             document.getElementById("titlebar").style.backgroundColor = "transparent";
             document.getElementsByTagName("body")[0].style.backgroundColor = "#141414";
         }
@@ -25,10 +25,10 @@ export const Main: React.FC = () => {
             document.getElementById("titlebar").style.backgroundColor = "transparent";
             document.getElementsByTagName("body")[0].style.backgroundColor = "white";
         }
-    }, [settingsState.theme]);
+    }, [settings.theme]);
 
     return (
-        <ThemeProvider theme={themesMap[settingsState.theme]}>
+        <ThemeProvider theme={themesMap[settings.theme]}>
             <SnackbarProvider maxSnack={4}>
                 <LcuProvider>
                     <ChampionsProvider>

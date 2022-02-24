@@ -21,7 +21,7 @@ export const Settings: React.FC = () => {
     const { championNameToId, patch } = useContext(ChampionsContext);
     const [autoLauncherEnabled, setAutoLauncherEnabled] = useState(false);
 
-    const { settingsState, settingsDispatch } = useContext(SettingsContext);
+    const { settings, settingsDispatch } = useContext(SettingsContext);
 
     const [gameAcceptTimer, setGameAcceptTimer] = useState(0);
 
@@ -216,8 +216,8 @@ export const Settings: React.FC = () => {
     // );
 
     useEffect(() => {
-        setGameAcceptTimer(settingsState.gameAcceptTimer);
-    }, [settingsState.gameAcceptTimer])
+        setGameAcceptTimer(settings.gameAcceptTimer);
+    }, [settings.gameAcceptTimer])
 
 
     const handleTimerChange = (event: Event, newValue: number, activeThumb: number) => {

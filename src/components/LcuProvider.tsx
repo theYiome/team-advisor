@@ -74,10 +74,10 @@ const LcuProvider: React.FC = ({ children }) => {
     console.log("LcuProvider");
 
     const [lcuState, setLcuState] = useState(initialState);
-    const { settingsState } = useContext(SettingsContext);
+    const { settings } = useContext(SettingsContext);
 
     const getCredentialsFromLockfile = async () => {
-        const lockfilePath = buildPath(settingsState.leagueInstallationPath, "lockfile");
+        const lockfilePath = buildPath(settings.leagueInstallationPath, "lockfile");
         try {
             const fileData = await files.loadString(lockfilePath);
             const credentials = parseLockfile(fileData);
@@ -97,7 +97,7 @@ const LcuProvider: React.FC = ({ children }) => {
         getCredentialsFromLockfile();
         const periodicUpdate = setInterval(getCredentialsFromLockfile, 10000);
         return () => clearInterval(periodicUpdate);
-    }, [settingsState.leagueInstallationPath, lcuState.credentials, lcuState.valid]);
+    }, [settings.leagueInstallationPath, lcuState.credentials, lcuState.valid]);
 
     return (
         <LcuContext.Provider value={lcuState}>

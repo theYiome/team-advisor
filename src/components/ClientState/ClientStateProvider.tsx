@@ -8,6 +8,7 @@ import { completeAction, getLcuState, hoverChampion, ClientPhase, acceptQueue } 
 import { LolChampionSelectV1 } from './ClientStateTypes';
 import { SettingsContext } from '../Settings/SettingsProvider';
 import * as connections from '../../libs/connections';
+import { FavouritesContext } from '../Settings/FavouritesProvider';
 
 const swapRolesInTeam = (firstRole: LolChampionSelectV1.Position, secondRole: LolChampionSelectV1.Position, team: LolChampionSelectV1.Team[]) => {
     team.forEach(x => {
@@ -47,7 +48,8 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
     const lcuState = useContext(LcuContext);
     const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
-    const { settingsState } = useContext(SettingsContext);
+    const { settings } = useContext(SettingsContext);
+    const { favourites } = useContext(FavouritesContext);
 
     const currentState = useRef({
         phase: ClientPhase.Unknown as ClientPhase,
@@ -91,11 +93,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
     const { enqueueSnackbar } = useSnackbar();
 
-    const favouritesForRole = (role: LolChampionSelectV1.Position): number[] => {
-        let preferredChampionList: string[] = settingsState.favourites[role];
-        return preferredChampionList.map(name => championNameToId[name]);
-    }
-
     const updateFunction = () => {
 
         console.log({ lcuState });
@@ -111,7 +108,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         getLcuState(lcuState.credentials).then((state) => {
             if ([ClientPhase.GameAccepted, ClientPhase.GameDeclined, ClientPhase.GameFound, ClientPhase.InQueue].includes(state.phase)) {
                 currentState.current.queueTimer = state.queueTimer;
-                if (state.phase === ClientPhase.GameFound && currentState.current.queueTimer >= settingsState.gameAcceptTimer)
+                if (state.phase === ClientPhase.GameFound && currentState.current.queueTimer >= settings.gameAcceptTimer)
                     acceptQueue(lcuState.credentials);
 
                 if (state.phase !== currentPhase)
@@ -141,7 +138,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
                     currentState.current.actionTimer = new Date();
                     currentState.current.failedToHover = [];
                 }
-                else if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= settingsState.championLockinTimer))
+                else if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= settings.championLockinTimer))
                     completeAction(lcuState.credentials, state.currentActionId);
 
                 const unavailableChampions = state.bans.concat(state.picks)
@@ -180,7 +177,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 if (!currentState.current.userTookControl) {
                     // if control not taken app can perform an action
                     if (isInBanningPhase) {
-                        const idBanList: number[] = settingsState.prefferedBans.map(name => championNameToId[name]);
+                        const idBanList: number[] = settings.prefferedBans.map(name => championNameToId[name]);
                         const championToBan: number = idBanList.find(ban => !unavailableChampions.includes(ban));
                         attemptToHover(championToBan);
                     }
@@ -245,7 +242,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
     // clearing state when turned off
     useEffect(() => {
         currentState.current.actionTimer = new Date();
-    }, [settingsState.autoAccept, settingsState.autoBan, settingsState.autoPick]);
+    }, [settings.autoAccept, settings.autoBan, settings.autoPick]);
 
     useEffect(() => {
         if (currentPhase === ClientPhase.ClientClosed) {
@@ -264,6 +261,10 @@ const ClientStateProvider: React.FC = ({ children }) => {
             setUpdateInterval(slowUpdateInterval)
     }, [currentPhase]);
 
+    const favouritesForRole = (role: LolChampionSelectV1.Position): number[] => {
+        let preferredChampionList: string[] = favourites[role];
+        return preferredChampionList.map(name => championNameToId[name]);
+    }
 
     const getPredictions = useCallback(async (endpoint: string) => {
         setLoadingPredictions(true);
@@ -302,7 +303,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
             console.warn(error);
             return [];
         }
-    }, []);
+    }, [favourites, championNameToId]);
 
     const userRequestedHoverChampion = useCallback(async (championIdToHover: number, actionType = LolChampionSelectV1.ActionType.Pick) => {
         const getProperActionId = (actionType: LolChampionSelectV1.ActionType) => {

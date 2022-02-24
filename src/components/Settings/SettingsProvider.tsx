@@ -1,17 +1,7 @@
 import React, { useReducer, createContext, useEffect } from 'react';
-import { defaultBottom, defaultJungle, defaultMiddle, defaultSupport, defaultTop } from './SettingsConstants';
 
 export interface SettingsContent {
     theme: "dark" | "light";
-    favourites: {
-        top: string[];
-        jungle: string[];
-        middle: string[];
-        bottom: string[];
-        support: string[];
-        utility: string[];
-        "": string[];
-    };
     prefferedBans: string[];
     autoAccept: boolean;
     autoBan: boolean;
@@ -21,23 +11,8 @@ export interface SettingsContent {
     leagueInstallationPath: string;
 }
 
-const areFavouritesValid = (settings: SettingsContent) => {
-    for (const key of Object.keys(settings.favourites)) {
-        const k = key as "top" | "jungle" | "middle" | "bottom" | "support" | "utility" | "";
-        const favouritesValid = settings.favourites[k].every((value, index) => {
-            if (typeof (value) !== typeof ("") || !isNaN(value as any))
-                return false;
-            return true;
-        });
-        if (!favouritesValid)
-            return false;
-    }
-    return true;
-}
-
 const validateSettingsContent = (settings: SettingsContent): boolean => {
     try {
-        const favouritesValid = areFavouritesValid(settings);
 
         const prefferedBansValid = settings.prefferedBans.every((value, index) => {
             if (typeof (value) !== typeof ("") || !isNaN(value as any))
@@ -45,8 +20,7 @@ const validateSettingsContent = (settings: SettingsContent): boolean => {
             return true;
         });
 
-        return favouritesValid &&
-            prefferedBansValid &&
+        return prefferedBansValid &&
             settings.championLockinTimer > 0 &&
             settings.gameAcceptTimer > 0;
 
@@ -56,17 +30,8 @@ const validateSettingsContent = (settings: SettingsContent): boolean => {
     return false
 }
 
-const initialSettingsState: SettingsContent = {
+const initialSettings: SettingsContent = {
     theme: "dark" as "dark" | "light",
-    favourites: {
-        top: defaultTop,
-        jungle: defaultJungle,
-        middle: defaultMiddle,
-        bottom: defaultBottom,
-        support: defaultSupport,
-        utility: defaultSupport,
-        "": [...defaultTop, ...defaultJungle, ...defaultMiddle, ...defaultBottom, ...defaultSupport]
-    },
     prefferedBans: ["Jax", "Viktor", "Lulu", "Riven"],
     autoAccept: true,
     autoBan: true,
@@ -84,11 +49,6 @@ export interface SettingsAction {
 export enum SettingsActionType {
     SetAll,
     SetTheme,
-    SetFavouritesTop,
-    SetFavouritesJungle,
-    SetFavouritesMiddle,
-    SetFavouritesBottom,
-    SetFavouritesSupport,
     SetPrefferedBans,
     SetAutoAccept,
     SetAutoBan,
@@ -99,7 +59,7 @@ export enum SettingsActionType {
 }
 
 const SettingsContext = createContext({
-    settingsState: initialSettingsState,
+    settings: initialSettings,
     settingsDispatch: (action: SettingsAction) => { }
 });
 
@@ -124,6 +84,8 @@ const reducer = (state: SettingsContent, action: SettingsAction): SettingsConten
             return { ...state, gameAcceptTimer: action.payload };
         case SettingsActionType.SetLeagueInstallationPath:
             return { ...state, leagueInstallationPath: action.payload };
+        case SettingsActionType.SetPrefferedBans:
+            return { ...state, prefferedBans: action.payload };
         default:
             throw new Error();
     }
@@ -133,26 +95,26 @@ const SettingsProvider: React.FC = ({ children }) => {
 
     console.log("SettingsProvider");
 
-    const [settingsState, settingsDispatch] = useReducer(reducer, initialSettingsState);
+    const [settings, settingsDispatch] = useReducer(reducer, initialSettings);
 
     useEffect(() => {
-        localStorage.setItem("SettingsProvider", JSON.stringify(settingsState));
-    }, [settingsState]);
+        localStorage.setItem("SettingsProvider", JSON.stringify(settings));
+    }, [settings]);
 
     useEffect(() => {
         const localStorageContent: string = localStorage.getItem("SettingsProvider");
-        const localStorageObj: SettingsContent = JSON.parse(localStorageContent);
-        if (validateSettingsContent(localStorageObj)) {
-            console.log({ localStorageObj });
+        const settingsObj: SettingsContent = JSON.parse(localStorageContent);
+        if (validateSettingsContent(settingsObj)) {
+            console.log({ settingsObj });
             settingsDispatch({
                 type: SettingsActionType.SetAll,
-                payload: localStorageObj
+                payload: settingsObj
             });
         }
     }, []);
 
     return (
-        <SettingsContext.Provider value={{ settingsState, settingsDispatch }}>
+        <SettingsContext.Provider value={{ settings, settingsDispatch }}>
             {children}
         </SettingsContext.Provider>
     );
