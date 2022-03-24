@@ -1,5 +1,5 @@
 import React, { ReactElement, FC, useState, useEffect, useContext } from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Button, FormControlLabel, Paper, Stack, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Alert, AlertTitle, Slider } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, FormControlLabel, Paper, Stack, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Alert, AlertTitle, Slider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { ChampionsContext } from '../ChampionProvider';
@@ -242,12 +242,24 @@ export const Settings: React.FC = () => {
                 }
             );
         }
-    };
+    }
 
     return (
         <Container>
             <Stack spacing={3}>
                 <Typography variant='h6'>General settings</Typography>
+
+                <FormControl fullWidth>
+                    <InputLabel>Theme</InputLabel>
+                    <Select
+                        value={settings.theme}
+                        label="Theme"
+                        onChange={(event: SelectChangeEvent) => settingsDispatch({type: SettingsActionType.SetTheme, payload: event.target.value as string})}
+                    >
+                        <MenuItem value="dark">Dark</MenuItem>
+                        <MenuItem value="light">Light</MenuItem>
+                    </Select>
+                </FormControl>
 
                 <FormControlLabel
                     control={<Switch checked={autoLauncherEnabled} onChange={onAutoLauncherChange} />}

@@ -5,7 +5,7 @@ export const lightTheme = createTheme({
         mode: 'light',
     },
     shape: {
-        borderRadius: 10,
+        borderRadius: 8,
     },
     components: {
         MuiButton: {
@@ -38,7 +38,7 @@ export const darkTheme = createTheme({
         },
     },
     shape: {
-        borderRadius: 10,
+        borderRadius: 8,
     },
     components: {
         MuiButton: {

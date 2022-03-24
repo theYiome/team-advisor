@@ -7,10 +7,6 @@ body {
 } 
 */
 
-.MuiDrawer-paper {
-    width: 80% !important;
-}
-
 #close-button-inner {
     background-image: url('./icons/close.png');
 }
@@ -38,26 +34,27 @@ body {
 /* Basic styling */
 
 /* https://stackoverflow.com/questions/59588519/how-do-you-make-your-own-customize-the-scroll-bar-in-electron */
-.scroll_enabled {
-    overflow: scroll;
+.scroll-enabled {
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
-.scroll_enabled::-webkit-scrollbar {
+.scroll-enabled::-webkit-scrollbar {
     width: 20px;
 }
 
-.scroll_enabled::-webkit-scrollbar-corner {
+.scroll-enabled::-webkit-scrollbar-corner {
     background: rgba(0,0,0,0);
 }
-.scroll_enabled::-webkit-scrollbar-thumb {
+.scroll-enabled::-webkit-scrollbar-thumb {
     background-image: linear-gradient(#083c9e, #195ad2);
     border-radius: 12px;
-    border: 5px solid rgba(0,0,0,0);
+    border: 7px solid rgba(0,0,0,0);
     background-clip: content-box;
     min-width: 32px;
     min-height: 32px;
 }
-.scroll_enabled::-webkit-scrollbar-track {
+.scroll-enabled::-webkit-scrollbar-track {
     background-color: rgba(0,0,0,0);
 }
 
@@ -133,10 +130,9 @@ body {
 
 #titlebar {
     padding: 4px;
-    border-radius: 0 0 16px 0;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    /* box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23); */
     /* backdrop-filter: blur(3px); */
-    backdrop-filter: brightness(70%) blur(2px);
+    backdrop-filter: brightness(40%) blur(2px);
 }
 
 #titlebar #drag-region {
@@ -212,12 +208,10 @@ body {
 
 #close-button:hover {
     background: #083c9e !important;
-    border-radius: 0 0 16px 0;
 }
 
 #close-button:active {
     background: #195ad2 !important;
-    border-radius: 0 0 16px 0;
 }
 
 #close-button:active .icon {

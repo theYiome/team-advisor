@@ -29,13 +29,11 @@ export const Main: React.FC = () => {
 
     return (
         <ThemeProvider theme={themesMap[settings.theme]}>
-            <SnackbarProvider maxSnack={4}>
+            <SnackbarProvider maxSnack={4} anchorOrigin={{horizontal: "right", vertical: "bottom"}}>
                 <LcuProvider>
                     <ChampionsProvider>
                         <ClientStateProvider>
-                            <Paper elevation={0}>
                                 <TeamAdvisor />
-                            </Paper>
                         </ClientStateProvider>
                     </ChampionsProvider>
                 </LcuProvider>
