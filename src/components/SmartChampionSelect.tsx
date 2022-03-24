@@ -86,7 +86,7 @@ export const SmartChampionSelect: React.FC = () => {
     ), [predictions, canPick]);
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
-        <Grid key={index} item xs={2} sm={1}>
+        <Grid key={index} item md={2} lg={1}>
             <Skeleton
                 key={index}
                 variant="rectangular"
@@ -96,7 +96,7 @@ export const SmartChampionSelect: React.FC = () => {
     ), []);
 
     const renderedBans = useMemo(() => currentBans.map((ban: number, index: number) =>
-        <Grid key={index} item xs={2} sm={1}>
+        <Grid key={index} item md={2} lg={1}>
             <Avatar
                 key={index}
                 src={avatarURI(patch, championIdToName[ban])}
@@ -145,10 +145,6 @@ export const SmartChampionSelect: React.FC = () => {
     return (
         <Container>
             <Stack spacing={3}>
-                <Button variant="outlined" color='success' size="small" onClick={() => setDrawerOpen(true)}>
-                    <SettingsIcon fontSize='small' sx={{ mr: 0.5 }}></SettingsIcon> SETTINGS
-                </Button>
-
                 <Stack direction="row" spacing={2}>
                     <Button
                         variant="contained"

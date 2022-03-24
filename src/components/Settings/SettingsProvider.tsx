@@ -1,4 +1,4 @@
-import React, { useReducer, createContext, useEffect } from 'react';
+import React, { useReducer, createContext, useEffect, useRef, useState } from 'react';
 
 export interface SettingsContent {
     theme: "dark" | "light";
@@ -6,6 +6,7 @@ export interface SettingsContent {
     autoAccept: boolean;
     autoBan: boolean;
     autoPick: boolean;
+    autoLockin: boolean;
     championLockinTimer: number;
     gameAcceptTimer: number;
     leagueInstallationPath: string;
@@ -20,9 +21,11 @@ const validateSettingsContent = (settings: SettingsContent): boolean => {
             return true;
         });
 
+        console.log({ prefferedBansValid, settings });
+
         return prefferedBansValid &&
-            settings.championLockinTimer > 0 &&
-            settings.gameAcceptTimer > 0;
+            settings.championLockinTimer >= 0 &&
+            settings.gameAcceptTimer >= 0;
 
     } catch (error) {
         console.error({ error, settings, message: "Settings object is invalid" });
@@ -36,8 +39,9 @@ const initialSettings: SettingsContent = {
     autoAccept: true,
     autoBan: true,
     autoPick: true,
+    autoLockin: true,
     championLockinTimer: 31.0,
-    gameAcceptTimer: 2,
+    gameAcceptTimer: 3,
     leagueInstallationPath: "C:\\Riot Games\\League of Legends\\",
 };
 
@@ -53,6 +57,7 @@ export enum SettingsActionType {
     SetAutoAccept,
     SetAutoBan,
     SetAutoPick,
+    SetAutoLockin,
     SetChampionLockinTimer,
     SetGameAcceptTimer,
     SetLeagueInstallationPath
@@ -78,6 +83,8 @@ const reducer = (state: SettingsContent, action: SettingsAction): SettingsConten
             return { ...state, autoBan: action.payload };
         case SettingsActionType.SetAutoPick:
             return { ...state, autoPick: action.payload };
+        case SettingsActionType.SetAutoLockin:
+            return { ...state, autoLockin: action.payload };
         case SettingsActionType.SetChampionLockinTimer:
             return { ...state, championLockinTimer: action.payload };
         case SettingsActionType.SetGameAcceptTimer:
@@ -96,21 +103,33 @@ const SettingsProvider: React.FC = ({ children }) => {
     console.log("SettingsProvider");
 
     const [settings, settingsDispatch] = useReducer(reducer, initialSettings);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem("SettingsProvider", JSON.stringify(settings));
+        if (loaded) {
+            console.log({ loaded, settings: JSON.stringify(settings) });
+            localStorage.setItem("SettingsProvider", JSON.stringify(settings));
+            const localStorageContent: string = localStorage.getItem("SettingsProvider");
+            console.log({ localStorageContent, loaded });
+        }
     }, [settings]);
 
     useEffect(() => {
         const localStorageContent: string = localStorage.getItem("SettingsProvider");
-        const settingsObj: SettingsContent = JSON.parse(localStorageContent);
-        if (validateSettingsContent(settingsObj)) {
-            console.log({ settingsObj });
-            settingsDispatch({
-                type: SettingsActionType.SetAll,
-                payload: settingsObj
-            });
+        console.log({ localStorageContent, loaded });
+
+        if (localStorageContent) {
+            const settingsObj: SettingsContent = JSON.parse(localStorageContent);
+            if (validateSettingsContent(settingsObj)) {
+                settingsDispatch({
+                    type: SettingsActionType.SetAll,
+                    payload: settingsObj
+                });
+            } else {
+                console.warn({ "msg": "Invalid", settingsObj });
+            }
         }
+        setLoaded(true);
     }, []);
 
     return (

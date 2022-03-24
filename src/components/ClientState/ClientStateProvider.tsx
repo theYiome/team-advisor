@@ -237,7 +237,10 @@ const ClientStateProvider: React.FC = ({ children }) => {
         setPeriodicUpdate(setInterval(updateFunction, updateInterval));
 
         return () => clearInterval(periodicUpdate);
-    }, [updateInterval, lcuState.valid, lcuState.credentials, roleSwappedWith]);
+    }, [
+        updateInterval, lcuState.valid, lcuState.credentials, roleSwappedWith,
+        settings.gameAcceptTimer, settings.championLockinTimer, settings.gameAcceptTimer, settings.autoAccept, settings.autoBan, settings.autoPick, settings.prefferedBans
+    ]);
 
     // clearing state when turned off
     useEffect(() => {
