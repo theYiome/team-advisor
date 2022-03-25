@@ -1,8 +1,7 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
 import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress } from '@mui/material';
-import SettingsIcon from '@mui/icons-material/Settings';
 
 import { defaultRoles } from './Settings/SettingsConstants';
 
@@ -28,11 +27,9 @@ export const SmartChampionSelect: React.FC = () => {
     const clientState = useContext(ClientStateContext);
     const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
 
-
-    const [predictionEndpoint, setPredictionEndpoint] = useState("default");
+    const [predictionEndpoint, setPredictionEndpoint] = useState("default" as "default" | "strong" | "fit");
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
-    const [drawerOpen, setDrawerOpen] = useState(false);
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     const predictions = clientState.predictions;
@@ -42,8 +39,13 @@ export const SmartChampionSelect: React.FC = () => {
     const localPlayerCellId = clientState.localPlayerCellId;
     const loadingPredictions = clientState.loadingPredictions;
 
-    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Banning].includes(clientState.phase);
+    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Banning].includes(clientState.phase) && !clientState.userTookControl;
     const canBan = [ClientPhase.Banning].includes(clientState.phase);
+
+    useEffect(() => {
+        if (clientState.userTookControl && [ClientPhase.InChampionSelect, ClientPhase.Planning, ClientPhase.Picking].includes(clientState.phase))
+            enqueueSnackbar("You hovered something in client - picking from app will be disabled in this champion select", {variant: "error"});
+    }, [clientState.userTookControl]);
 
     const championNames = useMemo(() =>
         Object.keys(championNameToId),
@@ -149,7 +151,7 @@ export const SmartChampionSelect: React.FC = () => {
                     <Button
                         variant="contained"
                         sx={{ width: "100%" }}
-                        onClick={() => clientState.getPredictions("http://tomage.eu.pythonanywhere.com/team-advisor/fit")}
+                        onClick={() => clientState.getPredictions(suggestionsEndpoints[predictionEndpoint])}
                         size="small"
                         disabled={[ClientPhase.ClientClosed, ClientPhase.ClientOpen, ClientPhase.Unknown].includes(clientState.phase)}
                     >
@@ -184,7 +186,7 @@ export const SmartChampionSelect: React.FC = () => {
                             onChange={(event) => {
                                 const endpoint = event.target.value as "default" | "strong" | "fit";
                                 setPredictionEndpoint(endpoint);
-                                // clientState.setPredictionsEndpoint(suggestionsEndpoints[endpoint]);
+                                clientState.getPredictions(suggestionsEndpoints[endpoint]);
                             }}
                         >
                             <MenuItem value={"default"}>Default</MenuItem>
@@ -205,10 +207,10 @@ export const SmartChampionSelect: React.FC = () => {
                     </Grid>
 
                     <Typography>Bans</Typography>
-
                     <Grid container columns={10} spacing={1}>
                         {currentBans.length > 0 ? renderedBans : bansPlaceholder}
                     </Grid>
+
                     <Typography>Picks</Typography>
                     <Stack direction="row" spacing={3}>
                         <Stack spacing={2} sx={{ width: 1 }}>
@@ -226,7 +228,7 @@ export const SmartChampionSelect: React.FC = () => {
 
 // https://stackoverflow.com/questions/7128675/from-green-to-red-color-depend-on-percentage/7128796
 const getColor = (value: number) => {
-    //value from 0 to 1
+    // value from 0 to 1
     const hue = ((1.0 - value) * 120).toString(10);
     const color = `hsl(${hue}, 100%, 45%)`;
     return color;

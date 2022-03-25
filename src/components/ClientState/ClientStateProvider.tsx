@@ -28,6 +28,7 @@ const ClientStateContext = createContext({
     bans: [] as number[],
     predictions: [] as number[],
     loadingPredictions: false,
+    userTookControl: false,
     getPredictions: async (endpoint: string) => [1, 2, 3],
     hoverChampion: async (championId: number) => true,
     setRoleSwap: (role: LolChampionSelectV1.Position) => { }
@@ -58,6 +59,8 @@ const ClientStateProvider: React.FC = ({ children }) => {
         actionTimer: new Date() as Date,
         failedToHover: [] as number[],
         predictions: [] as number[],
+        lastPredictionsEndpoint: "http://tomage.eu.pythonanywhere.com/team-advisor/" as string,
+        newPredictionRequested: false as boolean,
         userTookControl: false as boolean,
         role: "" as LolChampionSelectV1.Position,
 
@@ -89,6 +92,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
     const [currentBans, setCurrentBans] = useState([] as number[]);
     const [currentPredictions, setCurrentPredictions] = useState([] as number[]);
     const [loadingPredictions, setLoadingPredictions] = useState(false);
+    const [userTookControl, setUserTookControl] = useState(false);
     const [roleSwappedWith, setRoleSwappedWith] = useState("" as LolChampionSelectV1.Position);
 
     const { enqueueSnackbar } = useSnackbar();
@@ -218,12 +222,19 @@ const ClientStateProvider: React.FC = ({ children }) => {
                         setCurrentBans(currentState.current.bans);
                     if (currentState.current.localPlayerCellId !== currentLocalPlayerCellId)
                         setCurrentLocalPlayerCellId(currentState.current.localPlayerCellId);
+                    if (userTookControl !== currentState.current.userTookControl)
+                        setUserTookControl(currentState.current.userTookControl);
                 }
 
             }
             currentState.current.phase = state.phase;
             if (currentState.current.phase !== currentPhase)
                 setCurrentPhase(currentState.current.phase);
+
+            if (currentState.current.newPredictionRequested) {
+                getPredictions(currentState.current.lastPredictionsEndpoint);
+                currentState.current.newPredictionRequested = false;
+            }
         });
     };
 
@@ -271,6 +282,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
     const getPredictions = useCallback(async (endpoint: string) => {
         setLoadingPredictions(true);
+        currentState.current.lastPredictionsEndpoint = endpoint;
 
         const options = {
             method: "POST",
@@ -339,9 +351,13 @@ const ClientStateProvider: React.FC = ({ children }) => {
             bans: currentBans,
             predictions: currentPredictions,
             loadingPredictions: loadingPredictions,
+            userTookControl: userTookControl,
             getPredictions: getPredictions,
             hoverChampion: userRequestedHoverChampion,
-            setRoleSwap: setRoleSwappedWith
+            setRoleSwap: (role: LolChampionSelectV1.Position) => {
+                setRoleSwappedWith(role);
+                currentState.current.newPredictionRequested = true;
+            }
         }}>
             {children}
         </ClientStateContext.Provider>
