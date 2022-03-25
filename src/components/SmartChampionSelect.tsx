@@ -39,7 +39,7 @@ export const SmartChampionSelect: React.FC = () => {
     const localPlayerCellId = clientState.localPlayerCellId;
     const loadingPredictions = clientState.loadingPredictions;
 
-    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Banning].includes(clientState.phase) && !clientState.userTookControl;
+    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Banning].includes(clientState.phase);
     const canBan = [ClientPhase.Banning].includes(clientState.phase);
 
     useEffect(() => {
