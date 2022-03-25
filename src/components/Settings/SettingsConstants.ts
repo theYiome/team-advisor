@@ -230,4 +230,12 @@ const defaultSupport = [
 
 const defaultRoles = ["top", "jungle", "middle", "bottom", "support"];
 
-export { defaultTop, defaultJungle, defaultMiddle, defaultBottom, defaultSupport, defaultRoles };
+const defaultChampionsForRole = {
+    top: defaultTop,
+    jungle: defaultJungle,
+    middle: defaultMiddle,
+    bottom: defaultBottom,
+    support: defaultSupport
+}
+
+export { defaultTop, defaultJungle, defaultMiddle, defaultBottom, defaultSupport, defaultRoles, defaultChampionsForRole };

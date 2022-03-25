@@ -68,7 +68,7 @@ export const SmartChampionSelect: React.FC = () => {
         </Grid>
     ), []);
 
-    const renderedPredictions = useMemo(() => predictions.map((prediction: number, index: number) =>
+    const renderedPredictions = predictions.map((prediction: number, index: number) =>
         <Grid key={prediction} item xs={"auto"}>
             <Button
                 onClick={() => clientState.hoverChampion(prediction)}
@@ -83,7 +83,7 @@ export const SmartChampionSelect: React.FC = () => {
                 />
             </Button>
         </Grid>
-    ), [predictions, canPick]);
+    );
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item md={2} lg={1}>

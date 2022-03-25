@@ -7,9 +7,9 @@ import { TeamAdvisor } from './TeamAdvisor';
 import { themesMap } from './Themes'
 import { ThemeProvider } from '@mui/material/styles';
 import { SnackbarProvider } from 'notistack';
-import { Paper } from '@mui/material';
 import { SettingsContext } from "./Settings/SettingsProvider";
 import { ClientStateProvider } from "./ClientState/ClientStateProvider";
+import { FavouritesProvider } from "./Settings/FavouritesProvider";
 
 
 export const Main: React.FC = () => {
@@ -29,12 +29,14 @@ export const Main: React.FC = () => {
 
     return (
         <ThemeProvider theme={themesMap[settings.theme]}>
-            <SnackbarProvider maxSnack={4} anchorOrigin={{horizontal: "right", vertical: "bottom"}}>
+            <SnackbarProvider maxSnack={4} anchorOrigin={{ horizontal: "right", vertical: "bottom" }}>
                 <LcuProvider>
                     <ChampionsProvider>
-                        <ClientStateProvider>
+                        <FavouritesProvider>
+                            <ClientStateProvider>
                                 <TeamAdvisor />
-                        </ClientStateProvider>
+                            </ClientStateProvider>
+                        </FavouritesProvider>
                     </ChampionsProvider>
                 </LcuProvider>
             </SnackbarProvider>

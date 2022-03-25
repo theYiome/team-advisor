@@ -32,7 +32,7 @@ const initialFavourites: FavouritesContent = {
     bottom: defaultBottom,
     support: defaultSupport,
     utility: defaultSupport,
-    "": [...defaultTop, ...defaultJungle, ...defaultMiddle, ...defaultBottom, ...defaultSupport]
+    "": ["Annie", "Olaf", "Galio", "TwistedFate", "XinZhao", "Urgot", "Leblanc", "Vladimir"]
 };
 
 export interface FavouritesAction {
@@ -52,10 +52,11 @@ export enum FavouritesActionType {
 
 const FavouritesContext = createContext({
     favourites: initialFavourites,
-    favouritesDispatch: (action: FavouritesAction) => { }
+    favouritesDispatch: (action: FavouritesAction) => { console.error({action}) }
 });
 
 const reducer = (state: FavouritesContent, action: FavouritesAction): FavouritesContent => {
+    console.log({state, action});
     switch (action.type) {
         case FavouritesActionType.SetAll:
             return action.payload;

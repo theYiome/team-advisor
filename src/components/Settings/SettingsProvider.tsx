@@ -65,7 +65,7 @@ export enum SettingsActionType {
 
 const SettingsContext = createContext({
     settings: initialSettings,
-    settingsDispatch: (action: SettingsAction) => { }
+    settingsDispatch: (action: SettingsAction) => { console.error({action}) }
 });
 
 
