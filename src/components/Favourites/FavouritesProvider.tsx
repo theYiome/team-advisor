@@ -1,4 +1,4 @@
-import React, { useReducer, createContext, useEffect } from 'react';
+import React, { useReducer, createContext, useEffect, useState } from 'react';
 import { defaultBottom, defaultJungle, defaultMiddle, defaultSupport, defaultTop } from '../Settings/SettingsConstants';
 
 export interface FavouritesContent {
@@ -77,22 +77,28 @@ const reducer = (state: FavouritesContent, action: FavouritesAction): Favourites
 
 const FavouritesProvider: React.FC = ({ children }) => {
     const [favourites, favouritesDispatch] = useReducer(reducer, initialFavourites);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem("FavouritesProvider", JSON.stringify(favourites));
+        if (loaded)
+            localStorage.setItem("FavouritesProvider", JSON.stringify(favourites));
     }, [favourites]);
 
     useEffect(() => {
         const localStorageContent: string = localStorage.getItem("FavouritesProvider");
-        const favouritesObj: FavouritesContent = JSON.parse(localStorageContent);
-        if (areFavouritesValid(favouritesObj)) {
-            console.log({ favouritesObj });
-            favouritesDispatch({
-                type: FavouritesActionType.SetAll,
-                payload: favouritesObj
-            });
+
+        if (localStorageContent) {
+            const favouritesObj: FavouritesContent = JSON.parse(localStorageContent);
+            if (areFavouritesValid(favouritesObj)) {
+                console.log("Favourites loaded from localStorage", { favouritesObj });
+                favouritesDispatch({
+                    type: FavouritesActionType.SetAll,
+                    payload: favouritesObj
+                });
+            }
+            else console.warn("FavouritesProvider: localStorage content is invalid", { localStorageContent });
         }
-        else console.warn("FavouritesProvider: localStorage content is invalid", { localStorageContent });
+        setLoaded(true);
     }, []);
 
     return (

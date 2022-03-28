@@ -23,7 +23,7 @@ export interface SettingsContent {
     predictionEndpoint: PredictionEndpoint;
 }
 
-const validateSettingsContent = (settings: SettingsContent): boolean => {
+const areSettingsValid = (settings: SettingsContent): boolean => {
     try {
 
         const prefferedBansValid = settings.prefferedBans.every((value, index) => {
@@ -118,28 +118,23 @@ const SettingsProvider: React.FC = ({ children }) => {
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        if (loaded) {
-            console.log({ loaded, settings: JSON.stringify(settings) });
+        if (loaded)
             localStorage.setItem("SettingsProvider", JSON.stringify(settings));
-            const localStorageContent: string = localStorage.getItem("SettingsProvider");
-            console.log({ localStorageContent, loaded });
-        }
     }, [settings]);
 
     useEffect(() => {
         const localStorageContent: string = localStorage.getItem("SettingsProvider");
-        console.log({ localStorageContent, loaded });
 
         if (localStorageContent) {
             const settingsObj: SettingsContent = JSON.parse(localStorageContent);
-            if (validateSettingsContent(settingsObj)) {
+            if (areSettingsValid(settingsObj)) {
+                console.log("Settings loaded from localStorage", { settingsObj });
                 settingsDispatch({
                     type: SettingsActionType.SetAll,
                     payload: settingsObj
                 });
-            } else {
-                console.warn({ "msg": "Invalid", settingsObj });
-            }
+            } 
+            else console.warn("SettingsProvider: localStorage content is invalid", { localStorageContent });
         }
         setLoaded(true);
     }, []);
