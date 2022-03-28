@@ -1,6 +1,6 @@
 import React, { useReducer, createContext, useEffect, useState } from 'react';
+import { AppTheme } from '../Themes';
 
-type Theme = "light" | "dark";
 type PredictionEndpoint = "default" | "strong" | "fit";
 
 const predictionEndpoints = {
@@ -11,7 +11,7 @@ const predictionEndpoints = {
 
 
 export interface SettingsContent {
-    theme: Theme;
+    theme: AppTheme;
     prefferedBans: string[];
     autoAccept: boolean;
     autoBan: boolean;
@@ -45,7 +45,7 @@ const areSettingsValid = (settings: SettingsContent): boolean => {
 }
 
 const initialSettings: SettingsContent = {
-    theme: "dark" as Theme,
+    theme: "dark" as AppTheme,
     prefferedBans: ["Jax", "Viktor", "Lulu", "Riven"],
     autoAccept: true,
     autoBan: true,
@@ -143,4 +143,4 @@ const SettingsProvider: React.FC = ({ children }) => {
     );
 }
 
-export { SettingsProvider, SettingsContext, predictionEndpoints, PredictionEndpoint, Theme };
+export { SettingsProvider, SettingsContext, predictionEndpoints, PredictionEndpoint };

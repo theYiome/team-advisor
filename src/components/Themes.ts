@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-export const lightTheme = createTheme({
+const lightTheme = createTheme({
     palette: {
         mode: 'light',
     },
@@ -19,7 +19,7 @@ export const lightTheme = createTheme({
     }
 });
 
-export const darkTheme = createTheme({
+const darkTheme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
@@ -57,7 +57,11 @@ export const darkTheme = createTheme({
     }
 });
 
-export const themesMap = {
+const themesMap = {
     "dark": darkTheme,
     "light": lightTheme
 };
+
+type AppTheme = keyof typeof themesMap;
+
+export { themesMap, AppTheme };

@@ -17,14 +17,7 @@ export const Main: React.FC = () => {
     const { settings } = useContext(SettingsContext);
 
     useEffect(() => {
-        if (themesMap[settings.theme].palette.mode = "dark") {
-            document.getElementById("titlebar").style.backgroundColor = "transparent";
-            document.getElementsByTagName("body")[0].style.backgroundColor = "#141414";
-        }
-        else {
-            document.getElementById("titlebar").style.backgroundColor = "transparent";
-            document.getElementsByTagName("body")[0].style.backgroundColor = "white";
-        }
+        document.getElementById("titlebar").style.backgroundColor = "#353535"; 
     }, [settings.theme]);
 
     return (
