@@ -38,8 +38,8 @@ export const SmartChampionSelect: React.FC = () => {
     const canBan = [ClientPhase.Banning].includes(clientState.phase);
 
     useEffect(() => {
-        if (clientState.userTookControl && [ClientPhase.InChampionSelect, ClientPhase.Planning, ClientPhase.Picking].includes(clientState.phase))
-            enqueueSnackbar("You hovered something in client - picking from app will be disabled in this champion select", {variant: "error"});
+        // if (clientState.userTookControl && [ClientPhase.InChampionSelect, ClientPhase.Planning, ClientPhase.Picking].includes(clientState.phase))
+        //     enqueueSnackbar("You hovered something in client - picking from app will be disabled in this champion select", {variant: "error"});
     }, [clientState.userTookControl]);
 
     const championNames = useMemo(() =>
@@ -83,7 +83,7 @@ export const SmartChampionSelect: React.FC = () => {
     );
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
-        <Grid key={index} item md={2} lg={1}>
+        <Grid key={index} item>
             <Skeleton
                 key={index}
                 variant="rectangular"
@@ -93,7 +93,7 @@ export const SmartChampionSelect: React.FC = () => {
     ), []);
 
     const renderedBans = useMemo(() => currentBans.map((ban: number, index: number) =>
-        <Grid key={index} item md={2} lg={1}>
+        <Grid key={index} item>
             <Avatar
                 key={index}
                 src={avatarURI(patch, championIdToName[ban])}
@@ -143,7 +143,7 @@ export const SmartChampionSelect: React.FC = () => {
         <Container>
             <Stack spacing={3}>
                 <Stack direction="row" spacing={2}>
-                    <Button
+                    {/* <Button
                         variant="contained"
                         sx={{ width: "100%" }}
                         onClick={() => clientState.getPredictions()}
@@ -151,7 +151,23 @@ export const SmartChampionSelect: React.FC = () => {
                         disabled={[ClientPhase.ClientClosed, ClientPhase.ClientOpen, ClientPhase.Unknown].includes(clientState.phase)}
                     >
                         MAKE PREDICTION
-                    </Button>
+                    </Button> */}
+
+                    <FormControl fullWidth size="small">
+                        <InputLabel>Suggestion type</InputLabel>
+                        <Select
+                            value={settings.predictionEndpoint}
+                            label="Suggestion type"
+                            onChange={(event) => {
+                                const endpoint = event.target.value as PredictionEndpoint;
+                                settingsDispatch({ type: SettingsActionType.SetPredictionEndpoint, payload: endpoint });
+                            }}
+                        >
+                            <MenuItem value={"default"}>Default</MenuItem>
+                            <MenuItem value={"strong"}>Prioritize winrate</MenuItem>
+                            <MenuItem value={"fit"}>Prioritize matchups</MenuItem>
+                        </Select>
+                    </FormControl>
 
                     <FormControl fullWidth size="small">
                         <InputLabel>Role swap</InputLabel>
@@ -172,23 +188,6 @@ export const SmartChampionSelect: React.FC = () => {
                             <MenuItem value={"support"}>Support</MenuItem>
                         </Select>
                     </FormControl>
-
-                    <FormControl fullWidth size="small">
-                        <InputLabel>Suggestion type</InputLabel>
-                        <Select
-                            value={settings.predictionEndpoint}
-                            label="Suggestion type"
-                            onChange={(event) => {
-                                const endpoint = event.target.value as PredictionEndpoint;
-                                settingsDispatch({ type: SettingsActionType.SetPredictionEndpoint, payload: endpoint });
-                            }}
-                        >
-                            <MenuItem value={"default"}>Default</MenuItem>
-                            <MenuItem value={"strong"}>Prioritize winrate</MenuItem>
-                            <MenuItem value={"fit"}>Prioritize matchups</MenuItem>
-                        </Select>
-                    </FormControl>
-
                 </Stack>
 
                 <Stack spacing={1}>

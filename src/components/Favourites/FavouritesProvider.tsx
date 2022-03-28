@@ -13,7 +13,7 @@ export interface FavouritesContent {
 
 const areFavouritesValid = (favourites: FavouritesContent) => {
     for (const key of Object.keys(favourites)) {
-        const k = key as "top" | "jungle" | "middle" | "bottom" | "support" | "utility" | "";
+        const k = key as keyof FavouritesContent;
         const favouritesValid = favourites[k].every((value, index) => {
             if (typeof (value) !== typeof ("") || !isNaN(value as any))
                 return false;
@@ -91,10 +91,7 @@ const FavouritesProvider: React.FC = ({ children }) => {
             const favouritesObj: FavouritesContent = JSON.parse(localStorageContent);
             if (areFavouritesValid(favouritesObj)) {
                 console.log("Favourites loaded from localStorage", { favouritesObj });
-                favouritesDispatch({
-                    type: FavouritesActionType.SetAll,
-                    payload: favouritesObj
-                });
+                favouritesDispatch({ type: FavouritesActionType.SetAll, payload: favouritesObj });
             }
             else console.warn("FavouritesProvider: localStorage content is invalid", { localStorageContent });
         }

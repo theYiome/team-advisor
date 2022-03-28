@@ -108,7 +108,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         getLcuState(lcuState.credentials).then((state) => {
             if ([ClientPhase.GameAccepted, ClientPhase.GameDeclined, ClientPhase.GameFound, ClientPhase.InQueue].includes(state.phase)) {
                 currentState.current.queueTimer = state.queueTimer;
-                if (state.phase === ClientPhase.GameFound && currentState.current.queueTimer >= settings.gameAcceptTimer)
+                if (state.phase === ClientPhase.GameFound && currentState.current.queueTimer >= settings.gameAcceptTimer && settings.autoAccept)
                     acceptQueue(lcuState.credentials);
 
                 if (state.phase !== currentPhase)
@@ -209,16 +209,12 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
                 // set state that is part of the context
                 {
-                    if (!compareTeams(currentState.current.leftTeam, currentLeftTeam)) {
+                    if (!compareTeams(currentState.current.leftTeam, currentLeftTeam)){
+                        console.log({ left: currentState.current.leftTeam, currentLeftTeam });
                         setCurrentLeftTeam(currentState.current.leftTeam);
-                        if (state.phase === ClientPhase.InChampionSelect || state.phase === ClientPhase.Picking)
-                            getPredictions();
                     }
-                    if (!compareTeams(currentState.current.rightTeam, currentRightTeam)) {
+                    if (!compareTeams(currentState.current.rightTeam, currentRightTeam))
                         setCurrentRightTeam(currentState.current.rightTeam);
-                        if (state.phase === ClientPhase.InChampionSelect || state.phase === ClientPhase.Picking)
-                            getPredictions();
-                    }
                     if (currentState.current.championId !== currentChampionId)
                         setCurrentChampionId(currentState.current.championId);
                     if (!compareArrays(currentState.current.bans, currentBans))
@@ -241,6 +237,12 @@ const ClientStateProvider: React.FC = ({ children }) => {
         });
     };
 
+    // get predictions if user is inchampionselect or picking or planning phase and left or right team has changed
+    useEffect(() => {
+        if ([ClientPhase.Planning, ClientPhase.InChampionSelect, ClientPhase.Picking, ClientPhase.Banning, ClientPhase.Done].includes(currentPhase))
+            getPredictions();
+    }, [currentPhase, currentLeftTeam, currentRightTeam, settings.predictionEndpoint]);
+
     // pooling client status
     useEffect(() => {
         // updateFunction();
@@ -251,7 +253,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         setPeriodicUpdate(setInterval(updateFunction, updateInterval));
 
         return () => clearInterval(periodicUpdate);
-    }, [ updateInterval, lcuState.valid, lcuState.credentials, roleSwappedWith, settings ]);
+    }, [ updateInterval, lcuState, roleSwappedWith, settings, currentLeftTeam, currentRightTeam, currentPhase, currentLocalPlayerCellId, currentChampionId, currentBans, userTookControl]);
 
     // clearing state when turned off
     useEffect(() => {
@@ -280,7 +282,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         return preferredChampionList.map(name => championNameToId[name]);
     }
 
-    const getPredictions = useCallback(async () => {
+    const getPredictions = async () => {
         setLoadingPredictions(true);
         const endpoint = predictionEndpoints[settings.predictionEndpoint];
 
@@ -298,7 +300,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
             json: true
         };
 
-        console.log({ getPredictions: options });
+        console.log({ getPredictions: options, endpoint });
 
         try {
             const response = await connections.fetchJSON(endpoint, options);
@@ -310,15 +312,13 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 setCurrentPredictions(content);
                 return content;
             }
-            else
-                return [];
         }
         catch (error) {
             setLoadingPredictions(false);
             console.warn(error);
-            return [];
         }
-    }, [favourites, championNameToId]);
+        return [];
+    };
 
     const userRequestedHoverChampion = useCallback(async (championIdToHover: number, actionType = LolChampionSelectV1.ActionType.Pick) => {
         const getProperActionId = (actionType: LolChampionSelectV1.ActionType) => {
@@ -354,10 +354,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
             userTookControl: userTookControl,
             getPredictions: getPredictions,
             hoverChampion: userRequestedHoverChampion,
-            setRoleSwap: (role: LolChampionSelectV1.Position) => {
-                setRoleSwappedWith(role);
-                currentState.current.newPredictionRequested = true;
-            }
+            setRoleSwap: (role: LolChampionSelectV1.Position) => setRoleSwappedWith(role)
         }}>
             {children}
         </ClientStateContext.Provider>

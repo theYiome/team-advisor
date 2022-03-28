@@ -129,10 +129,7 @@ const SettingsProvider: React.FC = ({ children }) => {
             const settingsObj: SettingsContent = JSON.parse(localStorageContent);
             if (areSettingsValid(settingsObj)) {
                 console.log("Settings loaded from localStorage", { settingsObj });
-                settingsDispatch({
-                    type: SettingsActionType.SetAll,
-                    payload: settingsObj
-                });
+                settingsDispatch({ type: SettingsActionType.SetAll, payload: settingsObj });
             } 
             else console.warn("SettingsProvider: localStorage content is invalid", { localStorageContent });
         }
