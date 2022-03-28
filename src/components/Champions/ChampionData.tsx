@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Container, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 
 import { ChampionsContext } from './ChampionProvider';
-import { avatarURI } from '../componentLibs/leagueImages';
+import { avatarURI } from '../../componentLibs/leagueImages';
 
 export const ChampionData: React.FC = () => {
     const { championNameToId, patch } = useContext(ChampionsContext);

@@ -1,7 +1,17 @@
-import React, { useReducer, createContext, useEffect, useRef, useState } from 'react';
+import React, { useReducer, createContext, useEffect, useState } from 'react';
+
+type Theme = "light" | "dark";
+type PredictionEndpoint = "default" | "strong" | "fit";
+
+const predictionEndpoints = {
+    "default": "http://tomage.eu.pythonanywhere.com/team-advisor/",
+    "strong": "http://tomage.eu.pythonanywhere.com/team-advisor/strong",
+    "fit": "http://tomage.eu.pythonanywhere.com/team-advisor/fit"
+};
+
 
 export interface SettingsContent {
-    theme: "dark" | "light";
+    theme: Theme;
     prefferedBans: string[];
     autoAccept: boolean;
     autoBan: boolean;
@@ -10,6 +20,7 @@ export interface SettingsContent {
     championLockinTimer: number;
     gameAcceptTimer: number;
     leagueInstallationPath: string;
+    predictionEndpoint: PredictionEndpoint;
 }
 
 const validateSettingsContent = (settings: SettingsContent): boolean => {
@@ -34,7 +45,7 @@ const validateSettingsContent = (settings: SettingsContent): boolean => {
 }
 
 const initialSettings: SettingsContent = {
-    theme: "dark" as "dark" | "light",
+    theme: "dark" as Theme,
     prefferedBans: ["Jax", "Viktor", "Lulu", "Riven"],
     autoAccept: true,
     autoBan: true,
@@ -43,6 +54,7 @@ const initialSettings: SettingsContent = {
     championLockinTimer: 31.0,
     gameAcceptTimer: 3,
     leagueInstallationPath: "C:\\Riot Games\\League of Legends\\",
+    predictionEndpoint: "default" as PredictionEndpoint
 };
 
 export interface SettingsAction {
@@ -60,12 +72,13 @@ export enum SettingsActionType {
     SetAutoLockin,
     SetChampionLockinTimer,
     SetGameAcceptTimer,
-    SetLeagueInstallationPath
+    SetLeagueInstallationPath,
+    SetPredictionEndpoint
 }
 
 const SettingsContext = createContext({
     settings: initialSettings,
-    settingsDispatch: (action: SettingsAction) => { console.error({action}) }
+    settingsDispatch: (action: SettingsAction) => { console.error({ action }) }
 });
 
 
@@ -93,15 +106,14 @@ const reducer = (state: SettingsContent, action: SettingsAction): SettingsConten
             return { ...state, leagueInstallationPath: action.payload };
         case SettingsActionType.SetPrefferedBans:
             return { ...state, prefferedBans: action.payload };
+        case SettingsActionType.SetPredictionEndpoint:
+            return { ...state, predictionEndpoint: action.payload };
         default:
             throw new Error();
     }
 }
 
 const SettingsProvider: React.FC = ({ children }) => {
-
-    console.log("SettingsProvider");
-
     const [settings, settingsDispatch] = useReducer(reducer, initialSettings);
     const [loaded, setLoaded] = useState(false);
 
@@ -139,4 +151,4 @@ const SettingsProvider: React.FC = ({ children }) => {
     );
 }
 
-export { SettingsProvider, SettingsContext };
+export { SettingsProvider, SettingsContext, predictionEndpoints, PredictionEndpoint, Theme };

@@ -1,7 +1,7 @@
 import { useSnackbar } from 'notistack';
 import React, { useState, createContext, useEffect } from 'react';
 
-import { ChampionIdToNameData, ChampionNameToIdData, ddragonChampions, ddragonVersions } from '../libs/ddragon';
+import { ChampionIdToNameData, ChampionNameToIdData, ddragonChampions, ddragonVersions } from '../../libs/ddragon';
 
 const ChampionsContext = createContext({
     championIdToName: {} as ChampionIdToNameData,

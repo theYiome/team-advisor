@@ -3,31 +3,26 @@ import React, { useState, useContext, useMemo, useEffect } from 'react';
 import Container from '@mui/material/Container'
 import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress } from '@mui/material';
 
-import { defaultRoles } from './Settings/SettingsConstants';
+import { defaultRoles } from '../Settings/SettingsConstants';
 
-import { ChampionsContext } from './ChampionProvider';
+import { ChampionsContext } from '../Champions/ChampionProvider';
 
-import { avatarURI } from '../componentLibs/leagueImages';
-import { PickEntry } from './common/PickEntry';
+import { avatarURI } from '../../componentLibs/leagueImages';
+import { PickEntry } from '../common/PickEntry';
 
 import { useSnackbar } from 'notistack';
 
-import { ClientStateContext } from './ClientState/ClientStateProvider';
-import { ClientPhase } from './ClientState/ClientStateProviderLogic';
-import { LolChampionSelectV1 } from './ClientState/ClientStateTypes';
-
-const suggestionsEndpoints = {
-    "default": "http://tomage.eu.pythonanywhere.com/team-advisor/",
-    "strong": "http://tomage.eu.pythonanywhere.com/team-advisor/strong",
-    "fit": "http://tomage.eu.pythonanywhere.com/team-advisor/fit"
-};
+import { ClientStateContext } from './ClientStateProvider';
+import { ClientPhase } from './ClientStateProviderLogic';
+import { LolChampionSelectV1 } from './ClientStateTypes';
+import { PredictionEndpoint, SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 
 export const SmartChampionSelect: React.FC = () => {
 
     const clientState = useContext(ClientStateContext);
     const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
 
-    const [predictionEndpoint, setPredictionEndpoint] = useState("default" as "default" | "strong" | "fit");
+    const {settings, settingsDispatch} = useContext(SettingsContext);
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -151,7 +146,7 @@ export const SmartChampionSelect: React.FC = () => {
                     <Button
                         variant="contained"
                         sx={{ width: "100%" }}
-                        onClick={() => clientState.getPredictions(suggestionsEndpoints[predictionEndpoint])}
+                        onClick={() => clientState.getPredictions()}
                         size="small"
                         disabled={[ClientPhase.ClientClosed, ClientPhase.ClientOpen, ClientPhase.Unknown].includes(clientState.phase)}
                     >
@@ -181,12 +176,11 @@ export const SmartChampionSelect: React.FC = () => {
                     <FormControl fullWidth size="small">
                         <InputLabel>Suggestion type</InputLabel>
                         <Select
-                            value={predictionEndpoint}
+                            value={settings.predictionEndpoint}
                             label="Suggestion type"
                             onChange={(event) => {
-                                const endpoint = event.target.value as "default" | "strong" | "fit";
-                                setPredictionEndpoint(endpoint);
-                                clientState.getPredictions(suggestionsEndpoints[endpoint]);
+                                const endpoint = event.target.value as PredictionEndpoint;
+                                settingsDispatch({ type: SettingsActionType.SetPredictionEndpoint, payload: endpoint });
                             }}
                         >
                             <MenuItem value={"default"}>Default</MenuItem>

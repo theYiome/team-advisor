@@ -1,14 +1,16 @@
 import React, { ReactElement, useContext } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup } from '@mui/material';
+import { Button, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup, TextField } from '@mui/material';
 import { LcuContext, LcuCredentials } from './LcuProvider';
-import { rawLcuRequest } from '../libs/lcuRequest';
+import { rawLcuRequest } from '../../libs/lcuRequest';
+import { SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 
 export const ClientAccess: React.FC = (): ReactElement => {
 
     const lcuState = useContext(LcuContext);
-    const {protocol, port, username, password} = lcuState.credentials;
+    const { settings, settingsDispatch } = useContext(SettingsContext);
+    const { protocol, port, username, password } = lcuState.credentials;
 
     const warning_msg = (
         <Alert severity="warning">
@@ -21,12 +23,12 @@ export const ClientAccess: React.FC = (): ReactElement => {
     const ok_message = (
         <Alert severity="success">
             <AlertTitle>Loaded data from lockfile</AlertTitle>
-            Successulfy loaded data from lockfile.<br/><strong>Looks OK!</strong>
+            Successulfy loaded data from lockfile.<br /><strong>Looks OK!</strong>
         </Alert>
     );
 
     const data_table = (
-        <Paper sx={{p: 1}}>
+        <Paper sx={{ p: 1 }}>
             <TableContainer>
                 <Table sx={{ width: 1 }} size="small" aria-label="a dense table">
                     <TableHead>
@@ -65,10 +67,20 @@ export const ClientAccess: React.FC = (): ReactElement => {
     return (
         <Container>
             <Stack spacing={3}>
-                {port === "" ? warning_msg : ok_message}
+                {!lcuState.valid ? warning_msg : ok_message}
+
                 {data_table}
 
-                <Paper elevation={1} sx={{p: 1, pb: 2}}>
+                <TextField
+                    label="League installation directory"
+                    value={settings.leagueInstallationPath}
+                    onChange={
+                        (event: React.ChangeEvent<HTMLInputElement>) =>
+                            settingsDispatch({ type: SettingsActionType.SetLeagueInstallationPath, payload: event.target.value })
+                    }
+                />
+
+                <Paper elevation={1} sx={{ p: 1, pb: 2 }}>
                     <Container>
                         <Typography variant='h6'>
                             Utilities
@@ -76,13 +88,13 @@ export const ClientAccess: React.FC = (): ReactElement => {
                         <Typography>
                             Sometimes client may bug while using this app (annoying sounds or visual glitches).
                             If that happens you can <strong>restart client UX</strong>, that is a visual part of the client.
-                            It will take around 10 seconds and <strong>it will not kick you out</strong> of lobby, game search or champion select. 
+                            It will take around 10 seconds and <strong>it will not kick you out</strong> of lobby, game search or champion select.
                             Features like <strong>Smart Accept</strong> or <strong>Smart Ban</strong> will still work when client UX is offline.
                         </Typography>
                     </Container>
                 </Paper>
                 <ButtonGroup sx={{ width: 1 }} variant="contained" aria-label="outlined primary button group">
-                    <Button sx={{ width: 1}} color="error" onClick={() => restartClientUX(lcuState.credentials)}>RESTART CLIENT UX</Button>
+                    <Button sx={{ width: 1 }} color="error" onClick={() => restartClientUX(lcuState.credentials)}>RESTART CLIENT UX</Button>
                 </ButtonGroup>
             </Stack>
         </Container>

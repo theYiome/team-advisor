@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { FormControlLabel, Stack, Container, Switch, Typography, Alert, Slider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Box, Divider } from '@mui/material';
 
-import { ChampionsContext } from '../ChampionProvider';
 import { SettingsActionType, SettingsContext } from './SettingsProvider';
 let autoLauncher: any = null;
 

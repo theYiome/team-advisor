@@ -1,4 +1,4 @@
-import { LcuCredentials } from '../components/LcuProvider';
+import { LcuCredentials } from '../components/LCU/LcuProvider';
 import * as connections from './connections';
 
 async function rawLcuRequest(lockfileContent: LcuCredentials, endpointName: string, options: any = { method: 'GET' }) {

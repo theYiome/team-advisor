@@ -1,5 +1,5 @@
 import React, { useReducer, createContext, useEffect } from 'react';
-import { defaultBottom, defaultJungle, defaultMiddle, defaultSupport, defaultTop } from './SettingsConstants';
+import { defaultBottom, defaultJungle, defaultMiddle, defaultSupport, defaultTop } from '../Settings/SettingsConstants';
 
 export interface FavouritesContent {
     top: string[],
@@ -76,9 +76,6 @@ const reducer = (state: FavouritesContent, action: FavouritesAction): Favourites
 }
 
 const FavouritesProvider: React.FC = ({ children }) => {
-
-    console.log("FavouritesProvider");
-
     const [favourites, favouritesDispatch] = useReducer(reducer, initialFavourites);
 
     useEffect(() => {
@@ -95,6 +92,7 @@ const FavouritesProvider: React.FC = ({ children }) => {
                 payload: favouritesObj
             });
         }
+        else console.warn("FavouritesProvider: localStorage content is invalid", { localStorageContent });
     }, []);
 
     return (

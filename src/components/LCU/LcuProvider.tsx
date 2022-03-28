@@ -1,7 +1,7 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import { SettingsContext } from './Settings/SettingsProvider';
-import * as files from '../libs/files';
-import { jsonLcuRequest } from "../libs/lcuRequest";
+import { SettingsContext } from '../Settings/SettingsProvider';
+import * as files from '../../libs/files';
+import { jsonLcuRequest } from "../../libs/lcuRequest";
 
 interface Summoner {
     accountId: number;
@@ -70,18 +70,16 @@ const initialState = {
 const LcuContext = createContext(initialState);
 
 const LcuProvider: React.FC = ({ children }) => {
-
-    console.log("LcuProvider");
-
     const [lcuState, setLcuState] = useState(initialState);
     const { settings } = useContext(SettingsContext);
 
     const getCredentialsFromLockfile = async () => {
         const lockfilePath = buildPath(settings.leagueInstallationPath, "lockfile");
+        console.log({ lockfilePath });
         try {
             const fileData = await files.loadString(lockfilePath);
             const credentials = parseLockfile(fileData);
-            if (!compareCredentials(credentials, lcuState.credentials)) {
+            if (!compareCredentials(credentials, lcuState.credentials) || !lcuState.valid) {
                 const endpointName = "lol-summoner/v1/current-summoner";
                 const summoner: Summoner = await jsonLcuRequest(credentials, endpointName);
                 setLcuState({ credentials, valid: true, summoner });

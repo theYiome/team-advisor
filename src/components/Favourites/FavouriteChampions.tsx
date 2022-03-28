@@ -2,11 +2,11 @@ import React, { useContext } from 'react';
 import { Stack, Container, Typography, IconButton } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
-import { ChampionsContext } from './ChampionProvider';
-import { FavouritesActionType, FavouritesContext } from './Settings/FavouritesProvider';
-import { SettingsActionType, SettingsContext } from './Settings/SettingsProvider';
-import { MultipleChampionPicker } from './common/ChampionRolePicker';
-import { defaultChampionsForRole } from './Settings/SettingsConstants'
+import { ChampionsContext } from '../Champions/ChampionProvider';
+import { FavouritesActionType, FavouritesContext } from './FavouritesProvider';
+import { SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
+import { MultipleChampionPicker } from '../common/ChampionRolePicker';
+import { defaultChampionsForRole } from '../Settings/SettingsConstants'
 
 export const FavouriteChampions: React.FC = () => {
     const { championNameToId, patch } = useContext(ChampionsContext);
@@ -55,7 +55,7 @@ export const FavouriteChampions: React.FC = () => {
                     <Stack direction="row">
                         <IconButton
                             aria-label="Reset jungle to defaults"
-                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesTop, payload: defaultChampionsForRole.jungle})}
+                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesJungle, payload: defaultChampionsForRole.jungle})}
                         >
                             <RestartAltIcon />
                         </IconButton>
@@ -75,7 +75,7 @@ export const FavouriteChampions: React.FC = () => {
                     <Stack direction="row">
                         <IconButton
                             aria-label="Reset middle to defaults"
-                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesTop, payload: defaultChampionsForRole.middle})}
+                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesMiddle, payload: defaultChampionsForRole.middle})}
                         >
                             <RestartAltIcon />
                         </IconButton>
@@ -92,7 +92,7 @@ export const FavouriteChampions: React.FC = () => {
                     <Stack direction="row">
                         <IconButton
                             aria-label="Reset bottom to defaults"
-                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesTop, payload: defaultChampionsForRole.bottom})}>
+                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesBottom, payload: defaultChampionsForRole.bottom})}>
                             <RestartAltIcon />
                         </IconButton>
 
@@ -108,7 +108,7 @@ export const FavouriteChampions: React.FC = () => {
                     <Stack direction="row">
                         <IconButton
                             aria-label="Reset support to defaults"
-                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesTop, payload: defaultChampionsForRole.support})}>
+                            onClick={() => favouritesDispatch({type: FavouritesActionType.SetFavouritesSupport, payload: defaultChampionsForRole.support})}>
                             <RestartAltIcon />
                         </IconButton>
 

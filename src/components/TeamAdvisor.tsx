@@ -17,7 +17,7 @@ console.log({ userData, configFilePath });
 
 import React from 'react';
 
-import { ClientAccess } from './ClientAccess';
+import { ClientAccess } from './LCU/ClientAccess';
 import { GeneralSettings } from './Settings/GeneralSettings';
 
 import { Box, Tab, Tabs, Paper, Stack, Tooltip, Container, Divider } from '@mui/material';
@@ -28,11 +28,11 @@ import DataArrayIcon from '@mui/icons-material/DataArray';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 import '@fontsource/roboto/400.css';
-import { SmartChampionSelect } from './SmartChampionSelect';
-import { QuickSettings } from './QuickSettings';
+import { SmartChampionSelect } from './ClientState/SmartChampionSelect';
+import { QuickSettings } from './Settings/QuickSettings';
 import { VideoAd400x300 } from './VideoAd400x300';
-import { ChampionData } from './ChampionData';
-import { FavouriteChampions } from './FavouriteChampions';
+import { ChampionData } from './Champions/ChampionData';
+import { FavouriteChampions } from './Favourites/FavouriteChampions';
 
 export const TeamAdvisor: React.FC = () => {
     const [tabId, setTabId] = React.useState(0);

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { FormControlLabel, Stack, Switch, Typography } from '@mui/material';
-import { SettingsActionType, SettingsContext } from './Settings/SettingsProvider';
+import { SettingsActionType, SettingsContext } from './SettingsProvider';
 
 export const QuickSettings: React.FC = () => {
     const { settings, settingsDispatch } = useContext(SettingsContext);

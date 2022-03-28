@@ -1,5 +1,5 @@
-import { ChampionsProvider } from "./ChampionProvider";
-import { LcuProvider } from "./LcuProvider";
+import { ChampionsProvider } from "./Champions/ChampionProvider";
+import { LcuProvider } from "./LCU/LcuProvider";
 
 
 import React, { useEffect, useContext } from 'react';
@@ -9,7 +9,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { SnackbarProvider } from 'notistack';
 import { SettingsContext } from "./Settings/SettingsProvider";
 import { ClientStateProvider } from "./ClientState/ClientStateProvider";
-import { FavouritesProvider } from "./Settings/FavouritesProvider";
+import { FavouritesProvider } from "./Favourites/FavouritesProvider";
 
 
 export const Main: React.FC = () => {
