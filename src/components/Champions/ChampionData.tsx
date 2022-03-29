@@ -16,9 +16,9 @@ export const ChampionData: React.FC = () => {
                     <Table sx={{ width: 1, fontSize: 1 }} size="small" aria-label="champion names and ids list">
                         <TableHead>
                             <TableRow>
-                                <TableCell>avatar</TableCell>
-                                <TableCell>key</TableCell>
-                                <TableCell>value</TableCell>
+                                <TableCell>Avatar</TableCell>
+                                <TableCell>Name</TableCell>
+                                <TableCell>ID</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>

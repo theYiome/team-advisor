@@ -87,9 +87,9 @@ export const ClientAccess: React.FC = (): ReactElement => {
                         </Typography>
                         <Typography>
                             Sometimes client may bug while using this app (annoying sounds or visual glitches).
-                            If that happens you can <strong>restart client UX</strong>, that is a visual part of the client.
+                            If that happens you can restart client UX, that is a visual part of the client.
                             It will take around 10 seconds and <strong>it will not kick you out</strong> of lobby, game search or champion select.
-                            Features like <strong>Smart Accept</strong> or <strong>Smart Ban</strong> will still work when client UX is offline.
+                            Features like <strong>auto accept</strong> or <strong>auto ban</strong> will still work when client UX is offline.
                         </Typography>
                     </Container>
                 </Paper>

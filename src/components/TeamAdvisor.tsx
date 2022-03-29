@@ -103,15 +103,17 @@ interface TabPanelProps {
 function TabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
 
+    const visible = value === index;
+
     return (
         <Box
             role="tabpanel"
-            hidden={value !== index}
+            // hidden={!visible}
             id={`simple-tabpanel-${index}`}
             aria-labelledby={`simple-tab-${index}`}
             {...other}
         >
-            {children}
+            {visible && children}
         </Box>
     );
 }
