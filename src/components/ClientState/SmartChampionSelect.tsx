@@ -1,14 +1,13 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress } from '@mui/material';
+import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider } from '@mui/material';
 
 import { defaultRoles } from '../Settings/SettingsConstants';
 
 import { ChampionsContext } from '../Champions/ChampionProvider';
 
 import { avatarURI } from '../../componentLibs/leagueImages';
-import { PickEntry } from '../common/PickEntry';
 
 import { useSnackbar } from 'notistack';
 
@@ -16,13 +15,14 @@ import { ClientStateContext } from './ClientStateProvider';
 import { ClientPhase } from './ClientStateProviderLogic';
 import { LolChampionSelectV1 } from './ClientStateTypes';
 import { PredictionEndpoint, SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
+import { SimplePickEntry } from '../common/SimplePickEntry';
 
 export const SmartChampionSelect: React.FC = () => {
 
     const clientState = useContext(ClientStateContext);
     const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
 
-    const {settings, settingsDispatch} = useContext(SettingsContext);
+    const { settings, settingsDispatch } = useContext(SettingsContext);
     const [roleSwappedWith, setRoleSwaptWith] = useState("");
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -108,51 +108,66 @@ export const SmartChampionSelect: React.FC = () => {
         []
     );
 
+    const getPickEntryVariant = (team: LolChampionSelectV1.Team[], localPlayerCellId: number, cellId: number) => {
+        if (team.some(cell => cell.cellId === localPlayerCellId)) {
+            if (localPlayerCellId === cellId)
+                return "player";
+            else
+                return "allay";
+        }
+        else
+            return "enemy";
+    };
+
+    const sortByRole = (a: LolChampionSelectV1.Team, b: LolChampionSelectV1.Team) => {
+        const roleValues = {
+            "top": 5,
+            "jungle": 4,
+            "middle": 3,
+            "bottom": 2,
+            "support": 1,
+            "utility": 1,
+            "": 0
+        };
+        return roleValues[b.assignedPosition] - roleValues[a.assignedPosition]
+    };
+
     const renderLeftTeam = useMemo(() => (
-        leftTeam.length > 0 ?
-            leftTeam.map(pick => <PickEntry
-                key={pick.cellId}
-                champions={championNames}
-                championName={championIdToName[pick.championId ? pick.championId : pick.championPickIntent]}
-                roleName={pick.assignedPosition}
-                roles={roles}
-                patch={patch}
-                isPlayer={pick.cellId === localPlayerCellId}
-                disabled
-                reverse
-            />) :
-            picksPlaceholder
+        <Stack direction="row" spacing={1} justifyContent="center">
+            {
+                leftTeam.length > 0 ?
+                    leftTeam.sort(sortByRole).map(pick => <SimplePickEntry
+                        key={pick.cellId}
+                        champion={championIdToName[pick.championId ? pick.championId : pick.championPickIntent]}
+                        role={pick.assignedPosition}
+                        patch={patch}
+                        variant={getPickEntryVariant(leftTeam, localPlayerCellId, pick.cellId)}
+                    />) :
+                    picksPlaceholder
+            }
+        </Stack>
     ), [leftTeam]);
 
     const renderRightTeam = useMemo(() => (
-        rightTeam.length > 0 ?
-            rightTeam.map(pick => <PickEntry
-                key={pick.cellId}
-                champions={championNames}
-                championName={championIdToName[pick.championId ? pick.championId : pick.championPickIntent]}
-                roleName={pick.assignedPosition}
-                roles={roles}
-                patch={patch}
-                isPlayer={pick.cellId === localPlayerCellId}
-                disabled
-            />) :
-            picksPlaceholder
+        <Stack direction="row" spacing={1} justifyContent="center">
+            {
+                rightTeam.length > 0 ?
+                    rightTeam.sort(sortByRole).map(pick => <SimplePickEntry
+                        key={pick.cellId}
+                        champion={championIdToName[pick.championId ? pick.championId : pick.championPickIntent]}
+                        role={pick.assignedPosition}
+                        patch={patch}
+                        variant={getPickEntryVariant(rightTeam, localPlayerCellId, pick.cellId)}
+                    />) :
+                    picksPlaceholder
+            }
+        </Stack>
     ), [rightTeam]);
 
     return (
         <Container>
             <Stack spacing={3}>
                 <Stack direction="row" spacing={2}>
-                    {/* <Button
-                        variant="contained"
-                        sx={{ width: "100%" }}
-                        onClick={() => clientState.getPredictions()}
-                        size="small"
-                        disabled={[ClientPhase.ClientClosed, ClientPhase.ClientOpen, ClientPhase.Unknown].includes(clientState.phase)}
-                    >
-                        MAKE PREDICTION
-                    </Button> */}
-
                     <FormControl fullWidth size="small">
                         <InputLabel>Suggestion type</InputLabel>
                         <Select
@@ -205,14 +220,14 @@ export const SmartChampionSelect: React.FC = () => {
                     </Grid>
 
                     <Typography>Picks</Typography>
-                    <Stack direction="row" spacing={3}>
-                        <Stack spacing={2} sx={{ width: 1 }}>
+                    <Grid container spacing={1.2}>
+                        <Grid item md={12} lg={6}>
                             {renderLeftTeam}
-                        </Stack>
-                        <Stack spacing={2} sx={{ width: 1 }}>
+                        </Grid>
+                        <Grid item md={12} lg={6}>
                             {renderRightTeam}
-                        </Stack>
-                    </Stack>
+                        </Grid>
+                    </Grid>
                 </Stack>
             </Stack>
         </Container>

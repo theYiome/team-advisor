@@ -12,7 +12,9 @@ const roleImages: any = {
     jungle: "https://static.wikia.nocookie.net/leagueoflegends/images/1/1b/Jungle_icon.png",
     middle: "https://static.wikia.nocookie.net/leagueoflegends/images/9/98/Middle_icon.png",
     bottom: "https://static.wikia.nocookie.net/leagueoflegends/images/9/97/Bottom_icon.png",
-    support: "https://static.wikia.nocookie.net/leagueoflegends/images/e/e0/Support_icon.png"
+    support: "https://static.wikia.nocookie.net/leagueoflegends/images/e/e0/Support_icon.png",
+    utility: "https://static.wikia.nocookie.net/leagueoflegends/images/e/e0/Support_icon.png",
+    "": "https://static.wikia.nocookie.net/leagueoflegends/images/2/2f/Unplayed_icon.png"
 }
 
 function avatarURI(patch: string, championName: string) {
