@@ -39,8 +39,8 @@ export const SmartChampionSelect: React.FC = () => {
     const canBan = [ClientPhase.Banning].includes(clientState.phase);
 
     useEffect(() => {
-        // if (clientState.userTookControl && [ClientPhase.InChampionSelect, ClientPhase.Planning, ClientPhase.Picking].includes(clientState.phase))
-        //     enqueueSnackbar("You hovered something in client - picking from app will be disabled in this champion select", {variant: "error"});
+        if (clientState.userTookControl)
+            enqueueSnackbar("You hovered something in client - picking from app will be disabled in this champion select", { variant: "error" });
     }, [clientState.userTookControl]);
 
     const championNames = useMemo(() =>
@@ -56,6 +56,14 @@ export const SmartChampionSelect: React.FC = () => {
         height: settings.championAvatarSize,
     };
 
+    const predictionStyle = {
+        borderWidth: 3,
+        borderStyle: "solid",
+        outlineWidth: 1,
+        outlineStyle: "solid",
+        outlineColor: "black"
+    };
+
     const predictionsPlaceholder = useMemo(() => Array.from(Array(20).keys()).map(index =>
         <Grid key={index} item xs={"auto"}>
             <Skeleton
@@ -67,26 +75,34 @@ export const SmartChampionSelect: React.FC = () => {
     ), [settings.championAvatarSize]);
 
     // https://github.com/mui/material-ui/issues/8416
-    const renderedPredictions = predictions ? predictions.predictions.map((prediction: Prediction) =>
-        <Grid key={prediction.championId} item xs={"auto"}>
-            <Tooltip title={`Score: ${prediction.score} Tier: ${prediction.tier}`}>
+    const renderedPredictions = predictions ? predictions.predictions.sort((a, b) => b.score - a.score).map((prediction: Prediction) => {
+
+        const isAvailable = !clientState.userTookControl && !clientState.bans.includes(prediction.championId);
+        const isHighestTier = prediction.tier === predictions.tierCount - 1;
+
+        return (<Grid key={prediction.championId} item xs={"auto"}>
+            <Tooltip title={`Score: ${prediction.score} Tier: ${prediction.tier}`} followCursor placement='top'>
                 <div>
                     <Button
                         onClick={() => clientState.hoverChampion(prediction.championId)}
-                        sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.5)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
-                        disabled={!canPick}
+                        sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.5)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .12s ease-in-out" }}
+                        disabled={!canPick || !isAvailable}
                     >
                         <Avatar
                             key={prediction.championId}
                             src={avatarURI(patch, championIdToName[prediction.championId])}
-                            sx={{ ...avatarStyle, borderWidth: 3, borderStyle: "solid", borderColor: getColor(prediction.tier / (predictions.tierCount - 1.0)), outlineWidth: 1, outlineStyle: "solid", outlineColor: "black" }}
+                            sx={{ ...avatarStyle, ...predictionStyle, 
+                                borderColor: getColorForTier(prediction.tier, predictions.tierCount), 
+                                filter: isAvailable ? "none" : "grayscale(100%)", 
+                                borderWidth: isHighestTier ? 5 : 3 }}
                             variant='square'
                         />
                     </Button>
                 </div>
             </Tooltip>
-        </Grid>
-    ) : <></>;
+        </Grid>)
+    }
+    ) : predictionsPlaceholder;
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item>
@@ -217,7 +233,7 @@ export const SmartChampionSelect: React.FC = () => {
                         {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
                     </Typography>
                     <Grid container columns={12} spacing={1}>
-                        {predictions && predictions.predictions.length > 0 ? renderedPredictions : predictionsPlaceholder}
+                        {renderedPredictions}
                     </Grid>
 
                     <Typography>Bans</Typography>
@@ -243,7 +259,20 @@ export const SmartChampionSelect: React.FC = () => {
 // https://stackoverflow.com/questions/7128675/from-green-to-red-color-depend-on-percentage/7128796
 const getColor = (value: number) => {
     // value from 0 to 1
-    const hue = ((1.0 - value) * 120).toString(10);
-    const color = `hsl(${hue}, 100%, 45%)`;
+    const hue = ((1.0 - value) * 200).toString(10);
+    const color = `hsl(${hue}, 95%, 40%)`;
     return color;
+}
+
+
+const getColorForTier = (tier: number, tierCount: number) => {
+    if (tier === tierCount - 1)
+        return "#E0E";
+    else if (tier === 0)
+        return "#111";
+    else {
+        const value = (tier - 1.0) / (tierCount - 3.0);
+        // console.log({value, tier, tierCount});
+        return getColor(1.0 - value);
+    }
 }

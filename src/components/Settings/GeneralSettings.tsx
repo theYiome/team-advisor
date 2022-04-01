@@ -84,7 +84,9 @@ export const GeneralSettings: React.FC = () => {
                 />
 
                 <Divider/>
-
+                <Typography>
+                    Champion avatar size
+                </Typography>
                 <Stack>
                     <Alert severity="info">
                         Set champion avatar size to <strong>68px</strong> to match the default avatar size in the game.

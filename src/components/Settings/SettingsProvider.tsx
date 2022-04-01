@@ -26,6 +26,13 @@ export interface SettingsContent {
 
 const areSettingsValid = (settings: SettingsContent): boolean => {
     try {
+        // chceck is settings has all fields of type SettingsContent defined
+        const settingsKeys = Object.keys(settings);
+        const settingsContentKeys = Object.keys(initialSettings);
+        const settingsKeysAreValid = settingsKeys.every(key => settingsContentKeys.includes(key));
+
+        if (!settingsKeysAreValid)
+            return false;
 
         if(themesMap[settings.theme] === undefined)
             return false;
@@ -34,7 +41,7 @@ const areSettingsValid = (settings: SettingsContent): boolean => {
             if (typeof (value) !== typeof ("") || !isNaN(value as any))
                 return false;
             return true;
-        });
+        }); 
 
         console.log({ prefferedBansValid, settings });
 

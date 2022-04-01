@@ -108,10 +108,39 @@ const darkishRedTheme = createTheme({
     }
 });
 
+const darkishGreyTheme = createTheme({
+    palette: {
+        mode: 'dark',
+        primary: {
+            main: '#999',
+        },
+        secondary: {
+            main: '#000',
+        },
+        background: {
+            default: '#0e1117',
+            paper: '#262730',
+        },
+        text: {
+            primary: '#FFF',
+            secondary: '#FFF'
+        },
+    },
+    shape: {
+        borderRadius: 8,
+    },
+    typography: {
+        allVariants: {
+            color: "#EEE"
+        }
+    }
+});
+
 const themesMap = {
     "Dark": darkTheme,
     "Dark Red": darkRedTheme,
     "Darkish Red": darkishRedTheme,
+    "Darkish Gray": darkishGreyTheme,
     "Light": lightTheme,
     "Light Red": lightRedTheme
 };

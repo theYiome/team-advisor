@@ -19,9 +19,9 @@ export const Main: React.FC = () => {
     useEffect(() => {
         try {
             (document.querySelector(".scroll-enabled") as HTMLElement).style.setProperty("--scrollbar-background", themesMap[settings.theme].palette.primary.main);
-            document.getElementById("titlebar").style.backgroundColor = "#222"; 
+            document.getElementById("titlebar").style.backgroundColor = "#222";
         }
-        catch(error) {
+        catch (error) {
             console.warn("Failed to set theme!", error);
         }
     }, [settings.theme]);
@@ -33,7 +33,9 @@ export const Main: React.FC = () => {
                     <ChampionsProvider>
                         <FavouritesProvider>
                             <ClientStateProvider>
-                                <TeamAdvisor />
+                                <React.StrictMode>
+                                    <TeamAdvisor />
+                                </React.StrictMode>
                             </ClientStateProvider>
                         </FavouritesProvider>
                     </ChampionsProvider>

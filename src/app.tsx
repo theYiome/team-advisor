@@ -10,11 +10,9 @@ const container = document.getElementById('app');
 const root = ReactDOMClient.createRoot(container);
 
 const ReactApp = () => (
-    <React.StrictMode>
-        <SettingsProvider>
-            <Main />
-        </SettingsProvider>
-    </React.StrictMode>
+    <SettingsProvider>
+        <Main />
+    </SettingsProvider>
 );
 
 // Initial render: Render an element to the root.

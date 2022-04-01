@@ -34,7 +34,7 @@ const getQueueState = async (credentials: LcuCredentials): Promise<QueueState> =
         const url = urlWithAuth + endpointName;
 
         const response: Lcu.Error & LolMatchmakingV1ReadyCheck.Session = await connections.fetchJSON(url);
-        console.log(response);
+        // console.log(response);
 
         if (response.message === Lcu.Message.NotAttachedToMatchmakingQueue) return {
             phase: ClientPhase.ClientOpen,

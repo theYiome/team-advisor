@@ -25,10 +25,10 @@ const SimplePickEntry = ({ champion, role, patch, variant }: SimpleEntryPickerPr
     const style = { ...size, ...variantStyle() };
     return (
         <Stack spacing={2}>
-            <Tooltip title={champion}>
+            <Tooltip title={champion ? champion : ""}>
                 <Avatar sx={style} alt={champion} src={avatarURI(patch, champion)} variant='square'/>
             </Tooltip>
-            <Tooltip title={role}>
+            <Tooltip title={role ? role : ""}>
                 <Avatar sx={style} alt={role} src={roleImages[role]} variant="square"/>
             </Tooltip>
         </Stack>

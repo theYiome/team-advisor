@@ -106,24 +106,17 @@ const ClientStateProvider: React.FC = ({ children }) => {
     };
 
     const updateFunction = () => {
-
-        console.log({ lcuState });
-
         if (!lcuState.valid) {
+            console.log("Invalid LCU state, not updating.", lcuState);
             currentState.current.phase = ClientPhase.ClientClosed;
             if (currentPhase !== ClientPhase.ClientClosed)
                 setCurrentPhase(ClientPhase.ClientClosed);
-            return;
         }
-
-        getLcuState(lcuState.credentials).then((state) => {
+        else getLcuState(lcuState.credentials).then((state) => {
             if ([ClientPhase.GameAccepted, ClientPhase.GameDeclined, ClientPhase.GameFound, ClientPhase.InQueue].includes(state.phase)) {
                 currentState.current.queueTimer = state.queueTimer;
                 if (state.phase === ClientPhase.GameFound && currentState.current.queueTimer >= settings.gameAcceptTimer && settings.autoAccept)
                     acceptQueue(lcuState.credentials);
-
-                if (state.phase !== currentPhase)
-                    setCurrentPhase(state.phase);
             }
             else if ([ClientPhase.Planning, ClientPhase.Banning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Done].includes(state.phase)) {
                 // do role swap if selected by the user
@@ -142,10 +135,9 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
                 const isInPickingPhase = state.phase === ClientPhase.Picking;
                 const isInBanningPhase = state.phase === ClientPhase.Banning;
-                const phase = state.phase;
 
                 // lockin when reaches ~30 seconds in picking phase - draft only
-                if (phase !== currentState.current.phase) {
+                if (state.phase !== currentState.current.phase) {
                     currentState.current.actionTimer = new Date();
                     currentState.current.failedToHover = [];
                 }
@@ -228,7 +220,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
                         setCurrentLeftTeam(currentState.current.leftTeam);
                     }
                     if (!compareTeams(currentState.current.rightTeam, currentRightTeam)) {
-                        console.log({ left: currentState.current.leftTeam, currentLeftTeam });
+                        console.log({ right: currentState.current.rightTeam, currentRightTeam });
                         setCurrentRightTeam(currentState.current.rightTeam);
                     }
                     if (currentState.current.championId !== currentChampionId)
@@ -240,14 +232,17 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 }
 
             }
-            currentState.current.phase = state.phase;
-            if (currentState.current.phase !== currentPhase)
-                setCurrentPhase(currentState.current.phase);
 
-            if (currentState.current.newPredictionRequested) {
-                bindedGetPredictions();
-                currentState.current.newPredictionRequested = false;
+            currentState.current.phase = state.phase;
+            if (currentState.current.phase !== currentPhase) {
+                console.log({ phase: currentState.current.phase, currentPhase });
+                setCurrentPhase(currentState.current.phase);
             }
+
+            // if (currentState.current.newPredictionRequested) {
+            //     bindedGetPredictions();
+            //     currentState.current.newPredictionRequested = false;
+            // }
         });
     };
 
@@ -255,7 +250,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
     useEffect(() => {
         if ([ClientPhase.Planning, ClientPhase.InChampionSelect, ClientPhase.Picking, ClientPhase.Banning, ClientPhase.Done].includes(currentPhase))
             bindedGetPredictions();
-    }, [currentPhase, currentLeftTeam, currentRightTeam, settings.predictionEndpoint]);
+    }, [currentPhase, currentLeftTeam, currentRightTeam, settings.predictionEndpoint, lcuState]);
 
     // pooling client status
     useEffect(() => {
