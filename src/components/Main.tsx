@@ -17,7 +17,13 @@ export const Main: React.FC = () => {
     const { settings } = useContext(SettingsContext);
 
     useEffect(() => {
-        document.getElementById("titlebar").style.backgroundColor = "#353535"; 
+        try {
+            (document.querySelector(".scroll-enabled") as HTMLElement).style.setProperty("--scrollbar-background", themesMap[settings.theme].palette.primary.main);
+            document.getElementById("titlebar").style.backgroundColor = "#222"; 
+        }
+        catch(error) {
+            console.warn("Failed to set theme!", error);
+        }
     }, [settings.theme]);
 
     return (

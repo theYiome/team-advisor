@@ -1,14 +1,13 @@
 import React, { useContext } from 'react';
-import { FormControlLabel, Stack, Switch, Typography } from '@mui/material';
+import { FormControlLabel, Slider, Stack, Switch, Typography } from '@mui/material';
 import { SettingsActionType, SettingsContext } from './SettingsProvider';
 
 export const QuickSettings: React.FC = () => {
     const { settings, settingsDispatch } = useContext(SettingsContext);
 
     return (
-        <Stack spacing={3}>
-            <Typography variant='h6'>Quick settings</Typography>
-
+        <Stack spacing={2}>
+            <Typography>Quick settings</Typography>
             <FormControlLabel
                 control={
                     <Switch
@@ -48,6 +47,23 @@ export const QuickSettings: React.FC = () => {
                 }
                 label={<Typography>Lock-in when timer runs out</Typography>}
             />
+
+            <Stack>
+                <Typography gutterBottom>
+                    Champion avatar size
+                </Typography>
+                <Slider
+                    onChange={(event: Event, newValue: number, activeThumb: number) => settingsDispatch({ type: SettingsActionType.SetChampionAvatarSize, payload: newValue })}
+                    value={settings.championAvatarSize}
+                    valueLabelDisplay="auto"
+                    step={2}
+                    marks
+                    min={36}
+                    max={88}
+                    sx={{ width: "90%", ml: "5%" }}
+                />
+            </Stack>
+
         </Stack>
     );
 }

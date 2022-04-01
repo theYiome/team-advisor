@@ -1,5 +1,5 @@
 import React, { useReducer, createContext, useEffect, useState } from 'react';
-import { AppTheme } from '../Themes';
+import { AppTheme, themesMap } from '../Themes';
 
 type PredictionEndpoint = "default" | "strong" | "fit";
 
@@ -21,10 +21,14 @@ export interface SettingsContent {
     gameAcceptTimer: number;
     leagueInstallationPath: string;
     predictionEndpoint: PredictionEndpoint;
+    championAvatarSize: number;
 }
 
 const areSettingsValid = (settings: SettingsContent): boolean => {
     try {
+
+        if(themesMap[settings.theme] === undefined)
+            return false;
 
         const prefferedBansValid = settings.prefferedBans.every((value, index) => {
             if (typeof (value) !== typeof ("") || !isNaN(value as any))
@@ -45,7 +49,7 @@ const areSettingsValid = (settings: SettingsContent): boolean => {
 }
 
 const initialSettings: SettingsContent = {
-    theme: "dark" as AppTheme,
+    theme: "Dark" as AppTheme,
     prefferedBans: ["Jax", "Viktor", "Lulu", "Riven"],
     autoAccept: true,
     autoBan: true,
@@ -54,7 +58,8 @@ const initialSettings: SettingsContent = {
     championLockinTimer: 31.0,
     gameAcceptTimer: 3,
     leagueInstallationPath: "C:\\Riot Games\\League of Legends\\",
-    predictionEndpoint: "default" as PredictionEndpoint
+    predictionEndpoint: "default" as PredictionEndpoint,
+    championAvatarSize: 48
 };
 
 export interface SettingsAction {
@@ -73,7 +78,8 @@ export enum SettingsActionType {
     SetChampionLockinTimer,
     SetGameAcceptTimer,
     SetLeagueInstallationPath,
-    SetPredictionEndpoint
+    SetPredictionEndpoint,
+    SetChampionAvatarSize
 }
 
 const SettingsContext = createContext({
@@ -108,6 +114,8 @@ const reducer = (state: SettingsContent, action: SettingsAction): SettingsConten
             return { ...state, prefferedBans: action.payload };
         case SettingsActionType.SetPredictionEndpoint:
             return { ...state, predictionEndpoint: action.payload };
+        case SettingsActionType.SetChampionAvatarSize:
+            return { ...state, championAvatarSize: action.payload };
         default:
             throw new Error();
     }

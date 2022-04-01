@@ -7,8 +7,8 @@ import { ChampionsContext } from '../Champions/ChampionProvider';
 import { completeAction, getLcuState, hoverChampion, ClientPhase, acceptQueue } from './ClientStateProviderLogic';
 import { LolChampionSelectV1 } from './ClientStateTypes';
 import { predictionEndpoints, SettingsContext } from '../Settings/SettingsProvider';
-import * as connections from '../../libs/connections';
 import { FavouritesContext } from '../Favourites/FavouritesProvider';
+import { getPredictions, PredictionApiResponse } from '../Predictions/PredictionsAPI';
 
 const swapRolesInTeam = (firstRole: LolChampionSelectV1.Position, secondRole: LolChampionSelectV1.Position, team: LolChampionSelectV1.Team[]) => {
     team.forEach(x => {
@@ -26,10 +26,9 @@ const ClientStateContext = createContext({
     localPlayerCellId: -1,
     championId: 0,
     bans: [] as number[],
-    predictions: [] as number[],
+    predictions: null as PredictionApiResponse,
     loadingPredictions: false,
     userTookControl: false,
-    getPredictions: async () => [1, 2, 3],
     hoverChampion: async (championId: number) => true,
     setRoleSwap: (role: LolChampionSelectV1.Position) => { }
 });
@@ -45,7 +44,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
 
     const lcuState = useContext(LcuContext);
-    const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
+    const { championIdToName, championNameToId } = useContext(ChampionsContext);
     const { settings } = useContext(SettingsContext);
     const { favourites } = useContext(FavouritesContext);
 
@@ -55,9 +54,8 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
         actionTimer: new Date() as Date,
         failedToHover: [] as number[],
-        predictions: [] as number[],
+        predictions: null as PredictionApiResponse,
         newPredictionRequested: false as boolean,
-        userTookControl: false as boolean,
         role: LolChampionSelectV1.Position.None as LolChampionSelectV1.Position,
 
         currentActionId: -1 as number,
@@ -86,12 +84,26 @@ const ClientStateProvider: React.FC = ({ children }) => {
     const [currentLocalPlayerCellId, setCurrentLocalPlayerCellId] = useState(0);
     const [currentChampionId, setCurrentChampionId] = useState(0);
     const [currentBans, setCurrentBans] = useState([] as number[]);
-    const [currentPredictions, setCurrentPredictions] = useState([] as number[]);
+    const [currentPredictions, setCurrentPredictions] = useState(null as PredictionApiResponse);
     const [loadingPredictions, setLoadingPredictions] = useState(false);
     const [userTookControl, setUserTookControl] = useState(false);
-    const [roleSwappedWith, setRoleSwappedWith] = useState("" as LolChampionSelectV1.Position);
+    const [roleSwappedWith, setRoleSwappedWith] = useState(LolChampionSelectV1.Position.None as LolChampionSelectV1.Position);
 
     const { enqueueSnackbar } = useSnackbar();
+
+    const bindedGetPredictions = async () => {
+        setLoadingPredictions(true);
+        const endpoint = predictionEndpoints[settings.predictionEndpoint];
+        const favourites = favouritesForRole(currentState.current.role);
+
+        const result = await getPredictions(
+            currentState.current.leftTeam, currentState.current.rightTeam,
+            currentState.current.localPlayerCellId, currentState.current.localPlayerTeamId,
+            favourites, endpoint
+        );
+        setLoadingPredictions(false);
+        setCurrentPredictions(result);
+    };
 
     const updateFunction = () => {
 
@@ -103,7 +115,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 setCurrentPhase(ClientPhase.ClientClosed);
             return;
         }
-
 
         getLcuState(lcuState.credentials).then((state) => {
             if ([ClientPhase.GameAccepted, ClientPhase.GameDeclined, ClientPhase.GameFound, ClientPhase.InQueue].includes(state.phase)) {
@@ -168,27 +179,30 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 }
 
                 // check if user made any action
-                currentState.current.userTookControl =
-                    currentState.current.championId !== state.championId &&
-                    currentState.current.championId !== 0 && state.championId !== 0;
+                if (isInPickingPhase && !userTookControl) {
+                    const tookControlNow =
+                        currentState.current.championId !== state.championId &&
+                        currentState.current.championId !== 0 && state.championId !== 0;
 
-                currentState.current.championId = state.championId;
+                    if (tookControlNow)
+                        setUserTookControl(true);
+                }
+                else if (userTookControl)
+                    setUserTookControl(false);
+
 
                 // hover something to ban
-                if (!currentState.current.userTookControl && settings.autoBan) {
-                    // if control not taken app can perform an action
-                    if (isInBanningPhase) {
-                        const idBanList: number[] = settings.prefferedBans.map(name => championNameToId[name]);
-                        const championToBan: number = idBanList.find(ban => !unavailableChampions.includes(ban));
-                        attemptToHover(championToBan);
-                    }
+                if (state.championId === 0 && settings.autoBan && isInBanningPhase) {
+                    const idBanList: number[] = settings.prefferedBans.map(name => championNameToId[name]);
+                    const championToBan: number = idBanList.find(ban => !unavailableChampions.includes(ban));
+                    attemptToHover(championToBan);
                 }
 
                 // if no champion is hovered in picking phase, hover something
                 if (isInPickingPhase && settings.autoPick) {
-                    if (currentState.current.predictions.length > 0 && state.championId === 0) {
-                        const championToPick = currentState.current.predictions.find(pick => !unavailableChampions.includes(pick));
-                        attemptToHover(championToPick);
+                    if (currentState.current.predictions && state.championId === 0) {
+                        const championToPick = currentState.current.predictions.predictions.find(pick => !unavailableChampions.includes(pick.championId));
+                        attemptToHover(championToPick.championId);
                     }
                 }
 
@@ -209,20 +223,20 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
                 // set state that is part of the context
                 {
-                    if (!compareTeams(currentState.current.leftTeam, currentLeftTeam)){
+                    if (!compareTeams(currentState.current.leftTeam, currentLeftTeam)) {
                         console.log({ left: currentState.current.leftTeam, currentLeftTeam });
                         setCurrentLeftTeam(currentState.current.leftTeam);
                     }
-                    if (!compareTeams(currentState.current.rightTeam, currentRightTeam))
+                    if (!compareTeams(currentState.current.rightTeam, currentRightTeam)) {
+                        console.log({ left: currentState.current.leftTeam, currentLeftTeam });
                         setCurrentRightTeam(currentState.current.rightTeam);
+                    }
                     if (currentState.current.championId !== currentChampionId)
                         setCurrentChampionId(currentState.current.championId);
                     if (!compareArrays(currentState.current.bans, currentBans))
                         setCurrentBans(currentState.current.bans);
                     if (currentState.current.localPlayerCellId !== currentLocalPlayerCellId)
                         setCurrentLocalPlayerCellId(currentState.current.localPlayerCellId);
-                    if (userTookControl !== currentState.current.userTookControl)
-                        setUserTookControl(currentState.current.userTookControl);
                 }
 
             }
@@ -231,7 +245,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 setCurrentPhase(currentState.current.phase);
 
             if (currentState.current.newPredictionRequested) {
-                getPredictions();
+                bindedGetPredictions();
                 currentState.current.newPredictionRequested = false;
             }
         });
@@ -240,12 +254,12 @@ const ClientStateProvider: React.FC = ({ children }) => {
     // get predictions if user is inchampionselect or picking or planning phase and left or right team has changed
     useEffect(() => {
         if ([ClientPhase.Planning, ClientPhase.InChampionSelect, ClientPhase.Picking, ClientPhase.Banning, ClientPhase.Done].includes(currentPhase))
-            getPredictions();
+            bindedGetPredictions();
     }, [currentPhase, currentLeftTeam, currentRightTeam, settings.predictionEndpoint]);
 
     // pooling client status
     useEffect(() => {
-        // updateFunction();
+        updateFunction();
 
         if (periodicUpdate)
             clearInterval(periodicUpdate);
@@ -253,7 +267,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         setPeriodicUpdate(setInterval(updateFunction, updateInterval));
 
         return () => clearInterval(periodicUpdate);
-    }, [ updateInterval, lcuState, roleSwappedWith, settings, currentLeftTeam, currentRightTeam, currentPhase, currentLocalPlayerCellId, currentChampionId, currentBans, userTookControl]);
+    }, [updateInterval, lcuState, roleSwappedWith, settings, currentLeftTeam, currentRightTeam, currentPhase, currentLocalPlayerCellId, currentChampionId, currentBans, userTookControl]);
 
     // clearing state when turned off
     useEffect(() => {
@@ -281,44 +295,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
         let preferredChampionList: string[] = favourites[role];
         return preferredChampionList.map(name => championNameToId[name]);
     }
-
-    const getPredictions = async () => {
-        setLoadingPredictions(true);
-        const endpoint = predictionEndpoints[settings.predictionEndpoint];
-
-        const options = {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: {
-                leftTeam: currentState.current.leftTeam,
-                rightTeam: currentState.current.rightTeam,
-                bans: currentState.current.bans,
-                localPlayerCellId: currentState.current.localPlayerCellId,
-                localPlayerTeamId: currentState.current.localPlayerTeamId,
-                preferredChampionList: favouritesForRole(currentState.current.role)
-            },
-            json: true
-        };
-
-        console.log({ getPredictions: options, endpoint });
-
-        try {
-            const response = await connections.fetchJSON(endpoint, options);
-            console.log({ response, options, type: typeof (response) });
-            const content: number[] = response["sorted_champion_ids"];
-            setLoadingPredictions(false);
-            if (content) {
-                currentState.current.predictions = content;
-                setCurrentPredictions(content);
-                return content;
-            }
-        }
-        catch (error) {
-            setLoadingPredictions(false);
-            console.warn(error);
-        }
-        return [];
-    };
 
     const userRequestedHoverChampion = useCallback(async (championIdToHover: number, actionType = LolChampionSelectV1.ActionType.Pick) => {
         const getProperActionId = (actionType: LolChampionSelectV1.ActionType) => {
@@ -352,7 +328,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
             predictions: currentPredictions,
             loadingPredictions: loadingPredictions,
             userTookControl: userTookControl,
-            getPredictions: getPredictions,
             hoverChampion: userRequestedHoverChampion,
             setRoleSwap: (role: LolChampionSelectV1.Position) => setRoleSwappedWith(role)
         }}>

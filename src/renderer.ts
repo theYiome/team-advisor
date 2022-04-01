@@ -72,17 +72,17 @@ function handleWindowControls() {
         win.close();
     });
 
-    document.getElementById('zoom-in-button').addEventListener("click", event => {
-        const currentLevel = webFrame.getZoomLevel();
-        if (currentLevel < 2) {
-            webFrame.setZoomLevel(currentLevel + 1);
-        }
-    });
+    // document.getElementById('zoom-in-button').addEventListener("click", event => {
+    //     const currentLevel = webFrame.getZoomLevel();
+    //     if (currentLevel < 2) {
+    //         webFrame.setZoomLevel(currentLevel + 1);
+    //     }
+    // });
 
-    document.getElementById('zoom-out-button').addEventListener("click", event => {
-        const currentLevel = webFrame.getZoomLevel();
-        if (currentLevel > -1) {
-            webFrame.setZoomLevel(currentLevel - 1);
-        }
-    });
+    // document.getElementById('zoom-out-button').addEventListener("click", event => {
+    //     const currentLevel = webFrame.getZoomLevel();
+    //     if (currentLevel > -1) {
+    //         webFrame.setZoomLevel(currentLevel - 1);
+    //     }
+    // });
 }

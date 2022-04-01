@@ -15,7 +15,7 @@ const SimplePickEntry = ({ champion, role, patch, variant }: SimpleEntryPickerPr
     const variantStyle = () => {
         switch (variant) {
             case "player":
-                return { boxShadow: "0 6px 12px rgba(255, 215, 0, 0.25), 0 6px 12px rgba(255, 215, 0, 0.30)" };
+                return { boxShadow: "0 10px 20px rgba(255, 215, 0, 0.25), 0 8px 12px rgba(255, 215, 0, 0.30)" };
             case "allay":
                 return { boxShadow: "0 10px 20px rgba(8, 60, 158, 0.25), 0 8px 12px rgba(8, 60, 158, 0.30)" };
             case "enemy":

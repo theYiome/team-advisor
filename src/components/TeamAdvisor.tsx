@@ -82,7 +82,7 @@ export const TeamAdvisor: React.FC = () => {
                         <GeneralSettings />
                     </TabPanel>
                 </Box>
-                <Stack sx={{ width: 400, mr: 1, ml: 1, pt: 2 }}>
+                <Stack sx={{ width: 400, mr: 1, ml: 1, pt: 1 }}>
                     <VideoAd400x300 />
                     <Container sx={{ height: 1, mt: 2 }} className="scroll-enabled">
                         <QuickSettings />

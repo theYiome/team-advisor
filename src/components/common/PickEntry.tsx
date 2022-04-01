@@ -1,4 +1,4 @@
-import { Avatar, Divider, Stack, Typography, Autocomplete, Box, TextField, Paper } from '@mui/material';
+import { Avatar, Divider, Stack, Paper } from '@mui/material';
 import React, { FC, ReactElement } from 'react';
 
 import { avatarURI, roleImages } from '../../componentLibs/leagueImages';

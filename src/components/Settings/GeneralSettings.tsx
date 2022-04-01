@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { FormControlLabel, Stack, Container, Switch, Typography, Alert, Slider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Box, Divider } from '@mui/material';
 
 import { SettingsActionType, SettingsContext } from './SettingsProvider';
+import { themesMap } from '../Themes';
 let autoLauncher: any = null;
 
 try {
@@ -72,8 +73,7 @@ export const GeneralSettings: React.FC = () => {
                         label="Theme"
                         onChange={(event: SelectChangeEvent) => settingsDispatch({ type: SettingsActionType.SetTheme, payload: event.target.value as string })}
                     >
-                        <MenuItem value="dark">Dark</MenuItem>
-                        <MenuItem value="light">Light</MenuItem>
+                        { Object.keys(themesMap).map(key => <MenuItem key={key} value={key}>{key}</MenuItem>)}
                     </Select>
                 </FormControl>
 
@@ -85,6 +85,25 @@ export const GeneralSettings: React.FC = () => {
 
                 <Divider/>
 
+                <Stack>
+                    <Alert severity="info">
+                        Set champion avatar size to <strong>68px</strong> to match the default avatar size in the game.
+                    </Alert>
+                </Stack>
+                <Stack>
+                    <Slider
+                        onChange={(event: Event, newValue: number, activeThumb: number) => settingsDispatch({ type: SettingsActionType.SetChampionAvatarSize, payload: newValue })}
+                        value={settings.championAvatarSize}
+                        valueLabelDisplay="auto"
+                        step={2}
+                        marks
+                        min={36}
+                        max={88}
+                        sx={{ width: "90%", ml: "5%" }}
+                    />
+                </Stack>
+
+                <Divider/>
 
                 <FormControlLabel
                     control={

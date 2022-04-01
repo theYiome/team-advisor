@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider } from '@mui/material';
+import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider, Tooltip } from '@mui/material';
 
 import { defaultRoles } from '../Settings/SettingsConstants';
 
@@ -16,6 +16,7 @@ import { ClientPhase } from './ClientStateProviderLogic';
 import { LolChampionSelectV1 } from './ClientStateTypes';
 import { PredictionEndpoint, SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 import { SimplePickEntry } from '../common/SimplePickEntry';
+import { Prediction } from '../Predictions/PredictionsAPI';
 
 export const SmartChampionSelect: React.FC = () => {
 
@@ -51,8 +52,8 @@ export const SmartChampionSelect: React.FC = () => {
 
     const avatarStyle = {
         boxShadow: 1,
-        width: 48,
-        height: 48,
+        width: settings.championAvatarSize,
+        height: settings.championAvatarSize,
     };
 
     const predictionsPlaceholder = useMemo(() => Array.from(Array(20).keys()).map(index =>
@@ -63,24 +64,29 @@ export const SmartChampionSelect: React.FC = () => {
                 sx={avatarStyle}
             />
         </Grid>
-    ), []);
+    ), [settings.championAvatarSize]);
 
-    const renderedPredictions = predictions.map((prediction: number, index: number) =>
-        <Grid key={prediction} item xs={"auto"}>
-            <Button
-                onClick={() => clientState.hoverChampion(prediction)}
-                sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.5)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
-                disabled={!canPick}
-            >
-                <Avatar
-                    key={prediction}
-                    src={avatarURI(patch, championIdToName[prediction])}
-                    sx={{ ...avatarStyle, borderWidth: 2, borderStyle: "solid", borderColor: getColor(index / predictions.length), outlineWidth: 1, outlineStyle: "solid", outlineColor: "black" }}
-                    variant='square'
-                />
-            </Button>
+    // https://github.com/mui/material-ui/issues/8416
+    const renderedPredictions = predictions ? predictions.predictions.map((prediction: Prediction) =>
+        <Grid key={prediction.championId} item xs={"auto"}>
+            <Tooltip title={`Score: ${prediction.score} Tier: ${prediction.tier}`}>
+                <div>
+                    <Button
+                        onClick={() => clientState.hoverChampion(prediction.championId)}
+                        sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.5)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .1s ease-in-out" }}
+                        disabled={!canPick}
+                    >
+                        <Avatar
+                            key={prediction.championId}
+                            src={avatarURI(patch, championIdToName[prediction.championId])}
+                            sx={{ ...avatarStyle, borderWidth: 3, borderStyle: "solid", borderColor: getColor(prediction.tier / (predictions.tierCount - 1.0)), outlineWidth: 1, outlineStyle: "solid", outlineColor: "black" }}
+                            variant='square'
+                        />
+                    </Button>
+                </div>
+            </Tooltip>
         </Grid>
-    );
+    ) : <></>;
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item>
@@ -90,7 +96,7 @@ export const SmartChampionSelect: React.FC = () => {
                 sx={avatarStyle}
             />
         </Grid>
-    ), []);
+    ), [settings.championAvatarSize]);
 
     const renderedBans = useMemo(() => currentBans.map((ban: number, index: number) =>
         <Grid key={index} item>
@@ -101,7 +107,7 @@ export const SmartChampionSelect: React.FC = () => {
                 variant='rounded'
             />
         </Grid>
-    ), [currentBans]);
+    ), [currentBans, settings.championAvatarSize]);
 
     const picksPlaceholder = useMemo(() =>
         Array.from(Array(5).keys()).map(index => <Skeleton key={index} variant="rectangular" width="100%" height={128} sx={{ boxShadow: 5 }} />),
@@ -211,7 +217,7 @@ export const SmartChampionSelect: React.FC = () => {
                         {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
                     </Typography>
                     <Grid container columns={12} spacing={1}>
-                        {predictions.length > 0 ? renderedPredictions : predictionsPlaceholder}
+                        {predictions && predictions.predictions.length > 0 ? renderedPredictions : predictionsPlaceholder}
                     </Grid>
 
                     <Typography>Bans</Typography>
