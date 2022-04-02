@@ -171,17 +171,17 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 }
 
                 // check if user made any action
-                if (isInPickingPhase && !userTookControl) {
-                    const tookControlNow =
-                        currentState.current.championId !== state.championId &&
-                        currentState.current.championId !== 0 && state.championId !== 0;
+                if (isInPickingPhase) {
+                    if (!userTookControl) {
+                        const tookControlNow =
+                            currentState.current.championId !== state.championId &&
+                            currentState.current.championId !== 0 && state.championId !== 0;
 
-                    if (tookControlNow)
-                        setUserTookControl(true);
+                        if (tookControlNow)
+                            setUserTookControl(true);
+                    }
                 }
-                else if (userTookControl)
-                    setUserTookControl(false);
-
+                else if (userTookControl) setUserTookControl(false);
 
                 // hover something to ban
                 if (state.championId === 0 && settings.autoBan && isInBanningPhase) {
@@ -308,7 +308,10 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 enqueueSnackbar(`Failed to hover ${championIdToName[championIdToHover]}! Maybe unowned?`, { variant: "error" });
                 return false;
             }
-            return true;
+            else {
+                currentState.current.championId = championIdToHover;
+                return true;
+            }
         });
     }, [lcuState.credentials, championIdToName]);
 
