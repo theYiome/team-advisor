@@ -337,14 +337,19 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
 export { ClientStateContext, ClientStateProvider };
 
-
 const compareTeams = (a: LolChampionSelectV1.Team[], b: LolChampionSelectV1.Team[]) => {
-    return a.length === b.length && a.every((value, index) => (
-        value.championId === b[index].championId &&
-        value.championPickIntent === b[index].championPickIntent &&
-        value.summonerId === b[index].summonerId &&
-        value.assignedPosition === b[index].assignedPosition
-    ));
-};
+    // iterate over each element in a and chech if it is in b
+    for (let i = 0; i < a.length; i++) {
+        const x = a[i];
+        const found = b.find(y => y.championId === x.championId && y.assignedPosition === x.assignedPosition && y.championPickIntent === x.championPickIntent && y.summonerId === x.summonerId);
+        if (found === undefined)
+        {
+            console.warn({ a, b });
+            return false;
+        }
+    }
+
+    return true;
+}
 
 const compareArrays = (a: any[], b: any[]) => a.length === b.length && a.every((value, index) => value === b[index]);

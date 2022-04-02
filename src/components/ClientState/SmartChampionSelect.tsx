@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider, Tooltip } from '@mui/material';
+import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider, Tooltip, Box } from '@mui/material';
 
 import { defaultRoles } from '../Settings/SettingsConstants';
 
@@ -35,8 +35,7 @@ export const SmartChampionSelect: React.FC = () => {
     const localPlayerCellId = clientState.localPlayerCellId;
     const loadingPredictions = clientState.loadingPredictions;
 
-    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Banning].includes(clientState.phase);
-    const canBan = [ClientPhase.Banning].includes(clientState.phase);
+    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect].includes(clientState.phase);
 
     useEffect(() => {
         if (clientState.userTookControl)
@@ -51,12 +50,12 @@ export const SmartChampionSelect: React.FC = () => {
     const roles = [...defaultRoles, ""];
 
     const avatarStyle = {
-        boxShadow: 1,
         width: settings.championAvatarSize,
         height: settings.championAvatarSize,
     };
-
+    
     const predictionStyle = {
+        boxShadow: 2,
         borderWidth: 3,
         borderStyle: "solid",
         outlineWidth: 1,
@@ -82,23 +81,22 @@ export const SmartChampionSelect: React.FC = () => {
 
         return (<Grid key={prediction.championId} item xs={"auto"}>
             <Tooltip title={`Score: ${prediction.score} Tier: ${prediction.tier}`} followCursor placement='top'>
-                <div>
+                <Box>
                     <Button
                         onClick={() => clientState.hoverChampion(prediction.championId)}
                         sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.5)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .12s ease-in-out" }}
                         disabled={!canPick || !isAvailable}
                     >
-                        <Avatar
-                            key={prediction.championId}
-                            src={avatarURI(patch, championIdToName[prediction.championId])}
-                            sx={{ ...avatarStyle, ...predictionStyle, 
-                                borderColor: getColorForTier(prediction.tier, predictions.tierCount), 
-                                filter: isAvailable ? "none" : "grayscale(100%)", 
-                                borderWidth: isHighestTier ? 5 : 3 }}
-                            variant='square'
-                        />
+                        <Box sx={{ ...predictionStyle, borderColor: getColorForTier(prediction.tier, predictions.tierCount), borderWidth: isHighestTier ? 5 : 3}}>
+                            <Avatar
+                                key={prediction.championId}
+                                src={avatarURI(patch, championIdToName[prediction.championId])}
+                                sx={{ ...avatarStyle, filter: isAvailable ? "none" : "grayscale(100%)"}}
+                                variant='square'
+                            />
+                        </Box>
                     </Button>
-                </div>
+                </Box>
             </Tooltip>
         </Grid>)
     }
