@@ -108,7 +108,7 @@ const LcuProvider: React.FC = ({ children }) => {
             subtitleRef.innerHTML = `- <strong>${lcuState.summoner.displayName}</strong>`;
         else
             subtitleRef.innerHTML = "- not logged in";
-    }, [lcuState.summoner, lcuState.valid]);
+    }, [lcuState]);
 
     return (
         <LcuContext.Provider value={lcuState}>

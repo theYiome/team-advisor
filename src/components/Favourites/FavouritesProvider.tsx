@@ -50,6 +50,8 @@ export enum FavouritesActionType {
     SetFavouritesSupport,
 }
 
+const MAX_FAVOURITES = 10;
+
 const FavouritesContext = createContext({
     favourites: initialFavourites,
     favouritesDispatch: (action: FavouritesAction) => { console.error({action}) }
@@ -57,6 +59,16 @@ const FavouritesContext = createContext({
 
 const reducer = (state: FavouritesContent, action: FavouritesAction): FavouritesContent => {
     console.log({state, action});
+
+    if([FavouritesActionType.SetFavouritesTop, 
+        FavouritesActionType.SetFavouritesJungle, 
+        FavouritesActionType.SetFavouritesMiddle, 
+        FavouritesActionType.SetFavouritesBottom,
+        FavouritesActionType.SetFavouritesSupport].includes(action.type)) {
+            if (action.payload.length > MAX_FAVOURITES)
+                return state;
+    }
+
     switch (action.type) {
         case FavouritesActionType.SetAll:
             return action.payload;
@@ -105,4 +117,4 @@ const FavouritesProvider: React.FC = ({ children }) => {
     );
 }
 
-export { FavouritesProvider, FavouritesContext };
+export { FavouritesProvider, FavouritesContext, MAX_FAVOURITES };

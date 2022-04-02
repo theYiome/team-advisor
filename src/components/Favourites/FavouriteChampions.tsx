@@ -3,7 +3,7 @@ import { Stack, Container, Typography, IconButton } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 import { ChampionsContext } from '../Champions/ChampionProvider';
-import { FavouritesActionType, FavouritesContext } from './FavouritesProvider';
+import { FavouritesActionType, FavouritesContext, MAX_FAVOURITES } from './FavouritesProvider';
 import { SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 import { MultipleChampionPicker } from '../common/ChampionRolePicker';
 import { defaultChampionsForRole } from '../Settings/SettingsConstants'
@@ -18,10 +18,9 @@ export const FavouriteChampions: React.FC = () => {
     return (
         <Container>
             <Stack spacing={3}>
-                <Typography variant='h6'>Favourite champions</Typography>
                 <Stack spacing={2}>
-                    <Typography>
-                        Preffered bans
+                    <Typography variant='h6'>
+                        Ban list
                     </Typography>
                     <MultipleChampionPicker
                         championNames={championNames}
@@ -31,8 +30,13 @@ export const FavouriteChampions: React.FC = () => {
                         label="Ban list"
                         variant="outlined"
                     />
+
+                    <Typography variant='h6'>
+                        Favourite champions
+                    </Typography>
                     <Typography>
-                        Preffered picks
+                        Consider including some niche champions from your champion pool as this will guarantee their appearance in predictions.
+                        Limited to {MAX_FAVOURITES} champions per role.
                     </Typography>
 
                     <Stack direction="row">
