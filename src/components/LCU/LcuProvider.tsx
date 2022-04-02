@@ -102,6 +102,14 @@ const LcuProvider: React.FC = ({ children }) => {
         return () => clearInterval(periodicUpdate);
     }, [settings.leagueInstallationPath, lcuState.credentials, lcuState.valid]);
 
+    useEffect(() => {
+        const subtitleRef = document.getElementById("window-subtitle");
+        if (lcuState.valid && lcuState.summoner && lcuState.summoner.displayName && lcuState.summoner.displayName.length > 0)
+            subtitleRef.innerHTML = `- <strong>${lcuState.summoner.displayName}</strong>`;
+        else
+            subtitleRef.innerHTML = "- not logged in";
+    }, [lcuState.summoner, lcuState.valid]);
+
     return (
         <LcuContext.Provider value={lcuState}>
             {children}

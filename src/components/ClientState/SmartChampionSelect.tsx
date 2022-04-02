@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider, Tooltip, Box } from '@mui/material';
+import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider, Tooltip, Box, Badge } from '@mui/material';
 
 import { defaultRoles } from '../Settings/SettingsConstants';
 
@@ -78,6 +78,7 @@ export const SmartChampionSelect: React.FC = () => {
 
         const isAvailable = !clientState.userTookControl && !clientState.bans.includes(prediction.championId);
         const isHighestTier = prediction.tier === predictions.tierCount - 1;
+        const color = getColorForTier(prediction.tier, predictions.tierCount);
 
         return (<Grid key={prediction.championId} item xs={"auto"}>
             <Tooltip title={`Score: ${prediction.score} Tier: ${prediction.tier}`} followCursor placement='top'>
@@ -87,14 +88,16 @@ export const SmartChampionSelect: React.FC = () => {
                         sx={{ '&:hover': { boxShadow: 6, transform: "scale(1.5)", zIndex: 10 }, m: 0, p: 0, minHeight: 0, minWidth: 0, transition: "all .12s ease-in-out" }}
                         disabled={!canPick || !isAvailable}
                     >
-                        <Box sx={{ ...predictionStyle, borderColor: getColorForTier(prediction.tier, predictions.tierCount), borderWidth: isHighestTier ? 5 : 3}}>
-                            <Avatar
-                                key={prediction.championId}
-                                src={avatarURI(patch, championIdToName[prediction.championId])}
-                                sx={{ ...avatarStyle, filter: isAvailable ? "none" : "grayscale(100%)"}}
-                                variant='square'
-                            />
-                        </Box>
+                        <Badge badgeContent={isHighestTier ? "OP" : 0} color="primary">
+                            <Box sx={{ ...predictionStyle, borderColor: color}}>
+                                <Avatar
+                                    key={prediction.championId}
+                                    src={avatarURI(patch, championIdToName[prediction.championId])}
+                                    sx={{ ...avatarStyle, filter: isAvailable ? "none" : "grayscale(100%)"}}
+                                    variant='square'
+                                />
+                            </Box>
+                        </Badge>
                     </Button>
                 </Box>
             </Tooltip>

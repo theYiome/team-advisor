@@ -24,7 +24,6 @@ const ClientStateContext = createContext({
     leftTeam: [] as LolChampionSelectV1.Team[],
     rightTeam: [] as LolChampionSelectV1.Team[],
     localPlayerCellId: -1,
-    championId: 0,
     bans: [] as number[],
     predictions: null as PredictionApiResponse,
     loadingPredictions: false,
@@ -55,7 +54,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
         actionTimer: new Date() as Date,
         failedToHover: [] as number[],
         predictions: null as PredictionApiResponse,
-        newPredictionRequested: false as boolean,
         role: LolChampionSelectV1.Position.None as LolChampionSelectV1.Position,
 
         currentActionId: -1 as number,
@@ -82,7 +80,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
     const [currentLeftTeam, setCurrentLeftTeam] = useState([] as LolChampionSelectV1.Team[]);
     const [currentRightTeam, setCurrentRightTeam] = useState([] as LolChampionSelectV1.Team[]);
     const [currentLocalPlayerCellId, setCurrentLocalPlayerCellId] = useState(0);
-    const [currentChampionId, setCurrentChampionId] = useState(0);
     const [currentBans, setCurrentBans] = useState([] as number[]);
     const [currentPredictions, setCurrentPredictions] = useState(null as PredictionApiResponse);
     const [loadingPredictions, setLoadingPredictions] = useState(false);
@@ -101,6 +98,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
             currentState.current.localPlayerCellId, currentState.current.localPlayerTeamId,
             favourites, endpoint
         );
+        currentState.current.predictions = result;
         setLoadingPredictions(false);
         setCurrentPredictions(result);
     };
@@ -158,13 +156,13 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
                 const attemptToHover = (championIdToHover: number) => {
                     if (championIdToHover && championIdToHover !== state.championId) {
-
-                        if (currentState.current.championId !== state.championId)
-                            currentState.current.championId = championIdToHover;
-
                         hoverChampion(lcuState.credentials, state.currentActionId, championIdToHover).then((response: any) => {
                             if (response && response.errorCode) {
                                 currentState.current.failedToHover = [...currentState.current.failedToHover, championIdToHover];
+                            }
+                            else {
+                                if (currentState.current.championId !== state.championId)
+                                    currentState.current.championId = championIdToHover;
                             }
                         });
                     }
@@ -223,8 +221,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
                         console.log({ right: currentState.current.rightTeam, currentRightTeam });
                         setCurrentRightTeam(currentState.current.rightTeam);
                     }
-                    if (currentState.current.championId !== currentChampionId)
-                        setCurrentChampionId(currentState.current.championId);
                     if (!compareArrays(currentState.current.bans, currentBans))
                         setCurrentBans(currentState.current.bans);
                     if (currentState.current.localPlayerCellId !== currentLocalPlayerCellId)
@@ -238,11 +234,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 console.log({ phase: currentState.current.phase, currentPhase });
                 setCurrentPhase(currentState.current.phase);
             }
-
-            // if (currentState.current.newPredictionRequested) {
-            //     bindedGetPredictions();
-            //     currentState.current.newPredictionRequested = false;
-            // }
         });
     };
 
@@ -262,7 +253,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         setPeriodicUpdate(setInterval(updateFunction, updateInterval));
 
         return () => clearInterval(periodicUpdate);
-    }, [updateInterval, lcuState, roleSwappedWith, settings, currentLeftTeam, currentRightTeam, currentPhase, currentLocalPlayerCellId, currentChampionId, currentBans, userTookControl]);
+    }, [updateInterval, lcuState, roleSwappedWith, settings, currentLeftTeam, currentRightTeam, currentPhase, currentLocalPlayerCellId, currentBans, userTookControl]);
 
     // clearing state when turned off
     useEffect(() => {
@@ -291,7 +282,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         return preferredChampionList.map(name => championNameToId[name]);
     }
 
-    const userRequestedHoverChampion = useCallback(async (championIdToHover: number, actionType = LolChampionSelectV1.ActionType.Pick) => {
+    const userRequestedHoverChampion = async (championIdToHover: number, actionType = LolChampionSelectV1.ActionType.Pick) => {
         const getProperActionId = (actionType: LolChampionSelectV1.ActionType) => {
             switch (actionType) {
                 case LolChampionSelectV1.ActionType.Pick: return currentState.current.pickActionId;
@@ -305,7 +296,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
         return hoverChampion(lcuState.credentials, actionId, championIdToHover).then((response: any) => {
             if (response && response.errorCode) {
                 console.error({ response });
-                enqueueSnackbar(`Failed to hover ${championIdToName[championIdToHover]}! Maybe unowned?`, { variant: "error" });
+                enqueueSnackbar(`Failed to hover ${championIdToName[championIdToHover]}! Maybe unowned?`, { variant: "warning" });
                 return false;
             }
             else {
@@ -313,7 +304,7 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 return true;
             }
         });
-    }, [lcuState.credentials, championIdToName]);
+    };
 
     return (
         <ClientStateContext.Provider value={{
@@ -321,7 +312,6 @@ const ClientStateProvider: React.FC = ({ children }) => {
             leftTeam: currentLeftTeam,
             rightTeam: currentRightTeam,
             localPlayerCellId: currentLocalPlayerCellId,
-            championId: currentChampionId,
             bans: currentBans,
             predictions: currentPredictions,
             loadingPredictions: loadingPredictions,
@@ -343,10 +333,7 @@ const compareTeams = (a: LolChampionSelectV1.Team[], b: LolChampionSelectV1.Team
         const x = a[i];
         const found = b.find(y => y.championId === x.championId && y.assignedPosition === x.assignedPosition && y.championPickIntent === x.championPickIntent && y.summonerId === x.summonerId);
         if (found === undefined)
-        {
-            console.warn({ a, b });
             return false;
-        }
     }
 
     return true;
