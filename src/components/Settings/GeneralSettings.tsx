@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { FormControlLabel, Stack, Container, Switch, Typography, Alert, Slider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Box, Divider } from '@mui/material';
+import { FormControlLabel, Stack, Container, Switch, Typography, Alert, Slider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Box, Divider, Chip } from '@mui/material';
 
 import { SettingsActionType, SettingsContext } from './SettingsProvider';
 import { themesMap } from '../Themes';
@@ -61,10 +61,17 @@ export const GeneralSettings: React.FC = () => {
         }
     }
 
+    const gameAcceptTimerMessage = gameAcceptTimer === 0 ? "instantly" : (gameAcceptTimer === 1 ? "after 1 second" : `after ${gameAcceptTimer} seconds`);
+
+
     return (
         <Container>
             <Stack spacing={2}>
                 <Typography variant='h6'>General settings</Typography>
+
+                <Divider>
+                    <Chip label="Themes"/>
+                </Divider>
 
                 <FormControl fullWidth>
                     <InputLabel>Theme</InputLabel>
@@ -77,21 +84,29 @@ export const GeneralSettings: React.FC = () => {
                     </Select>
                 </FormControl>
 
+                <Divider>
+                    <Chip label="Auto launch"/>
+                </Divider>
+
+                <Typography>
+                    Automatically launch Team Advisor on PC startup. It will stay hidden in the system tray.
+                </Typography>
+
                 <FormControlLabel
                     control={<Switch checked={autoLauncherEnabled} onChange={onAutoLauncherChange} />}
                     label={<Typography>Launch on system startup</Typography>}
                     disabled={autoLauncher ? false : true}
                 />
+                
+                <Divider>
+                    <Chip label="Avatar size"/>
+                </Divider>
 
-                <Divider/>
                 <Typography>
-                    Champion avatar size
+                    Set champion avatar size used in displaying pick recommendations.
+                    Value of <strong>68px</strong> is the default avatar size in League Client.
                 </Typography>
-                <Stack>
-                    <Alert severity="info">
-                        Set champion avatar size to <strong>68px</strong> to match the default avatar size in the game.
-                    </Alert>
-                </Stack>
+
                 <Stack>
                     <Slider
                         onChange={(event: Event, newValue: number, activeThumb: number) => settingsDispatch({ type: SettingsActionType.SetChampionAvatarSize, payload: newValue })}
@@ -105,7 +120,14 @@ export const GeneralSettings: React.FC = () => {
                     />
                 </Stack>
 
-                <Divider/>
+                <Divider>
+                    <Chip label="Auto accept"/>
+                </Divider>
+
+                <Typography>
+                    If enabled and new game is found, 
+                    said game will be accepted <strong>{gameAcceptTimerMessage}</strong>.
+                </Typography>
 
                 <FormControlLabel
                     control={
@@ -114,14 +136,13 @@ export const GeneralSettings: React.FC = () => {
                             onChange={(event) => settingsDispatch({ type: SettingsActionType.SetAutoAccept, payload: event.target.checked })}
                         />
                     }
-                    label={<Typography>Auto accept</Typography>}
+                    label={<Typography>Enable auto accept</Typography>}
                 />
 
-                <Stack>
-                    <Alert severity="info">
-                        Game will be accepted <strong> {gameAcceptTimer} {(Math.round(gameAcceptTimer) === 1) ? "second" : "seconds"}</strong> after finding it - exact timing can adjust that with slider below.
-                    </Alert>
-                </Stack>
+                <Typography>
+                    Accept timing can adjust that with slider below. Lower values are recommended because they decrease probability of sound glitches in League Client.
+                </Typography>
+
                 <Stack>
                     <Slider
                         onChange={handleTimerChange}
@@ -136,7 +157,15 @@ export const GeneralSettings: React.FC = () => {
                     />
                 </Stack>
 
-                <Divider/>
+                <Divider>
+                    <Chip label="Auto ban"/>
+                </Divider>
+
+                <Typography>
+                    In banning phase app will hover first champion from your ban list that is not a pick intent of any ally. 
+                    App will adjust this hover if somebody eliminates your ban before you. 
+                    If no champion from your ban list matches criteria, nothing will be hovered.
+                </Typography>
 
                 <FormControlLabel
                     control={
@@ -145,21 +174,18 @@ export const GeneralSettings: React.FC = () => {
                             onChange={(event) => settingsDispatch({ type: SettingsActionType.SetAutoBan, payload: event.target.checked })}
                         />
                     }
-                    label={<Typography>Auto ban</Typography>}
+                    label={<Typography>Enable auto ban</Typography>}
                 />
-                <Alert severity="info">
-                    When banning phase starts,
-                    app will hover first champion from your list that is not <strong>already banned</strong> and
-                    is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally.
 
-                    <ul>
-                        <li>App will adjust this hover in real time.</li>
-                        <li>If no champion from your ban list matches criteria, nothing will be hovered.</li>
-                        <li>Hovering something by yourself takes control from the app.</li>
-                    </ul>
-                </Alert>
+                <Divider>
+                    <Chip label="Auto pick"/>
+                </Divider>
 
-                <Divider/>
+                <Typography>
+                    In picking phase app will hover first champion for your current role from predictions list that 
+                    is not already banned and is not a pick intent of any ally. App will adjust this hover if somebody picks your champion. 
+                    If no champion from your list matches criteria, nothing will be hovered.
+                </Typography>
 
                 <FormControlLabel
                     control={
@@ -168,24 +194,18 @@ export const GeneralSettings: React.FC = () => {
                             onChange={(event) => settingsDispatch({ type: SettingsActionType.SetAutoPick, payload: event.target.checked })}
                         />
                     }
-                    label={<Typography>Auto pick</Typography>}
+                    label={<Typography>Enable auto pick</Typography>}
                 />
 
-                <Alert severity="info">
-                    When your picking phase starts,
-                    app will hover first champion that <strong>you own</strong> from list for your <strong>current role</strong> that is not <strong>already banned</strong> and
-                    is not a <strong>ban intent</strong> or <strong>pick intent</strong> of any ally and <strong>you own</strong>.
-                    It will also <strong>lock in</strong> any champion you hover when timer reaches zero.
+                <Divider>
+                    <Chip label="Auto lock-in"/>
+                </Divider>
 
-                    <ul>
-                        <li>App will adjust this hover if somebody picks your champion</li>
-                        <li>If no champion from your list matches criteria, nothing will be hovered.</li>
-                        <li>Auto lock in does not work in custom games.</li>
-                    </ul>
-                </Alert>
-
-                <Divider/>
-
+                <Typography>
+                    If in your picking phase timer runs out app will lock-in champion you are currently hovering. 
+                    Auto lock-in works only in draft games, doesn't work in customs.
+                </Typography>
+                
                 <FormControlLabel
                     control={
                         <Switch
@@ -193,13 +213,12 @@ export const GeneralSettings: React.FC = () => {
                             onChange={(event) => settingsDispatch({ type: SettingsActionType.SetAutoLockin, payload: event.target.checked })}
                         />
                     }
-                    label={<Typography>Auto lock-in</Typography>}
+                    label={<Typography>Enable auto lock-in</Typography>}
                 />
 
-                <Alert severity="info">
-                    When it is your turn to pick and timer runs out app will lock-in champion you are currently hovering.
+                <Typography>
                     You can adjust timer to lock-in earlier or later if you are having issues - otherwise it is strongly discouraged.
-                </Alert>
+                </Typography>
 
                 <Box sx={{ p: 2 }}>
                     <Typography variant="subtitle2">Better leave as is - recommended value is 31 seconds</Typography>
@@ -207,7 +226,7 @@ export const GeneralSettings: React.FC = () => {
                         sx={{ width: "90%", ml: "5%" }}
                         value={settings.championLockinTimer}
                         onChange={onLockinAtChange}
-                        marks={[{ value: 0, label: "Instant lockin" }, { value: 32, label: "To late" }]}
+                        marks={[{ value: 0, label: "Instant lock-in" }, { value: 32, label: "To late" }]}
                         min={0}
                         max={40}
                         step={0.5}

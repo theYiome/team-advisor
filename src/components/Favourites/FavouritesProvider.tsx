@@ -32,7 +32,7 @@ const initialFavourites: FavouritesContent = {
     bottom: defaultBottom,
     support: defaultSupport,
     utility: defaultSupport,
-    "": ["Annie", "Olaf", "Galio", "TwistedFate", "XinZhao", "Urgot", "Leblanc", "Vladimir"]
+    "": []
 };
 
 export interface FavouritesAction {

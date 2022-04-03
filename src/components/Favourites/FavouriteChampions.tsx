@@ -22,6 +22,9 @@ export const FavouriteChampions: React.FC = () => {
                     <Typography variant='h6'>
                         Ban list
                     </Typography>
+                    <Typography>
+                        Bans will be hovered in given order starting from the left. If someone bans your ban before you, the next available champion from the list will be used.
+                    </Typography>
                     <MultipleChampionPicker
                         championNames={championNames}
                         currentList={settings.prefferedBans}
@@ -35,7 +38,7 @@ export const FavouriteChampions: React.FC = () => {
                         Favourite champions
                     </Typography>
                     <Typography>
-                        Consider including some niche champions from your champion pool as this will guarantee their appearance in predictions.
+                        Consider including some niche picks from your champion pool as this will guarantee their appearance in predictions.
                         Limited to {MAX_FAVOURITES} champions per role.
                     </Typography>
 

@@ -104,7 +104,7 @@ const LcuProvider: React.FC = ({ children }) => {
 
     useEffect(() => {
         const subtitleRef = document.getElementById("window-subtitle");
-        if (lcuState.valid && lcuState.summoner && lcuState.summoner.displayName && lcuState.summoner.displayName.length > 0)
+        if (lcuState.valid && lcuState?.summoner?.displayName?.length > 0)
             subtitleRef.innerHTML = `- <strong>${lcuState.summoner.displayName}</strong>`;
         else
             subtitleRef.innerHTML = "- not logged in";

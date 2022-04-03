@@ -1,9 +1,7 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Divider, Tooltip, Box, Badge } from '@mui/material';
-
-import { defaultRoles } from '../Settings/SettingsConstants';
+import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Tooltip, Box, Badge, Divider, Chip } from '@mui/material';
 
 import { ChampionsContext } from '../Champions/ChampionProvider';
 
@@ -17,6 +15,7 @@ import { LolChampionSelectV1 } from './ClientStateTypes';
 import { PredictionEndpoint, SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 import { SimplePickEntry } from '../common/SimplePickEntry';
 import { Prediction } from '../Predictions/PredictionsAPI';
+import { FavouritesContext } from '../Favourites/FavouritesProvider';
 
 export const SmartChampionSelect: React.FC = () => {
 
@@ -24,9 +23,10 @@ export const SmartChampionSelect: React.FC = () => {
     const { championIdToName, championNameToId, patch } = useContext(ChampionsContext);
 
     const { settings, settingsDispatch } = useContext(SettingsContext);
-    const [roleSwappedWith, setRoleSwaptWith] = useState("");
+    const { favourites } = useContext(FavouritesContext);
+    const [roleSwappedWith, setRoleSwaptWith] = useState(LolChampionSelectV1.Position.None);
 
-    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+    const { enqueueSnackbar } = useSnackbar();
 
     const predictions = clientState.predictions;
     const currentBans = clientState.bans;
@@ -35,19 +35,33 @@ export const SmartChampionSelect: React.FC = () => {
     const localPlayerCellId = clientState.localPlayerCellId;
     const loadingPredictions = clientState.loadingPredictions;
 
-    const canPick = [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect].includes(clientState.phase);
+    // get flat list of chamipionId from leftTeam and rightTeam
+    const pickedChampionIds = useMemo(() => {
+        const leftTeamChampionIds = leftTeam.map(player => player.championId);
+        const rightTeamChampionIds = rightTeam.map(player => player.championId);
+        return [...leftTeamChampionIds, ...rightTeamChampionIds];
+    }, [leftTeam, rightTeam]);
+
+    const canPick = useMemo(() => [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect].includes(clientState.phase), [clientState.phase]);
+
+    // get assignedPosition for player with localPlayerCellId from leftTeam and rightTeam
+    const assignedPosition = useMemo(() => {
+        if (roleSwappedWith === LolChampionSelectV1.Position.None) {
+            const leftTeamAssignedPosition = leftTeam.find(player => player.cellId === localPlayerCellId)?.assignedPosition;
+            const rightTeamAssignedPosition = rightTeam.find(player => player.cellId === localPlayerCellId)?.assignedPosition;
+            return leftTeamAssignedPosition || rightTeamAssignedPosition || LolChampionSelectV1.Position.None;
+        } 
+        else
+            return roleSwappedWith;
+    }, [leftTeam, rightTeam, localPlayerCellId, roleSwappedWith]);
+
+    // get favourites for assignedPosition
+    const currentFavourites = useMemo(() => favourites[assignedPosition].map(fav => championNameToId[fav]), [favourites, assignedPosition]);
 
     useEffect(() => {
         if (clientState.userTookControl)
             enqueueSnackbar("You hovered something in client - picking from app will be disabled in this champion select", { variant: "error" });
     }, [clientState.userTookControl]);
-
-    const championNames = useMemo(() =>
-        Object.keys(championNameToId),
-        [championNameToId]
-    );
-
-    const roles = [...defaultRoles, ""];
 
     const avatarStyle = {
         width: settings.championAvatarSize,
@@ -63,7 +77,7 @@ export const SmartChampionSelect: React.FC = () => {
         outlineColor: "black"
     };
 
-    const predictionsPlaceholder = useMemo(() => Array.from(Array(20).keys()).map(index =>
+    const predictionsPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item xs={"auto"}>
             <Skeleton
                 key={index}
@@ -73,15 +87,14 @@ export const SmartChampionSelect: React.FC = () => {
         </Grid>
     ), [settings.championAvatarSize]);
 
-    // https://github.com/mui/material-ui/issues/8416
-    const renderedPredictions = predictions ? predictions.predictions.sort((a, b) => b.score - a.score).map((prediction: Prediction) => {
 
-        const isAvailable = !clientState.userTookControl && !clientState.bans.includes(prediction.championId);
+    const predictionsToGrid = (prediction: Prediction) => {
+        const isAvailable = !clientState.userTookControl && !clientState.bans.includes(prediction.championId) && !pickedChampionIds.includes(prediction.championId);
         const isHighestTier = prediction.tier === predictions.tierCount - 1;
         const color = getColorForTier(prediction.tier, predictions.tierCount);
 
         return (<Grid key={prediction.championId} item xs={"auto"}>
-            <Tooltip title={`Score: ${prediction.score} Tier: ${prediction.tier}`} followCursor placement='top'>
+            <Tooltip title={`Score: ${prediction.score}`} followCursor placement='top'>
                 <Box>
                     <Button
                         onClick={() => clientState.hoverChampion(prediction.championId)}
@@ -103,7 +116,12 @@ export const SmartChampionSelect: React.FC = () => {
             </Tooltip>
         </Grid>)
     }
-    ) : predictionsPlaceholder;
+        
+
+    // https://github.com/mui/material-ui/issues/8416
+    const comparePredictions = (a: Prediction, b: Prediction) => b.score - a.score;
+    const renderedPredictions = predictions ? predictions.predictions.filter(p => !currentFavourites.includes(p.championId)).sort(comparePredictions).map(predictionsToGrid) : predictionsPlaceholder;
+    const renderedFavourites = (currentFavourites.length > 0 && predictions) ? predictions.predictions.filter(p => currentFavourites.includes(p.championId)).sort(comparePredictions).map(predictionsToGrid) : predictionsPlaceholder;
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item>
@@ -230,11 +248,20 @@ export const SmartChampionSelect: React.FC = () => {
 
                 <Stack spacing={1}>
                     <Typography>
-                        Suggested champions {canPick ? "- click to hover" : ""}
+                        Pick suggestions {canPick ? "- click to hover" : ""}
                         {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
                     </Typography>
+
                     <Grid container columns={12} spacing={1}>
                         {renderedPredictions}
+                    </Grid>
+
+                    <Divider>
+                        <Chip label="Favourites" color='primary'/>
+                    </Divider>
+
+                    <Grid container columns={12} spacing={1}>
+                        {renderedFavourites}
                     </Grid>
 
                     <Typography>Bans</Typography>
@@ -273,7 +300,6 @@ const getColorForTier = (tier: number, tierCount: number) => {
         return "#111";
     else {
         const value = (tier - 1.0) / (tierCount - 3.0);
-        // console.log({value, tier, tierCount});
         return getColor(1.0 - value);
     }
 }

@@ -10,7 +10,8 @@ export const ChampionData: React.FC = () => {
     return (
         <Container>
             <Stack spacing={3}>
-                <Typography variant='h6'>Champions in patch <strong>{patch}</strong></Typography>
+                <Typography variant='h6'>Supported champions</Typography>
+                <Typography>Current patch is <strong>{patch}</strong></Typography>
 
                 <TableContainer>
                     <Table sx={{ width: 1, fontSize: 1 }} size="small" aria-label="champion names and ids list">

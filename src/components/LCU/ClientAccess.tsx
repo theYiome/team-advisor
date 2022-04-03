@@ -1,9 +1,8 @@
 import React, { ReactElement, useContext } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ButtonGroup, TextField } from '@mui/material';
-import { LcuContext, LcuCredentials } from './LcuProvider';
-import { rawLcuRequest } from '../../libs/lcuRequest';
+import { Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { LcuContext } from './LcuProvider';
 import { SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 
 export const ClientAccess: React.FC = (): ReactElement => {
@@ -13,17 +12,15 @@ export const ClientAccess: React.FC = (): ReactElement => {
     const { protocol, port, username, password } = lcuState.credentials;
 
     const warning_msg = (
-        <Alert severity="warning">
-            <AlertTitle>Failed to load data from lockfile</AlertTitle>
-            Either <strong>client is not running</strong> or <strong>given installation path is incorrect</strong>.
-            Remember to choose your League instalation directory!
+        <Alert severity="warning" variant='outlined'>
+            Failed to detect League Client! Either <strong>client is not running</strong> or <strong>given installation path is incorrect</strong>.
+            Remember to fill in your League instalation directory!
         </Alert>
     );
 
     const ok_message = (
-        <Alert severity="success">
-            <AlertTitle>Loaded data from lockfile</AlertTitle>
-            Successulfy loaded data from lockfile.<br /><strong>Looks OK!</strong>
+        <Alert severity="success" variant='outlined'>
+            League Client detected! Successulfy loaded data from lockfile. <strong>All good!</strong>
         </Alert>
     );
 
@@ -67,9 +64,9 @@ export const ClientAccess: React.FC = (): ReactElement => {
     return (
         <Container>
             <Stack spacing={3}>
-                {!lcuState.valid ? warning_msg : ok_message}
+                <Typography variant='h6'>Connection with League Client</Typography>
 
-                {data_table}
+                {!lcuState.valid ? warning_msg : ok_message}
 
                 <TextField
                     label="League installation directory"
@@ -80,28 +77,8 @@ export const ClientAccess: React.FC = (): ReactElement => {
                     }
                 />
 
-                <Paper elevation={1} sx={{ p: 1, pb: 2 }}>
-                    <Container>
-                        <Typography variant='h6'>
-                            Utilities
-                        </Typography>
-                        <Typography>
-                            Sometimes client may bug while using this app (annoying sounds or visual glitches).
-                            If that happens you can restart client UX, that is a visual part of the client.
-                            It will take around 10 seconds and <strong>it will not kick you out</strong> of lobby, game search or champion select.
-                            Features like <strong>auto accept</strong> or <strong>auto ban</strong> will still work when client UX is offline.
-                        </Typography>
-                    </Container>
-                </Paper>
-                <ButtonGroup sx={{ width: 1 }} variant="contained" aria-label="outlined primary button group">
-                    <Button sx={{ width: 1 }} color="error" onClick={() => restartClientUX(lcuState.credentials)}>RESTART CLIENT UX</Button>
-                </ButtonGroup>
+                {data_table}
             </Stack>
         </Container>
     );
-}
-
-function restartClientUX(lockfileContent: LcuCredentials): void {
-    const endpointName = "riotclient/kill-and-restart-ux";
-    rawLcuRequest(lockfileContent, endpointName, { method: 'POST' }).catch(error => console.warn(error));
 }
