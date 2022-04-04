@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Tooltip, Box, Badge, Divider, Chip } from '@mui/material';
+import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Tooltip, Box, Badge, Divider, Chip, LinearProgress } from '@mui/material';
 
 import { ChampionsContext } from '../Champions/ChampionProvider';
 
@@ -50,24 +50,24 @@ export const SmartChampionSelect: React.FC = () => {
             const leftTeamAssignedPosition = leftTeam.find(player => player.cellId === localPlayerCellId)?.assignedPosition;
             const rightTeamAssignedPosition = rightTeam.find(player => player.cellId === localPlayerCellId)?.assignedPosition;
             return leftTeamAssignedPosition || rightTeamAssignedPosition || LolChampionSelectV1.Position.None;
-        } 
+        }
         else
             return roleSwappedWith;
     }, [leftTeam, rightTeam, localPlayerCellId, roleSwappedWith]);
 
     // get favourites for assignedPosition
-    const currentFavourites = useMemo(() => favourites[assignedPosition].map(fav => championNameToId[fav]), [favourites, assignedPosition]);
+    const currentFavourites = favourites[assignedPosition].map(fav => championNameToId[fav]);
 
     useEffect(() => {
         if (clientState.userTookControl)
-            enqueueSnackbar("You hovered something in client - picking from app will be disabled in this champion select", { variant: "error" });
+            enqueueSnackbar("You hovered something in client - picking from app is now disabled", { variant: "error", autoHideDuration: 10000 });
     }, [clientState.userTookControl]);
 
     const avatarStyle = {
         width: settings.championAvatarSize,
         height: settings.championAvatarSize,
     };
-    
+
     const predictionStyle = {
         boxShadow: 2,
         borderWidth: 3,
@@ -102,11 +102,11 @@ export const SmartChampionSelect: React.FC = () => {
                         disabled={!canPick || !isAvailable}
                     >
                         <Badge badgeContent={isHighestTier ? "OP" : 0} color="primary">
-                            <Box sx={{ ...predictionStyle, borderColor: color}}>
+                            <Box sx={{ ...predictionStyle, borderColor: color }}>
                                 <Avatar
                                     key={prediction.championId}
                                     src={avatarURI(patch, championIdToName[prediction.championId])}
-                                    sx={{ ...avatarStyle, filter: isAvailable ? "none" : "grayscale(100%)"}}
+                                    sx={{ ...avatarStyle, filter: isAvailable ? "none" : "grayscale(100%)" }}
                                     variant='square'
                                 />
                             </Box>
@@ -116,12 +116,15 @@ export const SmartChampionSelect: React.FC = () => {
             </Tooltip>
         </Grid>)
     }
-        
+
 
     // https://github.com/mui/material-ui/issues/8416
     const comparePredictions = (a: Prediction, b: Prediction) => b.score - a.score;
-    const renderedPredictions = predictions ? predictions.predictions.filter(p => !currentFavourites.includes(p.championId)).sort(comparePredictions).map(predictionsToGrid) : predictionsPlaceholder;
-    const renderedFavourites = (currentFavourites.length > 0 && predictions) ? predictions.predictions.filter(p => currentFavourites.includes(p.championId)).sort(comparePredictions).map(predictionsToGrid) : predictionsPlaceholder;
+    const nonFavouritePredictions = predictions?.predictions?.filter(p => !currentFavourites.includes(p.championId));
+    const favouritePredictions = predictions?.predictions?.filter(p => currentFavourites.includes(p.championId));
+
+    const renderedPredictions = nonFavouritePredictions?.length > 0 ? nonFavouritePredictions.sort(comparePredictions).map(predictionsToGrid) : predictionsPlaceholder;
+    const renderedFavourites = favouritePredictions?.length > 0 ? favouritePredictions.sort(comparePredictions).map(predictionsToGrid) : predictionsPlaceholder;
 
     const bansPlaceholder = useMemo(() => Array.from(Array(10).keys()).map(index =>
         <Grid key={index} item>
@@ -204,10 +207,16 @@ export const SmartChampionSelect: React.FC = () => {
             }
         </Stack>
     ), [rightTeam]);
+    
+    // notification that user can hover when picking
+    useEffect(() => {
+        if(canPick)
+            enqueueSnackbar("Click champion avatar to hover it in client", { variant: "info", autoHideDuration: 7000 });
+    }, [canPick]);
 
     return (
         <Container>
-            <Stack spacing={3}>
+            <Stack spacing={1.3}>
                 <Stack direction="row" spacing={2}>
                     <FormControl fullWidth size="small">
                         <InputLabel>Suggestion type</InputLabel>
@@ -246,39 +255,42 @@ export const SmartChampionSelect: React.FC = () => {
                     </FormControl>
                 </Stack>
 
-                <Stack spacing={1}>
-                    <Typography>
-                        Pick suggestions {canPick ? "- click to hover" : ""}
-                        {loadingPredictions && <CircularProgress size={21} sx={{ mb: -0.5, ml: 1.2 }} disableShrink></CircularProgress>}
-                    </Typography>
+                {loadingPredictions ? <LinearProgress/> : <LinearProgress value={100} variant="determinate"/>}
 
-                    <Grid container columns={12} spacing={1}>
-                        {renderedPredictions}
+                <Divider>
+                    <Chip label="Suggestions" />
+                </Divider>
+
+                <Grid container columns={12} spacing={1}>
+                    {renderedPredictions}
+                </Grid>
+
+                <Divider>
+                    <Chip label="Favourites" color='primary' />
+                </Divider>
+
+                <Grid container columns={12} spacing={1}>
+                    {renderedFavourites}
+                </Grid>
+
+                <Divider>
+                    <Chip label="Bans" />
+                </Divider>
+                <Grid container columns={10} spacing={1}>
+                    {currentBans.length > 0 ? renderedBans : bansPlaceholder}
+                </Grid>
+
+                <Divider>
+                    <Chip label="Picks" />
+                </Divider>
+                <Grid container spacing={1.2}>
+                    <Grid item md={12} lg={6}>
+                        {renderLeftTeam}
                     </Grid>
-
-                    <Divider>
-                        <Chip label="Favourites" color='primary'/>
-                    </Divider>
-
-                    <Grid container columns={12} spacing={1}>
-                        {renderedFavourites}
+                    <Grid item md={12} lg={6}>
+                        {renderRightTeam}
                     </Grid>
-
-                    <Typography>Bans</Typography>
-                    <Grid container columns={10} spacing={1}>
-                        {currentBans.length > 0 ? renderedBans : bansPlaceholder}
-                    </Grid>
-
-                    <Typography>Picks</Typography>
-                    <Grid container spacing={1.2}>
-                        <Grid item md={12} lg={6}>
-                            {renderLeftTeam}
-                        </Grid>
-                        <Grid item md={12} lg={6}>
-                            {renderRightTeam}
-                        </Grid>
-                    </Grid>
-                </Stack>
+                </Grid>
             </Stack>
         </Container>
     );
