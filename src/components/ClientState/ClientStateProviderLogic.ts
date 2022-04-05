@@ -118,6 +118,7 @@ const getLcuState = async (credentials: LcuCredentials) => {
         }
 
         const session: LolChampionSelectV1.Session = response;
+        console.log({session});
 
         try {
             const playerTeamId = session.myTeam[0].team;
@@ -136,7 +137,8 @@ const getLcuState = async (credentials: LcuCredentials) => {
             lcuState.rightTeam = rightTeam;
 
             lcuState.localPlayerCellId = session.localPlayerCellId;
-            lcuState.localPlayerTeamId = session.localPlayerCellId >= 5 ? 1 : 0;
+            // team in api is 1 or 2, but we need 0 or 1
+            lcuState.localPlayerTeamId = playerTeamId - 1;
             lcuState.gameId = session.gameId;
             lcuState.counter = session.counter;
             lcuState.isDraft = !session.isCustomGame && session.hasSimultaneousBans && !session.hasSimultaneousPicks;

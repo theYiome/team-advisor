@@ -8,7 +8,7 @@ import { completeAction, getLcuState, hoverChampion, ClientPhase, acceptQueue } 
 import { LolChampionSelectV1 } from './ClientStateTypes';
 import { predictionEndpoints, SettingsContext } from '../Settings/SettingsProvider';
 import { FavouritesContext } from '../Favourites/FavouritesProvider';
-import { getPredictions, PredictionApiResponse } from '../Predictions/PredictionsAPI';
+import { getPredictions, Prediction, PredictionApiResponse } from '../Predictions/PredictionsAPI';
 
 const swapRolesInTeam = (newRole: LolChampionSelectV1.Position, team: LolChampionSelectV1.Team[], localPlayerCellId: number) => {
     const userRef = team.find(player => player.cellId === localPlayerCellId);
@@ -184,7 +184,8 @@ const ClientStateProvider: React.FC = ({ children }) => {
                 // if no champion is hovered in picking phase, hover something
                 if (isInPickingPhase && settings.autoPick) {
                     if (currentState.current.predictions && state.championId === 0) {
-                        const championToPick = currentState.current.predictions.predictions.find(pick => !unavailableChampions.includes(pick.championId));
+                        const comparePredictions = (a: Prediction, b: Prediction) => b.score - a.score;
+                        const championToPick = currentState.current.predictions.predictions.sort(comparePredictions).find(pick => !unavailableChampions.includes(pick.championId));
                         attemptToHover(championToPick.championId);
                     }
                 }

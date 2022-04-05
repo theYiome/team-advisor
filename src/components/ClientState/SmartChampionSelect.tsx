@@ -42,7 +42,7 @@ export const SmartChampionSelect: React.FC = () => {
         return [...leftTeamChampionIds, ...rightTeamChampionIds];
     }, [leftTeam, rightTeam]);
 
-    const canPick = useMemo(() => [ClientPhase.Planning, ClientPhase.Picking, ClientPhase.InChampionSelect].includes(clientState.phase), [clientState.phase]);
+    const canPick = useMemo(() => [ClientPhase.Picking, ClientPhase.InChampionSelect].includes(clientState.phase), [clientState.phase]);
 
     // get assignedPosition for player with localPlayerCellId from leftTeam and rightTeam
     const assignedPosition = useMemo(() => {
