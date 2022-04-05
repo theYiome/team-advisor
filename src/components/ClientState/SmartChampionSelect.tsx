@@ -258,14 +258,6 @@ export const SmartChampionSelect: React.FC = () => {
                 {loadingPredictions ? <LinearProgress/> : <LinearProgress value={100} variant="determinate"/>}
 
                 <Divider>
-                    <Chip label="Suggestions" />
-                </Divider>
-
-                <Grid container columns={12} spacing={1}>
-                    {renderedPredictions}
-                </Grid>
-
-                <Divider>
                     <Chip label="Favourites" color='primary' />
                 </Divider>
 
@@ -274,10 +266,11 @@ export const SmartChampionSelect: React.FC = () => {
                 </Grid>
 
                 <Divider>
-                    <Chip label="Bans" />
+                    <Chip label="Other suggestions" />
                 </Divider>
-                <Grid container columns={10} spacing={1}>
-                    {currentBans.length > 0 ? renderedBans : bansPlaceholder}
+
+                <Grid container columns={12} spacing={1}>
+                    {renderedPredictions}
                 </Grid>
 
                 <Divider>
@@ -291,6 +284,13 @@ export const SmartChampionSelect: React.FC = () => {
                         {renderRightTeam}
                     </Grid>
                 </Grid>
+
+                <Divider>
+                    <Chip label="Bans" />
+                </Divider>
+                <Grid container columns={10} spacing={1}>
+                    {currentBans.length > 0 ? renderedBans : bansPlaceholder}
+                </Grid>
             </Stack>
         </Container>
     );
@@ -299,7 +299,7 @@ export const SmartChampionSelect: React.FC = () => {
 // https://stackoverflow.com/questions/7128675/from-green-to-red-color-depend-on-percentage/7128796
 const getColor = (value: number) => {
     // value from 0 to 1
-    const hue = ((1.0 - value) * 200).toString(10);
+    const hue = ((1.0 - value) * 150).toString(10);
     const color = `hsl(${hue}, 95%, 40%)`;
     return color;
 }

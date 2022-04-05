@@ -36,13 +36,15 @@ import { ChampionData } from './Champions/ChampionData';
 import { FavouriteChampions } from './Favourites/FavouriteChampions';
 import { ClientUtilities } from './LCU/ClientUtilities';
 import { LcuContext } from './LCU/LcuProvider';
+import { TitleBar } from './TitleBar';
 
 export const TeamAdvisor: React.FC = () => {
     const [tabId, setTabId] = React.useState(0);
     const lcuState = React.useContext(LcuContext);
 
     return (
-        <Paper sx={{ width: 1, height: 1, pt: 4 }} elevation={4}>
+        <Paper sx={{ width: 1, height: 1 }} elevation={4}>
+            <TitleBar/>
             <Stack direction="row" sx={{ height: 1 }}>
                 <Paper sx={{ borderRight: 1, borderColor: 'divider', pt: 1 }}>
                     <Tabs
@@ -72,7 +74,7 @@ export const TeamAdvisor: React.FC = () => {
                         </Tooltip>
                     </Tabs>
                 </Paper>
-                <Box sx={{ width: 1, pt: 2, pb: 2, borderRight: 1, borderColor: 'divider' }} className="scroll-enabled">
+                <Box sx={{ width: 1, pt: 2, pb: 6, borderRight: 1, borderColor: 'divider' }} className="scroll-enabled">
                     <TabPanel value={tabId} index={0}>
                         <SmartChampionSelect />
                     </TabPanel>
@@ -94,7 +96,7 @@ export const TeamAdvisor: React.FC = () => {
                 </Box>
                 <Stack sx={{ width: 400, mr: 1, ml: 1, pt: 1 }}>
                     <VideoAd400x300 />
-                    <Container sx={{ height: 1, mt: 2 }} className="scroll-enabled">
+                    <Container sx={{ height: 1, mt: 2, pb: 6 }} className="scroll-enabled">
                         <QuickSettings />
                     </Container>
                 </Stack>
