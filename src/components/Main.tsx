@@ -18,8 +18,8 @@ export const Main: React.FC = () => {
 
     useEffect(() => {
         try {
-            (document.querySelector(".scroll-enabled") as HTMLElement).style.setProperty("--scrollbar-background", themesMap[settings.theme].palette.primary.main);
-            document.getElementById("titlebar").style.backgroundColor = "#222";
+            (document.querySelector(".scroll-enabled") as HTMLElement).style
+                .setProperty("--scrollbar-background", themesMap[settings.theme].palette.primary.main);
         }
         catch (error) {
             console.warn("Failed to set theme!", error);

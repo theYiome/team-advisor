@@ -44,7 +44,7 @@ export const TeamAdvisor: React.FC = () => {
 
     return (
         <Paper sx={{ width: 1, height: 1 }} elevation={4}>
-            <TitleBar/>
+            <TitleBar title="Team Advisor" subtitle={lcuState.valid && lcuState?.summoner?.displayName}/>
             <Stack direction="row" sx={{ height: 1 }}>
                 <Paper sx={{ borderRight: 1, borderColor: 'divider', pt: 1 }}>
                     <Tabs
@@ -54,22 +54,22 @@ export const TeamAdvisor: React.FC = () => {
                         orientation='vertical'
                         centered
                     >
-                        <Tooltip title="Champion select & pick predictions" placement="right" enterDelay={0}>
+                        <Tooltip title="Champion select & pick predictions" placement="right">
                             <Tab label={<SportsEsportsIcon fontSize='large' />} {...a11yProps(0)} />
                         </Tooltip>
-                        <Tooltip title="Favourites" placement="right" enterDelay={0}>
+                        <Tooltip title="Favourites" placement="right">
                             <Tab label={<FavoriteIcon fontSize='large' />} {...a11yProps(1)} />
                         </Tooltip>
-                        <Tooltip title="LCU status" placement="right" enterDelay={0}>
+                        <Tooltip title="LCU status" placement="right">
                             <Tab label={<AnnouncementIcon fontSize='large' color={lcuState.valid ? "inherit" : "warning"}/>} {...a11yProps(2)} />
                         </Tooltip>
-                        <Tooltip title="LCU utilities" placement="right" enterDelay={0}>
+                        <Tooltip title="LCU utilities" placement="right">
                             <Tab label={<HandymanIcon fontSize='large' />} {...a11yProps(3)} />
                         </Tooltip>
-                        <Tooltip title="Supported champions" placement="right" enterDelay={0}>
+                        <Tooltip title="Supported champions" placement="right">
                             <Tab label={<DataArrayIcon fontSize='large' />} {...a11yProps(4)} />
                         </Tooltip>
-                        <Tooltip title="Settings" placement="right" enterDelay={0}>
+                        <Tooltip title="Settings" placement="right">
                             <Tab label={<SettingsApplicationsIcon fontSize='large' />} {...a11yProps(5)} />
                         </Tooltip>
                     </Tabs>

@@ -1,12 +1,13 @@
 import { app, getCurrentWindow } from '@electron/remote';
-import { Box, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Paper, Stack, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import MaximizeIcon from '@mui/icons-material/Maximize';
+import CropSquareIcon from '@mui/icons-material/CropSquare';
 import MinimizeIcon from '@mui/icons-material/Minimize';
 import LogoutIcon from '@mui/icons-material/Logout';
-import {version} from '../../package.json';
 
 const win = getCurrentWindow();
+
+const appVersion = process?.env?.npm_package_version || app.getVersion();
 
 // When document has loaded, initialise
 // document.onreadystatechange = (event) => {
@@ -42,7 +43,7 @@ const handleWindowClose = () => {
     win.close();
 }
 
-const TitleBar = ({title = "Team Advisor"}) => {
+const TitleBar = ({title = "", subtitle = ""}) => {
     
     // Titlebar with minimize, maximize and close buttons using MUI
     return (
@@ -50,7 +51,7 @@ const TitleBar = ({title = "Team Advisor"}) => {
             <Stack direction="row">
                 <Box sx={{width: 1, userSelect: "none"}}>
                     <Box sx={{mt: 0.6, ml: 1}}>
-                            {title} {version ? `v${version}` : ""}
+                        {title} {appVersion ? `v${appVersion}` : ""} {subtitle && subtitle !== "" ? `- ${subtitle}` : ""}
                     </Box>
                 </Box>
                 <Stack direction="row" className="no-drag-region">
@@ -66,7 +67,7 @@ const TitleBar = ({title = "Team Advisor"}) => {
                     </Tooltip>
                     <Tooltip title="Maximize">
                         <IconButton size="small" aria-label="maximize" onClick={handleWindowMaximize}>
-                            <MaximizeIcon />
+                            <CropSquareIcon />
                         </IconButton>
                     </Tooltip>
                     <Tooltip title="Minimize to system tray">

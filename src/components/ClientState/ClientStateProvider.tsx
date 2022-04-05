@@ -10,13 +10,11 @@ import { predictionEndpoints, SettingsContext } from '../Settings/SettingsProvid
 import { FavouritesContext } from '../Favourites/FavouritesProvider';
 import { getPredictions, PredictionApiResponse } from '../Predictions/PredictionsAPI';
 
-const swapRolesInTeam = (firstRole: LolChampionSelectV1.Position, secondRole: LolChampionSelectV1.Position, team: LolChampionSelectV1.Team[]) => {
-    team.forEach(x => {
-        if (x.assignedPosition === firstRole)
-            x.assignedPosition = secondRole;
-        else if (x.assignedPosition === secondRole)
-            x.assignedPosition = firstRole;
-    })
+const swapRolesInTeam = (newRole: LolChampionSelectV1.Position, team: LolChampionSelectV1.Team[], localPlayerCellId: number) => {
+    const userRef = team.find(player => player.cellId === localPlayerCellId);
+    if (userRef && userRef.assignedPosition !== LolChampionSelectV1.Position.None)
+        team.find(player => player.assignedPosition === newRole).assignedPosition = userRef.assignedPosition;
+    userRef.assignedPosition = newRole;
 };
 
 const ClientStateContext = createContext({
@@ -119,14 +117,9 @@ const ClientStateProvider: React.FC = ({ children }) => {
             else if ([ClientPhase.Planning, ClientPhase.Banning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Done].includes(state.phase)) {
                 // do role swap if selected by the user
                 if (roleSwappedWith !== LolChampionSelectV1.Position.None) {
-                    const allPlayers = state.leftTeam.concat(state.rightTeam);
-                    const user = allPlayers.find(x => (x.cellId === state.localPlayerCellId));
-                    const userRole = user ? user.assignedPosition : LolChampionSelectV1.Position.None;
-
-                    if (roleSwappedWith !== userRole)
-                        state.localPlayerTeamId === 0 ?
-                            swapRolesInTeam(userRole, roleSwappedWith, state.leftTeam) :
-                            swapRolesInTeam(userRole, roleSwappedWith, state.rightTeam);
+                    state.localPlayerTeamId === 0 ?
+                        swapRolesInTeam(roleSwappedWith, state.leftTeam, state.localPlayerCellId) :
+                        swapRolesInTeam(roleSwappedWith, state.rightTeam, state.localPlayerCellId);
                 }
 
                 console.log({ state });
