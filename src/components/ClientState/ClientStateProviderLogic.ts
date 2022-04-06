@@ -1,6 +1,6 @@
 import * as connections from '../../libs/connections'
 import { rawLcuRequest, jsonLcuRequest } from '../../libs/lcuRequest';
-import { Lcu, LolChampionSelectV1, LolMatchmakingV1ReadyCheck } from './ClientStateTypes';
+import { Lcu, LolChampionSelectV1, LolMatchmakingV1ReadyCheck } from './ClientStateTypings';
 import { LcuCredentials } from '../LCU/LcuProvider';
 
 enum ClientPhase {

@@ -1,4 +1,4 @@
-import { LolChampionSelectV1 } from "../ClientState/ClientStateTypes";
+import { LolChampionSelectV1 } from "../ClientState/ClientStateTypings";
 import * as connections from '../../libs/connections';
 
 /*

@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 
 import Container from '@mui/material/Container'
-import { Button, Typography, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, CircularProgress, Tooltip, Box, Badge, Divider, Chip, LinearProgress } from '@mui/material';
+import { Button, Stack, Avatar, Skeleton, Grid, FormControl, InputLabel, MenuItem, Select, Tooltip, Box, Badge, Divider, Chip, LinearProgress } from '@mui/material';
 
 import { ChampionsContext } from '../Champions/ChampionProvider';
 
@@ -11,7 +11,7 @@ import { useSnackbar } from 'notistack';
 
 import { ClientStateContext } from './ClientStateProvider';
 import { ClientPhase } from './ClientStateProviderLogic';
-import { LolChampionSelectV1 } from './ClientStateTypes';
+import { LolChampionSelectV1 } from './ClientStateTypings';
 import { PredictionEndpoint, SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 import { SimplePickEntry } from '../common/SimplePickEntry';
 import { Prediction } from '../Predictions/PredictionsAPI';
@@ -57,11 +57,6 @@ export const SmartChampionSelect: React.FC = () => {
 
     // get favourites for assignedPosition
     const currentFavourites = favourites[assignedPosition].map(fav => championNameToId[fav]);
-
-    useEffect(() => {
-        if (clientState.userTookControl)
-            enqueueSnackbar("You hovered something in client - picking from app is now disabled", { variant: "error", autoHideDuration: 10000 });
-    }, [clientState.userTookControl]);
 
     const avatarStyle = {
         width: settings.championAvatarSize,
@@ -299,7 +294,7 @@ export const SmartChampionSelect: React.FC = () => {
 // https://stackoverflow.com/questions/7128675/from-green-to-red-color-depend-on-percentage/7128796
 const getColor = (value: number) => {
     // value from 0 to 1
-    const hue = ((1.0 - value) * 150).toString(10);
+    const hue = ((1.0 - value) * 110).toString(10);
     const color = `hsl(${hue}, 95%, 40%)`;
     return color;
 }
@@ -309,7 +304,7 @@ const getColorForTier = (tier: number, tierCount: number) => {
     if (tier === tierCount - 1)
         return "#E0E";
     else if (tier === 0)
-        return "#111";
+        return "#500";
     else {
         const value = (tier - 1.0) / (tierCount - 3.0);
         return getColor(1.0 - value);

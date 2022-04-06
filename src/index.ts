@@ -1,7 +1,6 @@
 import { app, BrowserWindow, Menu, nativeImage, Tray } from 'electron';
 import { trayImageBluer as trayIcon } from './imagesBase64';
 import someImg from "./images/icon.png";
-// import someicon from './icons/close-k-10.png';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 

@@ -2,7 +2,6 @@ import React, { FC } from 'react';
 import { TextField, Autocomplete, Box } from '@mui/material';
 import { avatarURI, roleImages } from '../../componentLibs/leagueImages';
 
-
 // Multiple
 type MultipleChampionPickerProp = {
     championNames: string[],

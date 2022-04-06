@@ -1,6 +1,6 @@
 import { Stack, Avatar, Tooltip } from "@mui/material";
 import { avatarURI, roleImages } from "../../componentLibs/leagueImages";
-import { LolChampionSelectV1 } from "../ClientState/ClientStateTypes";
+import { LolChampionSelectV1 } from "../ClientState/ClientStateTypings";
 
 interface SimpleEntryPickerProps {
     champion: string,
@@ -26,10 +26,10 @@ const SimplePickEntry = ({ champion, role, patch, variant }: SimpleEntryPickerPr
     return (
         <Stack spacing={2}>
             <Tooltip title={champion ? champion : ""}>
-                <Avatar sx={style} alt={champion} src={avatarURI(patch, champion)} variant='square'/>
+                <Avatar sx={style} alt={champion} src={avatarURI(patch, champion)} variant='square' />
             </Tooltip>
             <Tooltip title={role ? role : ""}>
-                <Avatar sx={style} alt={role} src={roleImages[role]} variant="square"/>
+                <Avatar sx={style} alt={role} src={roleImages[role]} variant="square" />
             </Tooltip>
         </Stack>
     );

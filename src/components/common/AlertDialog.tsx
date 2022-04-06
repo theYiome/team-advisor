@@ -5,7 +5,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import React from 'react';
-import { Box, Button, IconButton, Typography } from '@mui/material';
+import { Box, Button, IconButton } from '@mui/material';
 
 export function AlertDialog({
     children = "" as any,

@@ -1,38 +1,3 @@
-/* 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0 !important;
-    max-width: 100%;
-    padding: 0 !important;
-} 
-*/
-
-#close-button-inner {
-    background-image: url('./icons/close.png');
-}
-
-#max-button-inner {
-    background-image: url('./icons/max.png');
-}
-
-#min-button-inner {
-    background-image: url('./icons/min.png');
-}
-
-#quit-button-inner {
-    background-image: url('./icons/outline_power_settings_new_white_48dp.png');
-}
-
-#zoom-in-button-inner {
-    background-image: url('./icons/outline_zoom_in_white_48dp.png');
-}
-
-#zoom-out-button-inner {
-    background-image: url('./icons/outline_zoom_out_white_48dp.png');
-}
-
-/* Basic styling */
-
 /* https://stackoverflow.com/questions/59588519/how-do-you-make-your-own-customize-the-scroll-bar-in-electron */
 .scroll-enabled {
     overflow-y: scroll;
@@ -61,23 +26,6 @@ body {
     background-color: rgba(0,0,0,0);
 }
 
-/* 
-some colors
-#a7caed
-#195ad2
-#083c9e
-#0087ba
-
-#d9ace0
-#9c27b0
-#821895
-
-green #2e7d32
-red #d32f2f
-lightorange #fff4e5
-*/
-
-/* TITLE BAR */
 * {
     margin: 0;
     padding: 0;
@@ -104,38 +52,7 @@ body {
 body {
     font-family: "Segoe UI", sans-serif;
     color: #FFF;
-}
-
-/* Styling of window frame and titlebar */
-body {
     overflow-y: hidden;
-}
-
-/* .main-bg {
-    background-image: url('./images/lolclashbg.jpg') cover;
-    background-color: #E81123;
-} */
-
-#titlebar {
-    display: block;
-    position: fixed;
-    height: 32px;
-    width: calc(100% - 2px);
-    z-index: 9999;
-}
-
-#main {
-    height: calc(100% - 32px);
-    margin-top: 32px;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-#titlebar {
-    padding: 4px;
-    /* box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23); */
-    /* backdrop-filter: blur(3px); */
-    backdrop-filter: brightness(40%) blur(2px);
 }
 
 .drag-region {
@@ -143,111 +60,26 @@ body {
     user-select: none;
 }
 
-.no-drag-region {
-    -webkit-app-region: no-drag;
-}
-
-#titlebar {
-    color: #FFF;
-}
-
-#titlebar #drag-region {
-    display: grid;
-    grid-template-columns: auto 138px;
-}
-
-#window-title {
-    grid-column: 1;
-    display: flex;
-    align-items: center;
-    margin-left: 8px;
-    overflow: hidden;
-    font-family: "Segoe UI", sans-serif;
-    font-size: 12px;
-}
-
-#window-title span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.5;
-}
-
-#window-controls {
-    display: grid;
-    grid-template-columns: repeat(6, 46px);
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    -webkit-app-region: no-drag;
-}
-
-#window-controls .button {
-    grid-row: 1 / span 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
-
-#window-controls .button {
-    user-select: none;
-}
-
-#window-controls .button:hover {
+.window-controls .button:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
-#window-controls .button:active {
+.window-controls .button:active {
     background: rgba(255, 255, 255, 0.2);
 }
 
-#quit-button:hover {
+.quit-button:hover {
     background: #E81123 !important;
 }
 
-#quit-button:active {
+.quit-button:active {
     background: #F1707A !important;
 }
 
-#close-button:hover {
+.close-button:hover {
     background: #083c9e !important;
 }
 
-#close-button:active {
+.close-button:active {
     background: #195ad2 !important;
-}
-
-#close-button:active .icon {
-    filter: invert(1);
-}
-
-#quit-button {
-    grid-column: 3;
-}
-
-#min-button {
-    grid-column: 4;
-}
-
-#max-button {
-    grid-column: 5;
-}
-
-#close-button {
-    grid-column: 6;
-}
-
-#restore-button {
-    display: none !important;
-}
-
-.maximized #restore-button {
-    display: flex !important;
-}
-
-.maximized #max-button {
-    display: none;
 }

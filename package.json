@@ -1,8 +1,8 @@
 {
     "name": "team-advisor",
     "productName": "team-advisor",
-    "version": "1.0.3",
-    "description": "My Electron application description",
+    "version": "1.0.4",
+    "description": "Assistance for your League of Legends games",
     "repository": {
         "type": "git",
         "url": "https://github.com/theYiome/team-advisor.git"
@@ -97,15 +97,15 @@
         "@types/react": "^17.0.43",
         "@types/react-dom": "^17.0.14",
         "@types/request": "^2.48.8",
-        "@typescript-eslint/eslint-plugin": "^5.17.0",
-        "@typescript-eslint/parser": "^5.17.0",
+        "@typescript-eslint/eslint-plugin": "^5.18.0",
+        "@typescript-eslint/parser": "^5.18.0",
         "@vercel/webpack-asset-relocator-loader": "^1.7.2",
         "copy-webpack-plugin": "^10.2.4",
         "css-loader": "^6.7.1",
-        "electron": "^18.0.0",
+        "electron": "^18.0.2",
         "eslint": "^8.12.0",
-        "eslint-plugin-import": "^2.25.4",
-        "fork-ts-checker-webpack-plugin": "^7.2.1",
+        "eslint-plugin-import": "^2.26.0",
+        "fork-ts-checker-webpack-plugin": "^7.2.3",
         "node-loader": "^2.0.0",
         "request": "^2.88.2",
         "style-loader": "^3.3.1",
@@ -114,11 +114,11 @@
     },
     "dependencies": {
         "@electron/remote": "^2.0.8",
-        "@emotion/react": "^11.8.2",
+        "@emotion/react": "^11.9.0",
         "@emotion/styled": "^11.8.1",
         "@fontsource/roboto": "^4.5.5",
-        "@mui/icons-material": "^5.5.1",
-        "@mui/material": "^5.5.3",
+        "@mui/icons-material": "^5.6.0",
+        "@mui/material": "^5.6.0",
         "auto-launch": "^5.0.5",
         "electron-localshortcut": "^3.2.1",
         "electron-squirrel-startup": "^1.0.0",
@@ -126,7 +126,7 @@
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
         "react-error-boundary": "^3.1.4",
-        "react-qr-code": "^2.0.3",
+        "react-qr-code": "^2.0.5",
         "update-electron-app": "^2.0.1"
     }
 }

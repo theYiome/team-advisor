@@ -1,7 +1,7 @@
 import React, { ReactElement, useContext } from 'react';
 
 import Container from '@mui/material/Container'
-import { Typography, Alert, AlertTitle, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { Typography, Alert, Stack, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import { LcuContext } from './LcuProvider';
 import { SettingsActionType, SettingsContext } from '../Settings/SettingsProvider';
 

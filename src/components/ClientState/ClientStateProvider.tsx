@@ -1,11 +1,11 @@
-import React, { useState, useContext, useEffect, createContext, useRef, useCallback } from 'react';
+import React, { useState, useContext, useEffect, createContext, useRef } from 'react';
 
 import { useSnackbar } from 'notistack';
 import { LcuContext } from '../LCU/LcuProvider';
 
 import { ChampionsContext } from '../Champions/ChampionProvider';
 import { completeAction, getLcuState, hoverChampion, ClientPhase, acceptQueue } from './ClientStateProviderLogic';
-import { LolChampionSelectV1 } from './ClientStateTypes';
+import { LolChampionSelectV1 } from './ClientStateTypings';
 import { predictionEndpoints, SettingsContext } from '../Settings/SettingsProvider';
 import { FavouritesContext } from '../Favourites/FavouritesProvider';
 import { getPredictions, Prediction, PredictionApiResponse } from '../Predictions/PredictionsAPI';
@@ -111,8 +111,10 @@ const ClientStateProvider: React.FC = ({ children }) => {
         else getLcuState(lcuState.credentials).then((state) => {
             if ([ClientPhase.GameAccepted, ClientPhase.GameDeclined, ClientPhase.GameFound, ClientPhase.InQueue].includes(state.phase)) {
                 currentState.current.queueTimer = state.queueTimer;
-                if (state.phase === ClientPhase.GameFound && currentState.current.queueTimer >= settings.gameAcceptTimer && settings.autoAccept)
+                if (state.phase === ClientPhase.GameFound && currentState.current.queueTimer >= settings.gameAcceptTimer && settings.autoAccept) {
                     acceptQueue(lcuState.credentials);
+                    enqueueSnackbar(`Automatically accepted game after ${settings.gameAcceptTimer}s`, { variant: "default"});
+                }
             }
             else if ([ClientPhase.Planning, ClientPhase.Banning, ClientPhase.Picking, ClientPhase.InChampionSelect, ClientPhase.Done].includes(state.phase)) {
                 // do role swap if selected by the user
@@ -132,8 +134,10 @@ const ClientStateProvider: React.FC = ({ children }) => {
                     currentState.current.actionTimer = new Date();
                     currentState.current.failedToHover = [];
                 }
-                else if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= settings.championLockinTimer) && settings.autoLockin)
+                else if (isInPickingPhase && state.isDraft && (elapsedTimeSinceLastAction() >= settings.championLockinTimer) && settings.autoLockin) {
                     completeAction(lcuState.credentials, state.currentActionId);
+                    enqueueSnackbar(`Automatically locked-in champion after ${settings.championLockinTimer}s`, { variant: "default"});
+                }
 
                 const unavailableChampions = state.bans.concat(state.picks)
                     .concat(currentState.current.failedToHover)
@@ -156,24 +160,22 @@ const ClientStateProvider: React.FC = ({ children }) => {
                             else {
                                 if (currentState.current.championId !== state.championId)
                                     currentState.current.championId = championIdToHover;
+                                enqueueSnackbar(`Automatically hovered ${championIdToName[championIdToHover]}`, { variant: "default" });
                             }
                         });
                     }
                 }
 
                 // check if user made any action
-                if (isInPickingPhase) {
-                    if (!userTookControl) {
-                        const tookControlNow =
-                            currentState.current.championId !== state.championId &&
-                            currentState.current.championId !== 0 && state.championId !== 0;
+                if (isInPickingPhase && !userTookControl && !currentState.current.isHovering) {
+                    const tookControlNow =
+                        currentState.current.championId !== state.championId &&
+                        currentState.current.championId !== 0 && state.championId !== 0;
 
-                        if (tookControlNow)
-                            setUserTookControl(true);
-                    }
+                    if (tookControlNow)
+                        setUserTookControl(true);
                 }
-                else if (userTookControl) setUserTookControl(false);
-
+                
                 // hover something to ban
                 if (state.championId === 0 && settings.autoBan && isInBanningPhase) {
                     const idBanList: number[] = settings.prefferedBans.map(name => championNameToId[name]);
@@ -186,7 +188,8 @@ const ClientStateProvider: React.FC = ({ children }) => {
                     if (currentState.current.predictions && state.championId === 0) {
                         const comparePredictions = (a: Prediction, b: Prediction) => b.score - a.score;
                         const championToPick = currentState.current.predictions.predictions.sort(comparePredictions).find(pick => !unavailableChampions.includes(pick.championId));
-                        attemptToHover(championToPick.championId);
+                        if (championToPick)
+                            attemptToHover(championToPick.championId);
                     }
                 }
 
@@ -236,6 +239,24 @@ const ClientStateProvider: React.FC = ({ children }) => {
         if ([ClientPhase.Planning, ClientPhase.InChampionSelect, ClientPhase.Picking, ClientPhase.Banning, ClientPhase.Done].includes(currentPhase))
             bindedGetPredictions();
     }, [currentPhase, currentLeftTeam, currentRightTeam, settings.predictionEndpoint, lcuState]);
+
+    // on phase change, if phase is not Picking, set userTookControl to false
+    useEffect(() => {
+        if (currentPhase !== ClientPhase.Picking && userTookControl)
+            setUserTookControl(false);
+    }, [currentPhase]);
+
+    useEffect(() => {
+        if (userTookControl)
+            enqueueSnackbar("You picked champion in client - picking from app is now disabled", { variant: "error", autoHideDuration: 9000 });
+    }, [userTookControl]);
+
+    useEffect(() => {
+        if (roleSwappedWith !== LolChampionSelectV1.Position.None)
+            enqueueSnackbar(`Showing recommendations for ${roleSwappedWith}`, { variant: "info"});
+        else
+            enqueueSnackbar(`Role swap disabled`, { variant: "info"});
+    }, [roleSwappedWith]);
 
     // pooling client status
     useEffect(() => {
@@ -287,14 +308,18 @@ const ClientStateProvider: React.FC = ({ children }) => {
 
         let actionId = getProperActionId(actionType);
 
+        currentState.current.isHovering = true;
         return hoverChampion(lcuState.credentials, actionId, championIdToHover).then((response: any) => {
             if (response && response.errorCode) {
                 console.error({ response });
                 enqueueSnackbar(`Failed to hover ${championIdToName[championIdToHover]}! Maybe unowned?`, { variant: "warning" });
+                currentState.current.isHovering = false;
                 return false;
             }
             else {
                 currentState.current.championId = championIdToHover;
+                currentState.current.isHovering = false;
+                enqueueSnackbar(`Hovered ${championIdToName[championIdToHover]}`, { variant: "success" });
                 return true;
             }
         });

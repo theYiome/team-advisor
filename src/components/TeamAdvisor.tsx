@@ -1,20 +1,3 @@
-import { app } from '@electron/remote';
-
-const buildPath = (...args: string[]) => {
-    return args.map((part, i) => {
-        if (i === 0) {
-            return part.trim().replace(/[\/]*$/g, '');
-        } else {
-            return part.trim().replace(/(^[\/]*|[\/]*$)/g, '');
-        }
-    }).filter(x => x.length).join('/');
-};
-
-export const userData = app.getPath("userData");
-export const configFilePath = (filename: string) => buildPath(userData, filename);
-
-console.log({ userData, configFilePath });
-
 import React from 'react';
 
 import { ClientAccess } from './LCU/ClientAccess';
@@ -74,7 +57,7 @@ export const TeamAdvisor: React.FC = () => {
                         </Tooltip>
                     </Tabs>
                 </Paper>
-                <Box sx={{ width: 1, pt: 2, pb: 6, borderRight: 1, borderColor: 'divider' }} className="scroll-enabled">
+                <Box sx={{ width: 1, pt: 2, mb: 6, borderRight: 1, borderColor: 'divider' }} className="scroll-enabled">
                     <TabPanel value={tabId} index={0}>
                         <SmartChampionSelect />
                     </TabPanel>
@@ -96,7 +79,7 @@ export const TeamAdvisor: React.FC = () => {
                 </Box>
                 <Stack sx={{ width: 400, mr: 1, ml: 1, pt: 1 }}>
                     <VideoAd400x300 />
-                    <Container sx={{ height: 1, mt: 2, pb: 6 }} className="scroll-enabled">
+                    <Container sx={{ height: 1, mt: 2, mb: 6 }} className="scroll-enabled">
                         <QuickSettings />
                     </Container>
                 </Stack>

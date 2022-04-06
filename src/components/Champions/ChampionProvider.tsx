@@ -20,10 +20,7 @@ const ChampionsProvider: React.FC = ({ children }) => {
     useEffect(() => {
         const handleFailedLoad = () => {
             enqueueSnackbar("Failed to load champion names for current patch! No internet connection?", { variant: "error" });
-            setTimeout(
-                () => updateStaticChampionData(),
-                5000
-            );
+            setTimeout(() => updateStaticChampionData(), 5000);
         };
 
         // if getting champion data from ddragon fails, load cache
@@ -36,7 +33,7 @@ const ChampionsProvider: React.FC = ({ children }) => {
 
         const newChampionIdToName: ChampionIdToNameData = await ddragonChampions(newPatch);
         newChampionIdToName[0] = "";
-        
+
         const newChampionNameToId: ChampionNameToIdData = {};
 
         for (const strId of Object.keys(newChampionIdToName)) {
@@ -46,14 +43,14 @@ const ChampionsProvider: React.FC = ({ children }) => {
         }
 
         console.log({ newChampionIdToName, newChampionNameToId });
-        
+
         setChampionIdToName(newChampionIdToName);
         setChampionNameToId(newChampionNameToId);
         setPatch(newPatch);
     }
 
     return (
-        <ChampionsContext.Provider value={{championIdToName, championNameToId, patch}}>
+        <ChampionsContext.Provider value={{ championIdToName, championNameToId, patch }}>
             {children}
         </ChampionsContext.Provider>
     );
